@@ -9,7 +9,10 @@ binaryOper: PLUS | MINUS ;
 expr: expr binaryOper expr
 | INTEGER
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
+| TRUE
+| FALSE
+| MYSKIP
 ;
 
 // EOF indicates that the program must consume to the end of the input.
-prog: (expr)*  EOF ;
+prog: BEGIN (expr)* END EOF ;
