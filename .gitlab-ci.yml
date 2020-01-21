@@ -1,0 +1,15 @@
+stages:
+  - compile
+  - test
+
+compile:
+  stage: compile
+  script: mvn compile
+  tags:
+    - shell
+
+test:
+  stage: test
+  script: mvn test
+  tags:
+    - shell
