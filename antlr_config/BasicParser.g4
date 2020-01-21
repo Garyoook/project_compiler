@@ -7,20 +7,6 @@ options {
 binary_oper: TIME | DIVIDE | MOD | PLUS | MINUS | GREATER
 | SMALLER | GREATER_E | SMALLER_E | EQUAL | NOT_EQUAL | B_AND | B_OR ;
 
-stat: ASKIP
-| type ident ASSIGN assign_rhs
-| assign_lhs ASSIGN assign_rhs
-| READ assign_lhs
-| FREE expr
-| RETURN expr
-| EXIT expr
-| PRINT expr
-| PRINTLN expr
-| IF expr THEN stat ELSE stat FI
-| WHILE expr DO stat DONE
-| BEGIN stat END
-| stat COLON stat;
-
 assign_lhs: ident
 | array_elem
 | pair_elem ;
@@ -36,18 +22,18 @@ arg_list: expr (COMMA expr)* ;
 pair_elem: FST expr
 | SND expr;
 
-type: base_type
-| array_type
-| pair_type ;
-
 base_type: INT
 | BOOL
 | CHAR
 | STRING ;
 
 // array_type: type OPEN_SQUARE CLOSE_SQUARE ; //type
- array_type: OPEN_SQUARE CLOSE_SQUARE ; //type
+array_type: OPEN_SQUARE CLOSE_SQUARE ; //type
 pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES ;
+
+type: base_type
+| array_type
+| pair_type ;
 
 pair_elem_type: base_type
 | array_type
@@ -63,23 +49,18 @@ int_sign: PLUS | MINUS ;
 
 bool_liter: TRUE | FALSE ;
 
-char_liter: AP CHAR AP ;
+char_liter: AP CHAR_LITER AP
+| BACKSLASH ESCAPED_CHAR;
 
-str_liter: ST (CHAR)* ST ;
+str_liter: ST (CHAR_LITER)* ST ;
 
 array_liter: OPEN_SQUARE ( expr (COMMA expr)* )? CLOSE_SQUARE ;
 
 pair_liter: NULL;
 
-// comment: COMMENT (CHAR)* EOL;    // any-character-except-EOL
-
 param_list: param (COMMA param)*;
 
 param: type ident;
-
-func: type ident OPEN_PARENTHESES (param_list)? CLOSE_PARENTHESES IS stat END ;
-
-
 
 expr: int_liter
 | bool_liter
@@ -94,7 +75,21 @@ expr: int_liter
 
 unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
 
+stat: ASKIP
+| type ident ASSIGN assign_rhs
+| assign_lhs ASSIGN assign_rhs
+| READ assign_lhs
+| FREE expr
+| RETURN expr
+| EXIT expr
+| PRINT expr
+| PRINTLN expr
+| IF expr THEN stat ELSE stat FI
+| WHILE expr DO stat DONE
+| BEGIN stat END
+| stat COLON stat;
 
+func: type ident OPEN_PARENTHESES (param_list)? CLOSE_PARENTHESES IS stat END ;
 
 // EOF indicates that the program must consume to the end of the input.
 prog: BEGIN (func)* stat END EOF ;

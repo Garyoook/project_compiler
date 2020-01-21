@@ -62,8 +62,7 @@ CLOSE_SQUARE: ']' ;
 
 TRUE: 'true';
 FALSE: 'false';
-AP: '\'';        //not sure
-ST: '"';
+
 
 
 // pair
@@ -77,10 +76,16 @@ COMMA: ',';
 CALL: 'call';
 ASSIGN: '=';
 NULL: 'null';
-COMMENT: '#';
+COMMENT: '#' .*? '\n' -> skip;
 // EOL: '\n';
 
+// escaped char
+ESCAPED_CHAR:[0btnfr"'\\];     //not sure
+BACKSLASH: '\\';    //not sure
+AP: '\'';        //not sure
+ST: '"';
 
 
+CHAR_LITER: [^\\'"];     //not sure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 STRING: CHAR+ ;
 IGNOR: [ \t\r\n] -> skip;
