@@ -8,18 +8,19 @@ ASKIP: 'skip';
 // type
 INT: 'int';
 DIGIT: '0'..'9' ;
-INTEGER: DIGIT+ ;
-CHAR: 'a'..'z' | 'A'..'Z' ;    //any-ASCII-character-except-`\'-`''-`"'
-
-UNDERSCORE: '_';
+STRING: 'string' ;
+CHAR: 'char';
 BOOL: 'bool';
+TRUE: 'true';
+FALSE: 'false';
+
 
 // unary operators
 NOT: '!' ;
 NEGATIVE: '-' ;
 LEN: 'len' ;
 ORD: 'ord' ;
-CHR: 'char' ;
+CHR: 'chr' ;
 
 // binary operators
 PLUS: '+' ;
@@ -36,8 +37,7 @@ MOD: '%' ;
 GREATER_E: '>=' ;
 SMALLER_E: '<=' ;
 
-
-// state
+// stat
 READ: 'read';
 FREE: 'free';
 RETURN: 'return';
@@ -52,18 +52,11 @@ WHILE: 'while';
 DO: 'do';
 DONE: 'done';
 
-
-
 //brackets
 OPEN_PARENTHESES: '(' ;
 CLOSE_PARENTHESES: ')' ;
 OPEN_SQUARE: '[' ;
 CLOSE_SQUARE: ']' ;
-
-TRUE: 'true';
-FALSE: 'false';
-
-
 
 // pair
 NEWPAIR: 'newpair' ;
@@ -77,15 +70,21 @@ CALL: 'call';
 ASSIGN: '=';
 NULL: 'null';
 COMMENT: '#' .*? '\n' -> skip;
-// EOL: '\n';
 
 // escaped char
-ESCAPED_CHAR:[0btnfr"'\\];     //not sure
-BACKSLASH: '\\';    //not sure
-AP: '\'';        //not sure
 ST: '"';
+AP: '\'';        //not sure
 
 
-CHAR_LITER: [^\\'"];     //not sure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-STRING: CHAR+ ;
 IGNOR: [ \t\r\n] -> skip;
+
+fragment CHARACTER: ANY_ASCII
+| ESCAPED_CHAR;
+
+CHAR_LITER: AP CHARACTER AP;
+
+STR_LITER: ST (CHARACTER)* ST ;
+
+IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)*;
+ANY_ASCII: ~[\\'"];     //not sure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ESCAPED_CHAR: '\\' [0btnfr"'\\];     //not sure

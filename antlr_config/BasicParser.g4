@@ -4,79 +4,73 @@ options {
   tokenVocab=BasicLexer;
 }
 
+pair_liter: NULL;
+
+array_liter: OPEN_SQUARE ( expr (COMMA expr)* )? CLOSE_SQUARE ;
+
+bool_liter: TRUE | FALSE ;
+
+int_sign: PLUS | MINUS ;
+
+int_liter: (int_sign)? (DIGIT)+ ;
+
+array_elem: IDENT (OPEN_SQUARE expr CLOSE_SQUARE)+ ;
+
 binary_oper: TIME | DIVIDE | MOD | PLUS | MINUS | GREATER
 | SMALLER | GREATER_E | SMALLER_E | EQUAL | NOT_EQUAL | B_AND | B_OR ;
 
-assign_lhs: ident
+unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
+
+expr: STR_LITER
+|int_liter
+| bool_liter
+| CHAR_LITER
+| pair_liter
+| IDENT
 | array_elem
-| pair_elem ;
+| unary_oper expr
+| expr binary_oper expr
+| OPEN_PARENTHESES expr CLOSE_PARENTHESES ;
 
-assign_rhs: expr
-| array_liter
-| NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
-| pair_elem
-| CALL ident OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES ;
+pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES ;
 
-arg_list: expr (COMMA expr)* ;
+pair_elem_type: base_type
+| array_type
+| PAIR ;
 
-pair_elem: FST expr
-| SND expr;
+
+// array_type: type OPEN_SQUARE CLOSE_SQUARE ; //type
+
 
 base_type: INT
 | BOOL
 | CHAR
 | STRING ;
 
-// array_type: type OPEN_SQUARE CLOSE_SQUARE ; //type
-array_type: OPEN_SQUARE CLOSE_SQUARE ; //type
-pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES ;
-
-type: base_type
-| array_type
+type: array_type
+| base_type
 | pair_type ;
 
-pair_elem_type: base_type
-| array_type
-| PAIR ;
+array_type: (base_type | pair_type) OPEN_SQUARE CLOSE_SQUARE
+ | array_type OPEN_SQUARE CLOSE_SQUARE ;
 
-ident: (UNDERSCORE | CHAR) (UNDERSCORE | CHAR | DIGIT)*;
+pair_elem: FST expr
+| SND expr;
 
-array_elem: ident (OPEN_SQUARE expr CLOSE_SQUARE)+ ;
+arg_list: expr (COMMA expr)* ;
 
-int_liter: (int_sign)? (DIGIT)+ ;
+assign_rhs: expr
+| array_liter
+| NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
+| pair_elem
+| CALL IDENT OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES ;
 
-int_sign: PLUS | MINUS ;
-
-bool_liter: TRUE | FALSE ;
-
-char_liter: AP CHAR_LITER AP
-| BACKSLASH ESCAPED_CHAR;
-
-str_liter: ST (CHAR_LITER)* ST ;
-
-array_liter: OPEN_SQUARE ( expr (COMMA expr)* )? CLOSE_SQUARE ;
-
-pair_liter: NULL;
-
-param_list: param (COMMA param)*;
-
-param: type ident;
-
-expr: int_liter
-| bool_liter
-| char_liter
-| str_liter
-| pair_liter
-| ident
+assign_lhs: IDENT
 | array_elem
-| unary_oper expr
-| expr binary_oper expr
-| OPEN_PARENTHESES expr CLOSE_PARENTHESES ;
-
-unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
+| pair_elem ;
 
 stat: ASKIP
-| type ident ASSIGN assign_rhs
+| type IDENT ASSIGN assign_rhs
 | assign_lhs ASSIGN assign_rhs
 | READ assign_lhs
 | FREE expr
@@ -89,7 +83,11 @@ stat: ASKIP
 | BEGIN stat END
 | stat COLON stat;
 
-func: type ident OPEN_PARENTHESES (param_list)? CLOSE_PARENTHESES IS stat END ;
+param: type IDENT;
+
+param_list: param (COMMA param)*;
+
+func: type IDENT OPEN_PARENTHESES (param_list)? CLOSE_PARENTHESES IS stat END ;
 
 // EOF indicates that the program must consume to the end of the input.
 prog: BEGIN (func)* stat END EOF ;
