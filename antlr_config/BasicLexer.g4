@@ -1,64 +1,90 @@
 lexer grammar BasicLexer;
-//numbers
-fragment DIGIT: '0'..'9' ;
-INTEGER: DIGIT+ ;
-WS : [ \t\r\n]+ -> skip ;
+// program
+BEGIN: 'begin';
+END: 'end';
+IS: 'is';
+ASKIP: 'skip';
 
-BEN: 'begin' ;
-END: 'end' ;
-MYSKIP: 'skip' ;
-
-//null
-NULL: 'null' ;
-
-//uniary operators
-NOT: '!' ;
-LENGTH: 'len' ;
-ORD: 'ord' ;
-CHR: 'chr' ;
-
-//boolean
+// type
+INT: 'int';
+DIGIT: '0'..'9' ;
+STRING: 'string' ;
+CHAR: 'char';
+BOOL: 'bool';
 TRUE: 'true';
 FALSE: 'false';
 
-//binary operators
+
+// unary operators
+NOT: '!' ;
+NEGATIVE: '-' ;
+LEN: 'len' ;
+ORD: 'ord' ;
+CHR: 'chr' ;
+
+// binary operators
 PLUS: '+' ;
 MINUS: '-' ;
-GREATER: '>' ;
-GREATEREQUAL: '>=' ;
-SMALLER: '<' ;
-SMALLEREQUAL: '<=' ;
 EQUAL: '==' ;
-NOTEQUAL: '!=' ;
-MULTIPLICATION: '*' ;
-DIVISION: '/' ;
+NOT_EQUAL: '!=' ;
+B_AND: '&&' ;
+B_OR: '||' ;
+TIME: '*' ;
+DIVIDE: '/' ;
+GREATER: '>' ;
+SMALLER: '<' ;
 MOD: '%' ;
-BITWISEOR: '||' ;
-BITWISEAND: '&&' ;
+GREATER_E: '>=' ;
+SMALLER_E: '<=' ;
+
+// stat
+READ: 'read';
+FREE: 'free';
+RETURN: 'return';
+EXIT: 'exit';
+PRINT: 'print';
+PRINTLN: 'println';
+IF: 'if';
+THEN: 'then';
+ELSE: 'else';
+FI: 'fi';
+WHILE: 'while';
+DO: 'do';
+DONE: 'done';
 
 //brackets
 OPEN_PARENTHESES: '(' ;
 CLOSE_PARENTHESES: ')' ;
-OPEN_BRACKETS: '[' ;
-CLOSE_BRACKETS: ']' ;
+OPEN_SQUARE: '[' ;
+CLOSE_SQUARE: ']' ;
 
-//semi-colon
-SEMI_COLON: ';' ;
+// pair
+NEWPAIR: 'newpair' ;
+PAIR: 'pair' ;
+FST: 'fst';
+SND: 'snd';
 
-//comma
-COMMA: ',' ;
+COLON: ';';
+COMMA: ',';
+CALL: 'call';
+ASSIGN: '=';
+NULL: 'null';
+COMMENT: '#' .*? '\n' -> skip;
+
+// escaped char
+ST: '"';
+AP: '\'';
 
 
+IGNOR: [ \t\r\n] -> skip;
 
-//strings
-UNDERSCORE: '_' ;
-SINGLE_QUOTE: '\'' ;
-DOUBLE_QUOTE: '"' ;
-EOL: '\n' ;
-/*fragment LOWERCASE_ALPHA: 'a'..'z' ;
-fragment UPPERCASE_ALPHA: 'A'..'Z' ;*/
+fragment CHARACTER: ANY_ASCII
+| ESCAPED_CHAR;
 
+CHAR_LITER: AP CHARACTER AP;
 
-//comments
-START_COMMENTS: '#' ;
+STR_LITER: ST (CHARACTER)* ST ;
 
+IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)*;
+ANY_ASCII: ~[\\'"];
+ESCAPED_CHAR: '\\' [0btnfr"'\\];
