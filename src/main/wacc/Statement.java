@@ -1,3 +1,5 @@
+package wacc;
+
 public class Statement {
 
 //  public Statement()

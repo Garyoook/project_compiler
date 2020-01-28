@@ -1,6 +1,6 @@
-import antlr.BasicLexer;
-import antlr.BasicParser;
-import antlr.BasicParserBaseVisitor;
+package wacc;
+
+import antlr.*;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -25,7 +25,7 @@ public class Wacc {
       System.out.println(visitor.visit(parseTree));
 
 //      for (int i = 0; i < parseTree.getChildCount(); i++) {
-//        System.out.println(parseTree.getChild(i).toStringTree(basicParser));
+        System.out.println(parseTree.toStringTree(basicParser));
 //      }
 
     }

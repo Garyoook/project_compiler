@@ -4,12 +4,17 @@ stages:
 
 compile:
   stage: compile
-  script: mvn compile
+  script:
+    - make
+    - mvn compile
   tags:
     - shell
 
 test:
   stage: test
-  script: mvn test
+  script:
+    - make
+    - mvn compile
+    - mvn test
   tags:
     - shell

@@ -1,3 +1,5 @@
+package wacc;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class AST {
