@@ -69,6 +69,7 @@ assign_lhs: IDENT
 
 stat: ASKIP
 | type IDENT ASSIGN assign_rhs
+| type IDENT ASSIGN assign_rhs
 | assign_lhs ASSIGN assign_rhs
 | READ assign_lhs
 | FREE expr
