@@ -15,6 +15,6 @@ test:
   script:
     - make
     - mvn compile
-    - mvm test
+    - mvn test
   tags:
     - shell
