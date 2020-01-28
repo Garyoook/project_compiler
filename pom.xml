@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.example</groupId>
+    <groupId>src</groupId>
     <artifactId>wacc_49</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -26,6 +26,9 @@
     </dependencies>
 
     <build>
+
+        <sourceDirectory>src/main</sourceDirectory>
+
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -45,8 +48,8 @@
                     <assembleDirectory>target</assembleDirectory>
                     <programs>
                         <program>
-                            <mainClass>ic.doc.WebServer</mainClass>
-                            <name>simplewebapp</name>
+                            <mainClass>src</mainClass>
+                            <name>wacc_49</name>
                         </program>
                     </programs>
                 </configuration>
@@ -72,5 +75,18 @@
                 </executions>
             </plugin>
         </plugins>
+
+<!--        <finalName>WACC_49</finalName>-->
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/antlr</directory>-->
+<!--            </resource>-->
+<!--            <resource>-->
+<!--                <directory>src</directory>-->
+<!--            </resource>-->
+<!--            <resource>-->
+<!--                <directory>antlr_config</directory>-->
+<!--            </resource>-->
+<!--        </resources>-->
     </build>
 </project>

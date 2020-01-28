@@ -4,7 +4,9 @@ stages:
 
 compile:
   stage: compile
-  script: mvn compile
+  script:
+    - make
+    - mvn compile
   tags:
     - shell
 
