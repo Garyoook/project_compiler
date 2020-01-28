@@ -12,6 +12,9 @@ compile:
 
 test:
   stage: test
-  script: mvn test
+  script:
+    - make
+    - mvn compile
+    - mvm test
   tags:
     - shell
