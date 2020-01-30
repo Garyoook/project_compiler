@@ -67,21 +67,19 @@ assign_lhs: IDENT
 | array_elem
 | pair_elem ;
 
-stat: ASKIP
-| type IDENT ASSIGN assign_rhs
-| type IDENT ASSIGN assign_rhs
-| assign_lhs ASSIGN assign_rhs
-| READ assign_lhs
-| FREE expr
-| RETURN expr
-| EXIT expr
-| PRINT expr
-| PRINTLN expr
-| IF expr THEN stat ELSE stat FI
-| WHILE expr DO stat DONE
-| BEGIN stat END
-| stat COLON stat;
-
+stat: ASKIP                      #askip
+| type IDENT ASSIGN assign_rhs   #declaration
+| assign_lhs ASSIGN assign_rhs   #assignment
+| READ assign_lhs                #read
+| FREE expr                      #free
+| RETURN expr                    #return
+| EXIT expr                      #exit
+| PRINT expr                     #print
+| PRINTLN expr                   #println
+| IF expr THEN stat ELSE stat FI #ifthenesle
+| WHILE expr DO stat DONE        #whileloop
+| BEGIN stat END                 #block
+| stat COLON stat                #seq_compose;
 param: type IDENT;
 
 param_list: param (COMMA param)*;
