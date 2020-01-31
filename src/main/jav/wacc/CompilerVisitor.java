@@ -1,4 +1,4 @@
-package wacc;
+package jav.wacc;
 
 import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;

@@ -3,4 +3,13 @@
 # You are free to change the language used for this script,
 # but do *not* change its name.
 
-puts "TODO: setup this script to call your WACC compiler"
+if ARGV.length != 1
+    puts "please give the path to the source .wacc file!"
+    exit
+end
+
+output = system('java -cp target/wacc_49-1.0-SNAPSHOT.jar:lib/* jav.wacc.Wacc ' + ARGV[0])
+
+puts "exit(%d)" %[$?.exitstatus]
+
+exit $?.exitstatus
