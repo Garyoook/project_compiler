@@ -80,6 +80,7 @@ stat: ASKIP                      #askip
 | WHILE expr DO stat DONE        #whileloop
 | BEGIN stat END                 #block
 | stat COLON stat                #seq_compose;
+
 param: type IDENT;
 
 param_list: param (COMMA param)*;

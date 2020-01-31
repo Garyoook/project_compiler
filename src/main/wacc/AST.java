@@ -1,6 +1,7 @@
 package wacc;
 
 import antlr.BasicParser;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +10,8 @@ public abstract class AST {
 //  ArrayList<AST> children = new ArrayList<>();
 
   public static class ProgramAST extends AST {
-    private final List<FuncAST> functions;
-    private final StatAST mainProgram;
+    private List<FuncAST> functions;
+    private StatAST mainProgram;
 
     public ProgramAST(List<FuncAST> functions, StatAST mainProgram) {
       this.functions = functions;
@@ -26,8 +27,131 @@ public abstract class AST {
     }
   }
 
-  public class StatAST {
+  // 3types of condition, only statement,
+  public class StatAST extends AST {
+
+//    private int type;
+//    private AST ast;
+//
+//    public StatAST(int type, ParserRuleContext fst, ParserRuleContext snd, ParserRuleContext thd) {
+//      switch (type) {
+//        case BasicParser.ASKIP: this.ast = new SkipAst();
+//        case
+//      }
+//    }
+
   }
+
+  public class ReadAst extends StatAST {
+    private final BasicParser.Assign_lhsContext lhs;
+    public ReadAst(BasicParser.Assign_lhsContext lhs) {
+      this.lhs = lhs;
+    }
+  }
+
+  public class AssignAST extends StatAST {
+    private final BasicParser.Assign_lhsContext lhs;
+    private final BasicParser.Assign_rhsContext rhs;
+    public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
+      this.lhs = lhs;
+      this.rhs = rhs;
+    }
+  }
+
+  public class IfAst extends StatAST {
+    private final ExprAst expr;
+    private StatAST thenbranch;
+    private StatAST elsebranch;
+
+
+    public IfAst(ExprAst expr, StatAST thenbranch, StatAST elsebranch) {
+      this.expr = expr;
+      this.thenbranch = thenbranch;
+      this.elsebranch = elsebranch;
+    }
+  }
+
+  public class SkipAst extends StatAST {
+
+  }
+
+  public class DeclarationAst extends StatAST {
+    private final BasicParser.TypeContext type;
+    private final String name;
+    private final BasicParser.Assign_rhsContext rhs;
+
+
+    public DeclarationAst(BasicParser.TypeContext type, String name, BasicParser.Assign_rhsContext rhs) {
+      this.type = type;
+      this.name = name;
+      this.rhs = rhs;
+    }
+  }
+
+  public class WhileAst extends StatAST {
+    private ExprAst expr;
+    private StatAST stat;
+
+
+    public WhileAst(ExprAst expr, StatAST stat) {
+      this.expr = expr;
+      this.stat = stat;
+    }
+  }
+
+  public class SeqStateAst extends StatAST {
+    private StatAST fst;
+    private StatAST snd;
+
+    public SeqStateAst(StatAST fst, StatAST snd) {
+      this.fst = fst;
+      this.snd = snd;
+    }
+  }
+
+  public class ExitAst extends StatAST {
+    private ExprAst expr;
+
+    public ExitAst(ExprAst expr) {
+      this.expr = expr;
+    }
+  }
+
+  public class PrintAst extends StatAST {
+    private ExprAst expr;
+
+    public PrintAst(ExprAst expr) {
+      this.expr = expr;
+    }
+  }
+
+  public class BlockAst extends StatAST {
+    private StatAST stat;
+
+    public BlockAst(StatAST stat) {
+      this.stat = stat;
+    }
+  }
+
+  public class FreeAst extends StatAST {
+    private StatAST stat;
+
+    public FreeAst(StatAST stat) {
+      this.stat = stat;
+    }
+  }
+
+  public class ReturnAst extends StatAST {
+    private StatAST stat;
+
+    public ReturnAst(StatAST stat) {
+      this.stat = stat;
+    }
+  }
+
+  public class ExprAst extends AST {
+  }
+
 //  public AST(BasicParser.StatContext thisTree) throws Exception {
 //    int i = 0;
 //    while (thisTree instanceof BasicParser.DeclarationContext) {
@@ -49,7 +173,7 @@ public abstract class AST {
     private final List<BasicParser.ParamContext> parameters;
     private final StatAST functionBody;
 
-    FuncAST(BasicParser.TypeContext returnType, String funcName, List<BasicParser.ParamContext> parameters, StatAST functionBody) {
+    public FuncAST(BasicParser.TypeContext returnType, String funcName, List<BasicParser.ParamContext> parameters, StatAST functionBody) {
       this.returnType = returnType;
       this.funcName = funcName;
       this.parameters = parameters;
