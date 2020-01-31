@@ -71,7 +71,7 @@ public abstract class AST {
     }
   }
 
-  public class SkipAst extends StatAST {
+  public class SkipAst extends StatAST { 
 
   }
 
