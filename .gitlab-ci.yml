@@ -5,7 +5,6 @@ stages:
 compile:
   stage: compile
   script:
-    - make
     - mvn compile
   tags:
     - shell
@@ -13,8 +12,6 @@ compile:
 test:
   stage: test
   script:
-    - make
-    - mvn compile
     - mvn test
   tags:
     - shell

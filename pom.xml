@@ -27,10 +27,27 @@
 
     <build>
         <outputDirectory>bin</outputDirectory>
-
         <sourceDirectory>src/main</sourceDirectory>
 
         <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.7.1</version>
+                <configuration>
+                    <sourceDirectory>antlr_config</sourceDirectory>
+                    <outputDirectory>src/main/antlr</outputDirectory>
+                    <listener>false</listener>
+                    <visitor>true</visitor>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
@@ -59,18 +76,6 @@
                         <phase>package</phase>
                         <goals>
                             <goal>assemble</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.7.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>antlr4</goal>
                         </goals>
                     </execution>
                 </executions>
