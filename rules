@@ -1,0 +1,8 @@
+src/main/wacc/AST.java
+src/main/wacc/CompilerVisitor.java
+src/main/wacc/Wacc.java
+src/main/wacc/SubTrees.java
+src/main/antlr/BasicLexer.java
+src/main/antlr/BasicParser.java
+src/main/antlr/BasicParserVisitor.java
+src/main/antlr/BasicParserBaseVisitor.java

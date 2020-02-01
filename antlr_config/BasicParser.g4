@@ -21,12 +21,16 @@ binary_oper: TIME | DIVIDE | MOD | PLUS | MINUS | GREATER
 
 unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
 
-expr: STR_LITER
-|int_liter
+char_liter: CHAR_LITER;
+string_liter: STR_LITER;
+ident: IDENT;
+
+expr: string_liter
+| int_liter
 | bool_liter
-| CHAR_LITER
+| char_liter
 | pair_liter
-| IDENT
+| ident
 | array_elem
 | unary_oper expr
 | expr binary_oper expr
@@ -80,6 +84,7 @@ stat: ASKIP                      #askip
 | WHILE expr DO stat DONE        #whileloop
 | BEGIN stat END                 #block
 | stat COLON stat                #seq_compose;
+
 param: type IDENT;
 
 param_list: param (COMMA param)*;
