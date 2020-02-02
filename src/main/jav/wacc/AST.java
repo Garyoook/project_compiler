@@ -6,9 +6,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import javax.xml.parsers.SAXParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import static java.lang.System.exit;
+
+
 public abstract class AST {
+  public static HashMap<String, BasicParser.TypeContext> symbolTable = new HashMap<>();
 //  ArrayList<AST> children = new ArrayList<>();
   @Override
   public String toString() {
@@ -42,11 +47,11 @@ public abstract class AST {
       stringBuilder.append("there is this many funcs ");
       for (FuncAST f: functions) {
         stringBuilder.append(f.funcName);
+        stringBuilder.append(f.toString());
         stringBuilder.append("  ");
       }
 
-
-      stringBuilder.append("this is a ");
+      stringBuilder.append("Now start the program \n");
       stringBuilder.append(getClass().getName());
       stringBuilder.append(" AST\n");
       stringBuilder.append(mainProgram.toString());
@@ -68,6 +73,10 @@ public abstract class AST {
     public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
       this.lhs = lhs;
       this.rhs = rhs;
+      if (rhs.expr().size() == 1) {
+        CompilerVisitor visitor = new CompilerVisitor();
+        visitor.visitExpr(rhs.expr(0));
+      }
     }
   }
 
@@ -94,10 +103,22 @@ public abstract class AST {
     private final BasicParser.Assign_rhsContext rhs;
 
 
+
     public DeclarationAst(BasicParser.TypeContext type, String name, BasicParser.Assign_rhsContext rhs) {
       this.type = type;
       this.name = name;
       this.rhs = rhs;
+      symbolTable.put(name, type);
+      if (rhs.expr().size() == 1) {
+
+        CompilerVisitor visitor = new CompilerVisitor();
+        visitor.visitExpr(rhs.expr(0));
+      }
+    }
+
+    @Override
+    public String toString() {
+      return super.toString() + "type: " + type.getText() + " name: " + name;
     }
   }
 
@@ -116,6 +137,11 @@ public abstract class AST {
     private ArrayList<AST> seqs;
     public SeqStateAst(ArrayList<AST> seqs) {
       this.seqs = new ArrayList<>(seqs);
+    }
+
+    @Override
+    public String toString() {
+      return super.toString() + seqs.toString();
     }
   }
 
@@ -175,13 +201,124 @@ public abstract class AST {
   }
 
 
-  public static class ExprAst extends AST {
-    ArrayList<AST> asts;
-    ExprAst(ArrayList<AST> asts) {
-      this.asts = new ArrayList<>(asts);
+  public static class IntNode extends AST {
+    int value;
+    IntNode(int value) {
+      this.value = value;
+    }
+  }
+
+  public static class StringNode extends AST {
+    String value;
+    StringNode(String value) {
+      this.value = value;
+    }
+  }
+
+  public static class BoolNode extends AST {
+    boolean value;
+    BoolNode(boolean value) {
+      this.value = value;
+    }
+  }
+
+  public static class IdenNode extends AST {
+    String ident;
+    IdenNode(String ident) {
+      this.ident = ident;
+    }
+  }
+
+  public static class Unaryop_node extends AST{
+    BasicParser.Unary_operContext operContext;
+    AST expr;
+    Unaryop_node(BasicParser.Unary_operContext operContext, AST expr) {
+      this.operContext = operContext;
+      this.expr = expr;
+    }
+  }
+
+  public static class BinaryOp_node extends AST{
+    BasicParser.Binary_operContext operContext;
+    AST expr1;
+    AST expr2;
+    BinaryOp_node(BasicParser.Binary_operContext operContext, AST expr1, AST expr2) {
+      this.operContext = operContext;
+      this.expr1 = expr1;
+      this.expr2 = expr2;
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("Semantic error: type doesn't matched");  exit(200);
+      }
+      if (expr1 instanceof IntNode && !(expr2 instanceof IntNode)) {
+        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+      }
+      if (expr1 instanceof BoolNode && !(expr2 instanceof BoolNode)) {
+        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+      }
+      if (expr1 instanceof CharNode && !(expr2 instanceof CharNode)) {
+        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+      }
+      if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
+        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+      }
+
     }
 
+    private boolean same_type(AST expr1, AST expr2) {
+      if (expr1 instanceof IdenNode) {
+        BasicParser.TypeContext type1 = symbolTable.get(((IdenNode) expr1).ident);
+        if (type1 == null) {
+          System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+          exit(200);
+        }
+        if (expr2 instanceof IdenNode) {
+
+          BasicParser.TypeContext type2 = symbolTable.get(((IdenNode) expr2).ident);
+          if (type2 == null) {
+            System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+            exit(200);
+          }
+
+          if (!type1.equals(type2)){
+            System.out.println("Semantic error: type doesn't matched");  exit(200);}
+        } else {
+          if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
+            
+            System.out.println("Semantic error: type doesn't matched");  exit(200); 
+          }
+          if (type1.base_type().BOOL() != null && !(expr2 instanceof BoolNode)) {
+            System.out.println("Semantic error: type doesn't matched");  exit(200); 
+          }
+          if (type1.base_type().CHAR() != null && !(expr2 instanceof CharNode)) {
+            System.out.println("Semantic error: type doesn't matched");  exit(200); 
+          }
+          if (type1.base_type().STRING() != null && !(expr2 instanceof StringNode)) {
+            System.out.println("Semantic error: type doesn't matched");  exit(200); 
+          }
+        }
+      }
+      return true;
+    }
   }
+
+  public static class CharNode extends AST {
+    char value;
+    CharNode(char value) {
+      this.value = value;
+    }
+  }
+
+  public static class ExprWithParen extends AST {
+    AST expr;
+
+    public ExprWithParen(AST expr) {
+      this.expr = expr;
+    }
+  }
+
+
+
+
 
   static class FuncAST extends AST {
     private final BasicParser.TypeContext returnType;

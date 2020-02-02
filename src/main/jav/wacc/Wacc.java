@@ -15,18 +15,18 @@ import java.util.Scanner;
 public class Wacc {
   public static void main(String[] args) throws Exception {
     StringBuilder sb = new StringBuilder();
-    try {
-      // the file to be opened for reading
-      FileInputStream fis = new FileInputStream(args[0]);
-      Scanner sc = new Scanner(fis); // file to be scanned
-      // returns true if there is another line to read
-      while (sc.hasNextLine()) {
-        sb.append(sc.nextLine()).append("\n");
-      }
-      sc.close(); // closes the scanner
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      // the file to be opened for reading
+//      FileInputStream fis = new FileInputStream(args[0]);
+//      Scanner sc = new Scanner(fis); // file to be scanned
+//      // returns true if there is another line to read
+//      while (sc.hasNextLine()) {
+//        sb.append(sc.nextLine()).append("\n");
+//      }
+//      sc.close(); // closes the scanner
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
     ANTLRInputStream input = new ANTLRInputStream(System.in);
 //
     BasicLexer lexer = new BasicLexer(input);
@@ -38,9 +38,6 @@ public class Wacc {
     CompilerVisitor visitor = new CompilerVisitor();
 
     AST ast = visitor.visitProg(basicParser.prog());
-
-    System.out.println(ast);
-
 
   }
 }
