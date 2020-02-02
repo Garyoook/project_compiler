@@ -29,7 +29,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitBool_liter(BasicParser.Bool_literContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitBool_liter(BasicParser.Bool_literContext ctx) {
+    if (ctx.getText().equals("false")) {
+      return new AST.BoolNode(false);
+    } else {
+      if (ctx.getText().equals("true")){
+        return new AST.BoolNode(true);
+      }
+    }
+    return null;
+  }
   /**
    * {@inheritDoc}
    *
@@ -43,7 +52,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitInt_liter(BasicParser.Int_literContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitInt_liter(BasicParser.Int_literContext ctx) {
+    if (ctx.int_sign() == null) {
+      return new AST.IntNode(Integer.parseInt(ctx.getText()));
+    }
+    if (ctx.int_sign().getText().equals("-")) {
+      return new AST.IntNode(-Integer.parseInt(ctx.getText()));
+    } else {
+      return new AST.IntNode(Integer.parseInt(ctx.getText()));
+    }
+  }
   /**
    * {@inheritDoc}
    *
@@ -57,7 +75,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitBinary_oper(BasicParser.Binary_operContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitBinary_oper(BasicParser.Binary_operContext ctx) {
+    return null;
+
+  }
   /**
    * {@inheritDoc}
    *
@@ -72,46 +93,53 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitExpr(BasicParser.ExprContext ctx) {
-    ArrayList<AST> asts = new ArrayList<>();
-    for (BasicParser.ExprContext context:ctx.expr()) {
-      if (ctx.int_liter() != null) {
-        asts.add(visitInt_liter(ctx.int_liter()));
-      }
-      if (ctx.bool_liter() != null) {
-        asts.add(visitBool_liter(ctx.bool_liter()));
-      }
-      if (ctx.char_liter() != null) {
-        asts.add(visitChar_liter(ctx.char_liter()));
-      }
-      if (ctx.pair_liter() != null) {
-        asts.add(visitPair_liter(ctx.pair_liter()));
-      }
-      if (ctx.array_elem() != null) {
-        asts.add(visitArray_elem(ctx.array_elem()));
-      }
-      if (ctx.ident() != null) {
-        asts.add(visitIdent(ctx.ident()));
-      }
-      if (ctx.unary_oper() != null) {
-        asts.add(visitUnary_oper(ctx.unary_oper()));
-      }
-      if (ctx.binary_oper() != null) {
-        asts.add(visitBinary_oper(ctx.binary_oper()));
-      }
-    }
-    return new AST.ExprAst(asts);
+    if (ctx.unary_oper() != null) {
+      return (new AST.Unaryop_node(ctx.unary_oper(), visitExpr(ctx.expr(0))));
+    } else
+    if (ctx.binary_oper() != null) {
+      return (new AST.BinaryOp_node(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+    } else
+    if (ctx.int_liter() != null) {
+      return (visitInt_liter(ctx.int_liter()));
+    } else
+    if (ctx.bool_liter() != null) {
+
+      return (visitBool_liter(ctx.bool_liter()));
+    } else
+    if (ctx.char_liter() != null) {
+      return (visitChar_liter(ctx.char_liter()));
+    } else
+    if (ctx.pair_liter() != null) {
+      return (visitPair_liter(ctx.pair_liter()));
+    } else
+    if (ctx.array_elem() != null) {
+      return (visitArray_elem(ctx.array_elem()));
+    } else
+    if (ctx.ident() != null) {
+      return (visitIdent(ctx.ident()));
+    } else
+    if (ctx.OPEN_PARENTHESES() != null) {
+      return new AST.ExprWithParen(visitExpr(ctx.expr(0)));
+    } else
+    return null;
   }
 
-  @Override public AST visitIdent(BasicParser.IdentContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitIdent(BasicParser.IdentContext ctx) {
+    return new AST.IdenNode(ctx.getText());
+  }
 
-  @Override public AST visitChar_liter(BasicParser.Char_literContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitChar_liter(BasicParser.Char_literContext ctx) {
+    return new AST.CharNode(ctx.getText().charAt(0));
+  }
   /**
    * {@inheritDoc}
    *
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitString_liter(BasicParser.String_literContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitString_liter(BasicParser.String_literContext ctx) {
+    return new AST.StringNode(ctx.getText());
+  }
   /**
    * {@inheritDoc}
    *
