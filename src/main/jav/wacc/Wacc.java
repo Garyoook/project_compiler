@@ -45,7 +45,8 @@ public class Wacc {
     ANTLRErrorListener errorListener = new ANTLRErrorListener() {
       @Override
       public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-
+        System.out.println("#Syntax Error#");
+        exit(100);
       }
 
       @Override
