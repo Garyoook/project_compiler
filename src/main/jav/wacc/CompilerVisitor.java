@@ -4,6 +4,7 @@ import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
 
 import static jav.wacc.AST.symbolTable;
+import static java.lang.System.exit;
 
 import java.beans.Visibility;
 import java.util.ArrayList;
@@ -356,10 +357,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
+    BasicParser.Param_listContext params = ctx.param_list();
     for (BasicParser.ParamContext p: ctx.param_list().param()) {
       symbolTable.put(p.IDENT().getText(), p.type());
     }
-    return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), ctx.param_list().param(), visitStat(ctx.stat()));
+    return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
   }
   /**
    * {@inheritDoc}
