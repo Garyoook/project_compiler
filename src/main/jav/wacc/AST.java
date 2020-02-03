@@ -15,14 +15,14 @@ import static java.lang.System.exit;
 public abstract class AST {
   public static HashMap<String, BasicParser.TypeContext> symbolTable = new HashMap<>();
 //  ArrayList<AST> children = new ArrayList<>();
-  @Override
-  public String toString() {
-    StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append("this is a ");
-    stringBuilder.append(getClass().getName());
-    stringBuilder.append(" AST \n");
-    return stringBuilder.toString();
-  }
+//  @Override
+//  public String toString() {
+//    StringBuilder stringBuilder = new StringBuilder();
+//    stringBuilder.append("this is a ");
+//    stringBuilder.append(getClass().getName());
+//    stringBuilder.append(" AST \n");
+//    return stringBuilder.toString();
+//  }
 
   public static class ProgramAST extends AST {
     private List<FuncAST> functions;
@@ -44,17 +44,15 @@ public abstract class AST {
     @Override
     public String toString() {
       StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append("there is this many funcs ");
+      stringBuilder.append("this program has these functions: \n");
       for (FuncAST f: functions) {
-        stringBuilder.append(f.funcName);
+        stringBuilder.append(f.funcName).append("\n");
         stringBuilder.append(f.toString());
-        stringBuilder.append("  ");
+        stringBuilder.append("  \n\n");
       }
 
       stringBuilder.append("Now start the program \n");
-      stringBuilder.append(getClass().getName());
-      stringBuilder.append(" AST\n");
-      stringBuilder.append(mainProgram.toString());
+      stringBuilder.append(mainProgram.toString()).append("\n");
       return stringBuilder.toString();
     }
   }
@@ -64,6 +62,11 @@ public abstract class AST {
     private final BasicParser.Assign_lhsContext lhs;
     public ReadAst(BasicParser.Assign_lhsContext lhs) {
       this.lhs = lhs;
+    }
+
+    @Override
+    public String toString() {
+      return "reading from: " + lhs.IDENT().getText() + "\n";
     }
   }
 
@@ -78,6 +81,11 @@ public abstract class AST {
         visitor.visitExpr(rhs.expr(0));
       }
     }
+
+    @Override
+    public String toString() {
+      return "assigning from: " + lhs.IDENT().getText() + " to " + rhs.IDENT().getText() + "\n";
+    }
   }
 
   public static class IfAst extends AST {
@@ -91,10 +99,20 @@ public abstract class AST {
       this.thenbranch = thenbranch;
       this.elsebranch = elsebranch;
     }
+
+    @Override
+    public String toString() {
+      return "If (" + expr.toString() + ") then " + "("
+              + thenbranch.toString() + ")" +  "else " + "("
+              + elsebranch.toString() + ")\n";
+    }
   }
 
-  public class SkipAst extends AST { 
-
+  public class SkipAst extends AST {
+    @Override
+    public String toString() {
+      return "skip\n";
+    }
   }
 
   public static class DeclarationAst extends AST {
@@ -118,7 +136,7 @@ public abstract class AST {
 
     @Override
     public String toString() {
-      return super.toString() + "type: " + type.getText() + " name: " + name;
+      return "DECLEAR: type: " + type.getText() + " name: " + name + "\n";
     }
   }
 
@@ -131,6 +149,14 @@ public abstract class AST {
       this.expr = expr;
       this.stat = stat;
     }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("while (").append(expr.toString()).append("): ");
+      sb.append("{ ").append(stat.toString()).append("}\n");
+      return sb.toString();
+    }
   }
 
   public static class SeqStateAst extends AST {
@@ -141,7 +167,11 @@ public abstract class AST {
 
     @Override
     public String toString() {
-      return super.toString() + seqs.toString();
+      StringBuilder sb = new StringBuilder();
+      for (AST a : seqs) {
+        sb.append(a.toString());
+      }
+      return sb.toString();
     }
   }
 
@@ -151,6 +181,11 @@ public abstract class AST {
     public ExitAst(AST expr) {
       this.expr = expr;
     }
+
+    @Override
+    public String toString() {
+      return "exit(" + expr.toString() + ")\n";
+    }
   }
 
   public static class PrintAst extends AST {
@@ -158,6 +193,11 @@ public abstract class AST {
 
     public PrintAst(AST expr) {
       this.expr = expr;
+    }
+
+    @Override
+    public String toString() {
+      return "Print: " + expr.toString() + "\n";
     }
   }
 
@@ -167,6 +207,11 @@ public abstract class AST {
     public PrintlnAst(AST expr) {
       this.expr = expr;
     }
+
+    @Override
+    public String toString() {
+      return "Println: " + expr.toString() + "\n";
+    }
   }
 
   public static class BlockAst extends AST {
@@ -174,6 +219,11 @@ public abstract class AST {
 
     public BlockAst(AST stat) {
       this.stat = stat;
+    }
+
+    @Override
+    public String toString() {
+      return "Block {" + stat.toString() + "}\n";
     }
   }
 
@@ -184,7 +234,10 @@ public abstract class AST {
       this.expr = expr;
     }
 
-
+    @Override
+    public String toString() {
+      return "Free expr: " + expr.toString() + "\n";
+    }
   }
 
   public static class ReturnAst extends AST {
@@ -194,10 +247,18 @@ public abstract class AST {
       this.expr = expr;
     }
 
+    @Override
+    public String toString() {
+      return "return " + expr.toString() + "\n";
+    }
   }
 
   public static class ASkipAst extends AST {
 
+    @Override
+    public String toString() {
+      return "ASkip\n";
+    }
   }
 
 
@@ -206,12 +267,22 @@ public abstract class AST {
     IntNode(int value) {
       this.value = value;
     }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
   }
 
   public static class StringNode extends AST {
     String value;
     StringNode(String value) {
       this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      return value;
     }
   }
 
@@ -220,12 +291,22 @@ public abstract class AST {
     BoolNode(boolean value) {
       this.value = value;
     }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
   }
 
   public static class IdenNode extends AST {
     String ident;
     IdenNode(String ident) {
       this.ident = ident;
+    }
+
+    @Override
+    public String toString() {
+      return ident;
     }
   }
 
@@ -235,6 +316,11 @@ public abstract class AST {
     Unaryop_node(BasicParser.Unary_operContext operContext, AST expr) {
       this.operContext = operContext;
       this.expr = expr;
+    }
+
+    @Override
+    public String toString() {
+      return operContext.getText() + expr.toString();
     }
   }
 
@@ -261,43 +347,47 @@ public abstract class AST {
       if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
         System.out.println("Semantic error: type doesn't matched");  exit(200); 
       }
-
     }
 
     private boolean same_type(AST expr1, AST expr2) {
       if (expr1 instanceof IdenNode) {
         BasicParser.TypeContext type1 = symbolTable.get(((IdenNode) expr1).ident);
-        if (type1 == null) {
-          System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
-          exit(200);
-        }
+//        if (type1 == null) {
+//          System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+//          exit(200);
+//        }
         if (expr2 instanceof IdenNode) {
-
+//
           BasicParser.TypeContext type2 = symbolTable.get(((IdenNode) expr2).ident);
-          if (type2 == null) {
-            System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
-            exit(200);
-          }
+//          if (type2 == null) {
+//            System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+//            exit(200);
+//          }
 
-          if (!type1.equals(type2)){
-            System.out.println("Semantic error: type doesn't matched");  exit(200);}
-        } else {
-          if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
-            
-            System.out.println("Semantic error: type doesn't matched");  exit(200); 
-          }
-          if (type1.base_type().BOOL() != null && !(expr2 instanceof BoolNode)) {
-            System.out.println("Semantic error: type doesn't matched");  exit(200); 
-          }
-          if (type1.base_type().CHAR() != null && !(expr2 instanceof CharNode)) {
-            System.out.println("Semantic error: type doesn't matched");  exit(200); 
-          }
-          if (type1.base_type().STRING() != null && !(expr2 instanceof StringNode)) {
-            System.out.println("Semantic error: type doesn't matched");  exit(200); 
-          }
+//          if (!type1.equals(type2)){
+//            System.out.println("Semantic error: type doesn't matched");  exit(200);}
+//        } else {
+//          if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
+//
+//            System.out.println("Semantic error: type doesn't matched");  exit(200);
+//          }
+//          if (type1.base_type().BOOL() != null && !(expr2 instanceof BoolNode)) {
+//            System.out.println("Semantic error: type doesn't matched");  exit(200);
+//          }
+//          if (type1.base_type().CHAR() != null && !(expr2 instanceof CharNode)) {
+//            System.out.println("Semantic error: type doesn't matched");  exit(200);
+//          }
+//          if (type1.base_type().STRING() != null && !(expr2 instanceof StringNode)) {
+//            System.out.println("Semantic error: type doesn't matched");  exit(200);
+//          }
         }
       }
       return true;
+    }
+
+    @Override
+    public String toString() {
+      return expr1.toString() + operContext.getText() + expr2.toString();
     }
   }
 
@@ -306,6 +396,11 @@ public abstract class AST {
     CharNode(char value) {
       this.value = value;
     }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
   }
 
   public static class ExprWithParen extends AST {
@@ -313,6 +408,11 @@ public abstract class AST {
 
     public ExprWithParen(AST expr) {
       this.expr = expr;
+    }
+
+    @Override
+    public String toString() {
+      return expr.toString();
     }
   }
 
@@ -348,6 +448,17 @@ public abstract class AST {
 
     public String getFuncName() {
       return funcName;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder params = new StringBuilder();
+      for (BasicParser.ParamContext p : parameters) {
+        params.append(p.type().getText()).append(" ").append(p.IDENT()
+                .getText()).append(", ");
+      }
+      return "function: " + this.getReturnType().getText() + " " +this.getFuncName()+"("
+              + params.toString() + "): " + this.functionBody.toString();
     }
   }
 
