@@ -19,9 +19,11 @@ int_liter: (int_sign)? (DIGIT)+ ;
 
 array_elem: IDENT (OPEN_SQUARE expr CLOSE_SQUARE)+ ;
 
-binary_oper: TIME | DIVIDE | MOD | PLUS | MINUS | GREATER
-| SMALLER | GREATER_E | SMALLER_E | EQUAL | NOT_EQUAL | B_AND | B_OR ;
-
+hignp_bin_op : TIME | DIVIDE | MOD ;
+binary_oper: PLUS | MINUS;
+binary_bool_oper: GREATER| SMALLER | GREATER_E | SMALLER_E | ;
+low_binbool_op: EQUAL | NOT_EQUAL ;
+lowest_binbool_op: B_AND | B_OR ;
 unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
 
 char_liter: CHAR_LITER;
@@ -36,7 +38,11 @@ expr: string_liter
 | ident
 | array_elem
 | unary_oper expr
+| expr hignp_bin_op expr
 | expr binary_oper expr
+| expr binary_bool_oper expr
+| expr low_binbool_op expr
+| expr lowest_binbool_op expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES ;
 
 pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES ;
