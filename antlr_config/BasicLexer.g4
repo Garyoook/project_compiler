@@ -2,7 +2,6 @@ lexer grammar BasicLexer;
 @header {
 package antlr;
 }
-
 // program
 BEGIN: 'begin';
 END: 'end';

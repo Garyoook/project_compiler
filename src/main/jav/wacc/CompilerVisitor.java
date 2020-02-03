@@ -2,11 +2,12 @@ package jav.wacc;
 
 import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
-import sun.jvm.hotspot.memory.SymbolTable;
+
+import static jav.wacc.AST.symbolTable;
+import static java.lang.System.exit;
 
 import java.beans.Visibility;
 import java.util.ArrayList;
-import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   /**
@@ -345,7 +346,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitParam_list(BasicParser.Param_listContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitParam_list(BasicParser.Param_listContext ctx) {
+
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -354,9 +358,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     BasicParser.Param_listContext params = ctx.param_list();
-//    for (BasicParser.ParamContext p : params.param()) {
-//
-//    }
+    for (BasicParser.ParamContext p: ctx.param_list().param()) {
+      symbolTable.put(p.IDENT().getText(), p.type());
+    }
     return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
   }
   /**

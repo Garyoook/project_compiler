@@ -2,13 +2,24 @@ package jav.wacc;
 
 import antlr.BasicLexer;
 import antlr.BasicParser;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
+
+import javax.xml.transform.ErrorListener;
+
+import static java.lang.System.exit;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Scanner;
 
@@ -31,9 +42,37 @@ public class Wacc {
 //
     BasicLexer lexer = new BasicLexer(input);
 
+    ANTLRErrorListener errorListener = new ANTLRErrorListener() {
+      @Override
+      public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+        System.out.println("#Syntax Error#");
+        exit(100);
+      }
+
+      @Override
+      public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
+
+      }
+
+      @Override
+      public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
+
+      }
+
+      @Override
+      public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
+
+      }
+    };
+
+    lexer.addErrorListener(errorListener);
+
     CommonTokenStream stream = new CommonTokenStream(lexer);
 
     BasicParser basicParser = new BasicParser(stream);
+
+    basicParser.addErrorListener(errorListener);
+
 
     CompilerVisitor visitor = new CompilerVisitor();
 
