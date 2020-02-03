@@ -100,13 +100,14 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return (new AST.Unaryop_node(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
     if (ctx.binary_oper() != null) {
+      System.out.println("1" + ctx.expr(0).getText());
+      System.out.println("2" + ctx.expr(1).getText());
       return (new AST.BinaryOp_node(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.int_liter() != null) {
       return (visitInt_liter(ctx.int_liter()));
     } else
     if (ctx.bool_liter() != null) {
-
       return (visitBool_liter(ctx.bool_liter()));
     } else
     if (ctx.char_liter() != null) {

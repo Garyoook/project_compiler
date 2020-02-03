@@ -110,7 +110,6 @@ public abstract class AST {
       this.rhs = rhs;
       symbolTable.put(name, type);
       if (rhs.expr().size() == 1) {
-
         CompilerVisitor visitor = new CompilerVisitor();
         visitor.visitExpr(rhs.expr(0));
       }
