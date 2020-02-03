@@ -1,7 +1,7 @@
 parser grammar BasicParser;
-@header {
-package antlr;
-}
+//@header {
+//package antlr;
+//}
 
 options {
   tokenVocab=BasicLexer;
