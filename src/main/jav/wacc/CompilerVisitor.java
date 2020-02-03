@@ -2,9 +2,11 @@ package jav.wacc;
 
 import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
+import sun.jvm.hotspot.memory.SymbolTable;
 
 import java.beans.Visibility;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   /**
@@ -351,7 +353,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
-    return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), ctx.param_list().param(), visitStat(ctx.stat()));
+    BasicParser.Param_listContext params = ctx.param_list();
+//    for (BasicParser.ParamContext p : params.param()) {
+//
+//    }
+    return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
   }
   /**
    * {@inheritDoc}
