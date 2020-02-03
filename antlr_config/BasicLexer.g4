@@ -20,7 +20,6 @@ FALSE: 'false';
 
 // unary operators
 NOT: '!' ;
-NEGATIVE: '-' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;

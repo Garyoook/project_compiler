@@ -13,19 +13,19 @@ array_liter: OPEN_SQUARE ( expr (COMMA expr)* )? CLOSE_SQUARE ;
 
 bool_liter: TRUE | FALSE ;
 
-int_sign: PLUS | MINUS ;
 
-int_liter: (int_sign)? (DIGIT)+ ;
 
 array_elem: IDENT (OPEN_SQUARE expr CLOSE_SQUARE)+ ;
 
 hignp_bin_op : TIME | DIVIDE | MOD ;
-binary_oper: PLUS | MINUS;
-binary_bool_oper: GREATER| SMALLER | GREATER_E | SMALLER_E | ;
+binary_oper: PLUS | MINUS ;
+binary_bool_oper: GREATER| SMALLER | GREATER_E | SMALLER_E ;
 low_binbool_op: EQUAL | NOT_EQUAL ;
 lowest_binbool_op: B_AND | B_OR ;
-unary_oper: NOT | NEGATIVE | LEN | ORD | CHR ;
+unary_oper: NOT | MINUS | LEN | ORD | CHR ;
 
+int_sign: PLUS | MINUS ;
+int_liter: (int_sign)? (DIGIT)+ ;
 char_liter: CHAR_LITER;
 string_liter: STR_LITER;
 ident: IDENT;
@@ -35,7 +35,6 @@ expr: string_liter
 | bool_liter
 | char_liter
 | pair_liter
-| ident
 | array_elem
 | unary_oper expr
 | expr hignp_bin_op expr
@@ -43,7 +42,8 @@ expr: string_liter
 | expr binary_bool_oper expr
 | expr low_binbool_op expr
 | expr lowest_binbool_op expr
-| OPEN_PARENTHESES expr CLOSE_PARENTHESES ;
+| OPEN_PARENTHESES expr CLOSE_PARENTHESES
+| ident;
 
 pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES ;
 

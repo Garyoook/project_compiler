@@ -141,18 +141,18 @@ public abstract class AST {
       if (rhs.expr().size() == 1) {
         CompilerVisitor visitor = new CompilerVisitor();
         visitor.visitExpr(rhs.expr(0));
+
         if (rhs.expr(0).hignp_bin_op() != null || rhs.expr(0).binary_bool_oper() != null) {
           if (type.base_type().INT() != null) {
-            System.out.println("#semantic_error#");  exit(200);
-          }
-        } else {
-          if (type.base_type().BOOL() != null) {
-            System.out.println("#semantic_error#");  exit(200);
+            System.out.println("#semantic_error#");
+            exit(200);
+          } else if (type.base_type().BOOL() != null) {
+            System.out.println("#semantic_error#");
+            exit(200);
           }
         }
       }
     }
-
     @Override
     public String toString() {
       return "DECLEAR: type: " + type.getText() + " name: " + name + "\n";
@@ -356,7 +356,6 @@ public abstract class AST {
       this.oper = operContext;
       this.expr1 = expr1;
       this.expr2 = expr2;
-
       if (!(expr1 instanceof Lowest_BinaryOp_node) || !(expr2 instanceof Lowest_BinaryOp_node)) {
         System.out.println("#semantic_error#");
         exit(200);
@@ -528,9 +527,8 @@ public abstract class AST {
             System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
             exit(200);
           }
-
-          if (!type1.equals(type2)){
-            System.out.println("#semantic_error#");  exit(200);}
+        if (!type1.getText().equals(type2.getText())){
+          System.out.println("#semantic_error#");  exit(200);}
         } else {
         if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
             System.out.println("#semantic_error#");  exit(200);
