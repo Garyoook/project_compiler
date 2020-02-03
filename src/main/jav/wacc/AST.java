@@ -62,6 +62,13 @@ public abstract class AST {
     private final BasicParser.Assign_lhsContext lhs;
     public ReadAst(BasicParser.Assign_lhsContext lhs) {
       this.lhs = lhs;
+      BasicParser.Base_typeContext type = symbolTable.get(lhs.getText()).base_type();
+      if (type == null) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if(type.INT() != null && type.CHAR() != null) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
     }
 
     @Override
@@ -98,6 +105,10 @@ public abstract class AST {
       this.expr = expr;
       this.thenbranch = thenbranch;
       this.elsebranch = elsebranch;
+      if (!(expr instanceof BoolNode) && !(expr instanceof Binary_BoolOp_node)
+          && !(expr instanceof Low_binaryOp_node) && !(expr instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
     }
 
     @Override
@@ -130,6 +141,15 @@ public abstract class AST {
       if (rhs.expr().size() == 1) {
         CompilerVisitor visitor = new CompilerVisitor();
         visitor.visitExpr(rhs.expr(0));
+        if (rhs.expr(0).hignp_bin_op() != null || rhs.expr(0).binary_bool_oper() != null) {
+          if (type.base_type().INT() != null) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+        } else {
+          if (type.base_type().BOOL() != null) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+        }
       }
     }
 
@@ -147,6 +167,11 @@ public abstract class AST {
     public WhileAst(AST expr, AST stat) {
       this.expr = expr;
       this.stat = stat;
+
+      if (!(expr instanceof BoolNode) && !(expr instanceof Binary_BoolOp_node)
+          && !(expr instanceof Low_binaryOp_node) && !(expr instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
     }
 
     @Override
@@ -323,6 +348,27 @@ public abstract class AST {
     }
   }
 
+  public static class Lowest_BinaryOp_node extends AST {
+    BasicParser.Lowest_binbool_opContext oper;
+    AST expr1;
+    AST expr2;
+    Lowest_BinaryOp_node(BasicParser.Lowest_binbool_opContext operContext, AST expr1, AST expr2) {
+      this.oper = operContext;
+      this.expr1 = expr1;
+      this.expr2 = expr2;
+
+      if (!(expr1 instanceof Lowest_BinaryOp_node) || !(expr2 instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");
+        exit(200);
+      }
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("#semantic_error#");
+        exit(200);
+      }
+    }
+
+  }
+
   public static class BinaryOp_node extends AST{
     BasicParser.Binary_operContext operContext;
     AST expr1;
@@ -331,63 +377,176 @@ public abstract class AST {
       this.operContext = operContext;
       this.expr1 = expr1;
       this.expr2 = expr2;
-      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
-        System.out.println("Semantic error: type doesn't matched");  exit(200);
+
+      if ((expr1 instanceof Lowest_BinaryOp_node) || (expr2 instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
       }
-      if (expr1 instanceof IntNode && !(expr2 instanceof IntNode)) {
-        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+      if ((expr1 instanceof IntNode && !(expr2 instanceof IntNode))) {
+        System.out.println("#semantic_error#");  exit(200);
       }
       if (expr1 instanceof BoolNode && !(expr2 instanceof BoolNode)) {
-        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+        System.out.println("#semantic_error#");  exit(200);
       }
       if (expr1 instanceof CharNode && !(expr2 instanceof CharNode)) {
-        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+        System.out.println("#semantic_error#");  exit(200);
       }
       if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
-        System.out.println("Semantic error: type doesn't matched");  exit(200); 
+        System.out.println("#semantic_error#");  exit(200);
       }
+
     }
-
-    private boolean same_type(AST expr1, AST expr2) {
-      if (expr1 instanceof IdenNode) {
-        BasicParser.TypeContext type1 = symbolTable.get(((IdenNode) expr1).ident);
-//        if (type1 == null) {
-//          System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
-//          exit(200);
-//        }
-        if (expr2 instanceof IdenNode) {
-//
-          BasicParser.TypeContext type2 = symbolTable.get(((IdenNode) expr2).ident);
-//          if (type2 == null) {
-//            System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
-//            exit(200);
-//          }
-
-//          if (!type1.equals(type2)){
-//            System.out.println("Semantic error: type doesn't matched");  exit(200);}
-//        } else {
-//          if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
-//
-//            System.out.println("Semantic error: type doesn't matched");  exit(200);
-//          }
-//          if (type1.base_type().BOOL() != null && !(expr2 instanceof BoolNode)) {
-//            System.out.println("Semantic error: type doesn't matched");  exit(200);
-//          }
-//          if (type1.base_type().CHAR() != null && !(expr2 instanceof CharNode)) {
-//            System.out.println("Semantic error: type doesn't matched");  exit(200);
-//          }
-//          if (type1.base_type().STRING() != null && !(expr2 instanceof StringNode)) {
-//            System.out.println("Semantic error: type doesn't matched");  exit(200);
-//          }
-        }
-      }
-      return true;
-    }
-
     @Override
     public String toString() {
       return expr1.toString() + operContext.getText() + expr2.toString();
     }
+  }
+
+  public static class High_binaryOp_node extends AST{
+    BasicParser.Hignp_bin_opContext operContext;
+    AST expr1;
+    AST expr2;
+    High_binaryOp_node(BasicParser.Hignp_bin_opContext operContext, AST expr1, AST expr2) {
+      this.operContext = operContext;
+      this.expr1 = expr1;
+      this.expr2 = expr2;
+
+      if ((expr1 instanceof Lowest_BinaryOp_node) || (expr2 instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+      if ((expr1 instanceof IntNode && !(expr2 instanceof IntNode))) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof BoolNode && !(expr2 instanceof BoolNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof CharNode && !(expr2 instanceof CharNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+    }
+    @Override
+    public String toString() {
+      return expr1.toString() + operContext.getText() + expr2.toString();
+    }
+  }
+
+  public static class Binary_BoolOp_node extends AST{
+    BasicParser.Binary_bool_operContext operContext;
+    AST expr1;
+    AST expr2;
+    Binary_BoolOp_node(BasicParser.Binary_bool_operContext operContext, AST expr1, AST expr2) {
+      this.operContext = operContext;
+      this.expr1 = expr1;
+      this.expr2 = expr2;
+
+      if ((expr1 instanceof Lowest_BinaryOp_node) || (expr2 instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+      if ((expr1 instanceof IntNode && !(expr2 instanceof IntNode))) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof BoolNode && !(expr2 instanceof BoolNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof CharNode && !(expr2 instanceof CharNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+    }
+    @Override
+    public String toString() {
+      return expr1.toString() + operContext.getText() + expr2.toString();
+    }
+  }
+
+  public static class Low_binaryOp_node extends AST{
+    BasicParser.Low_binbool_opContext operContext;
+    AST expr1;
+    AST expr2;
+    Low_binaryOp_node(BasicParser.Low_binbool_opContext operContext, AST expr1, AST expr2) {
+      this.operContext = operContext;
+      this.expr1 = expr1;
+      this.expr2 = expr2;
+
+
+      if ((expr1 instanceof Lowest_BinaryOp_node) || (expr2 instanceof Lowest_BinaryOp_node)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+      if ((expr1 instanceof IntNode && !(expr2 instanceof IntNode))) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof BoolNode && !(expr2 instanceof BoolNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof CharNode && !(expr2 instanceof CharNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+      if (expr1 instanceof StringNode && !(expr2 instanceof StringNode)) {
+        System.out.println("#semantic_error#");  exit(200);
+      }
+
+
+    }
+    @Override
+    public String toString() {
+      return expr1.toString() + operContext.getText() + expr2.toString();
+    }
+  }
+
+  public boolean same_type(AST expr1, AST expr2) {
+    if (expr1 instanceof IdenNode) {
+      BasicParser.TypeContext type1 = symbolTable.get(((IdenNode) expr1).ident);
+        if (type1 == null) {
+          System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+          exit(200);
+        }
+      if (expr2 instanceof IdenNode) {
+        BasicParser.TypeContext type2 = symbolTable.get(((IdenNode) expr2).ident);
+          if (type2 == null) {
+            System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
+            exit(200);
+          }
+
+          if (!type1.equals(type2)){
+            System.out.println("#semantic_error#");  exit(200);}
+        } else {
+        if (type1.base_type().INT() != null && !(expr2 instanceof IntNode)) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+          if (type1.base_type().BOOL() != null && !(expr2 instanceof BoolNode)) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+          if (type1.base_type().CHAR() != null && !(expr2 instanceof CharNode)) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+          if (type1.base_type().STRING() != null && !(expr2 instanceof StringNode)) {
+            System.out.println("#semantic_error#");  exit(200);
+          }
+      }
+    }
+    return true;
   }
 
   public static class CharNode extends AST {
