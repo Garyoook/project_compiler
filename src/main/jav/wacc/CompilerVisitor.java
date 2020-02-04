@@ -4,9 +4,7 @@ import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
 
 import static jav.wacc.AST.symbolTable;
-import static java.lang.System.exit;
 
-import java.beans.Visibility;
 import java.util.ArrayList;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
@@ -17,7 +15,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPair_liter(BasicParser.Pair_literContext ctx) {
-    return visitChildren(ctx);
+    return new PairAST(null, null);
   }
   /**
    * {@inheritDoc}
@@ -34,10 +32,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitBool_liter(BasicParser.Bool_literContext ctx) {
     if (ctx.getText().equals("false")) {
-      return new AST.BoolNode(false);
+      return new BoolNode(false);
     } else {
       if (ctx.getText().equals("true")){
-        return new AST.BoolNode(true);
+        return new BoolNode(true);
       }
     }
     return null;
@@ -57,12 +55,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitInt_liter(BasicParser.Int_literContext ctx) {
     if (ctx.int_sign() == null) {
-      return new AST.IntNode(Integer.parseInt(ctx.getText()));
+      return new IntNode(Integer.parseInt(ctx.getText()));
     }
     if (ctx.int_sign().getText().equals("-")) {
-      return new AST.IntNode(-Integer.parseInt(ctx.getText()));
+      return new IntNode(-Integer.parseInt(ctx.getText()));
     } else {
-      return new AST.IntNode(Integer.parseInt(ctx.getText()));
+      return new IntNode(Integer.parseInt(ctx.getText()));
     }
   }
   /**
@@ -97,16 +95,27 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitExpr(BasicParser.ExprContext ctx) {
     if (ctx.unary_oper() != null) {
-      return (new AST.Unaryop_node(ctx.unary_oper(), visitExpr(ctx.expr(0))));
+      return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
+    } else
+      if (ctx.lowest_binbool_op() != null) {
+      return (new Lowest_BinaryOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.binary_oper() != null) {
-      return (new AST.BinaryOp_node(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new BinaryOpNode(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+    } else
+    if (ctx.hignp_bin_op() != null) {
+      return (new High_BinaryOpNode(ctx.hignp_bin_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+    } else
+    if (ctx.low_binbool_op() != null) {
+      return (new Low_BinaryOpNode(ctx.low_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+    } else
+    if (ctx.binary_bool_oper() != null) {
+      return (new Binary_BoolOpNode(ctx.binary_bool_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.int_liter() != null) {
       return (visitInt_liter(ctx.int_liter()));
     } else
     if (ctx.bool_liter() != null) {
-
       return (visitBool_liter(ctx.bool_liter()));
     } else
     if (ctx.char_liter() != null) {
@@ -122,17 +131,17 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return (visitIdent(ctx.ident()));
     } else
     if (ctx.OPEN_PARENTHESES() != null) {
-      return new AST.ExprWithParen(visitExpr(ctx.expr(0)));
+      return new ExprWithParen(visitExpr(ctx.expr(0)));
     } else
     return null;
   }
 
   @Override public AST visitIdent(BasicParser.IdentContext ctx) {
-    return new AST.IdenNode(ctx.getText());
+    return new IdenNode(ctx.getText());
   }
 
   @Override public AST visitChar_liter(BasicParser.Char_literContext ctx) {
-    return new AST.CharNode(ctx.getText().charAt(0));
+    return new CharNode(ctx.getText().charAt(0));
   }
   /**
    * {@inheritDoc}
@@ -141,7 +150,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitString_liter(BasicParser.String_literContext ctx) {
-    return new AST.StringNode(ctx.getText());
+    return new StringNode(ctx.getText());
   }
   /**
    * {@inheritDoc}
@@ -219,7 +228,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitRead(BasicParser.ReadContext ctx) {
-    return new AST.ReadAst(ctx.assign_lhs());
+    return new ReadAst(ctx.assign_lhs());
   }
   /**
    * {@inheritDoc}
@@ -228,7 +237,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssignment(BasicParser.AssignmentContext ctx) {
-    return new AST.AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
+    return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
   }
   /**
    * {@inheritDoc}
@@ -237,7 +246,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitIfthenesle(BasicParser.IfthenesleContext ctx) {
-    return new AST.IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
+    return new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
   }
   /**
    * {@inheritDoc}
@@ -246,7 +255,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAskip(BasicParser.AskipContext ctx) {
-    return new AST.ASkipAst();
+    return new ASkipAst();
   }
   /**
    * {@inheritDoc}
@@ -255,7 +264,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitDeclaration(BasicParser.DeclarationContext ctx) {
-    return new AST.DeclarationAst(ctx.type(), ctx.IDENT().getText(), ctx.assign_rhs());
+    return new DeclarationAst(ctx.type(), ctx.IDENT().getText(), ctx.assign_rhs());
   }
   /**
    * {@inheritDoc}
@@ -264,7 +273,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitWhileloop(BasicParser.WhileloopContext ctx) {
-    return new AST.WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
+    return new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
   }
   /**
    * {@inheritDoc}
@@ -277,7 +286,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     for (BasicParser.StatContext statContext:ctx.stat()) {
       seqs.add(visitStat(statContext));
     }
-    return new AST.SeqStateAst(seqs);
+    return new SeqStateAst(seqs);
   }
   /**
    * {@inheritDoc}
@@ -286,7 +295,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitExit(BasicParser.ExitContext ctx) {
-    return new AST.ExitAst(visitExpr(ctx.expr()));
+    return new ExitAst(visitExpr(ctx.expr()));
   }
   /**
    * {@inheritDoc}
@@ -295,7 +304,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPrint(BasicParser.PrintContext ctx) {
-    return new AST.PrintAst(visitExpr(ctx.expr()));
+    return new PrintAst(visitExpr(ctx.expr()));
   }
   /**
    * {@inheritDoc}
@@ -304,7 +313,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPrintln(BasicParser.PrintlnContext ctx) {
-    return new AST.PrintlnAst(visitExpr(ctx.expr()));
+    return new PrintlnAst(visitExpr(ctx.expr()));
   }
   /**
    * {@inheritDoc}
@@ -313,7 +322,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitBlock(BasicParser.BlockContext ctx) {
-    return new AST.BlockAst(visitStat(ctx.stat()));
+    return new BlockAst(visitStat(ctx.stat()));
   }
   /**
    * {@inheritDoc}
@@ -322,7 +331,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitFree(BasicParser.FreeContext ctx) {
-    return new AST.FreeAst(visitExpr(ctx.expr()));
+    return new FreeAst(visitExpr(ctx.expr()));
   }
   /**
    * {@inheritDoc}
@@ -331,7 +340,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
-    return new AST.ReturnAst(visitExpr(ctx.expr()));
+    return new ReturnAst(visitExpr(ctx.expr()));
   }
   /**
    * {@inheritDoc}
@@ -359,9 +368,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     BasicParser.Param_listContext params = ctx.param_list();
     for (BasicParser.ParamContext p: ctx.param_list().param()) {
-      symbolTable.put(p.IDENT().getText(), p.type());
+      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), p.type());
     }
-    return new AST.FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
+    return new FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
   }
   /**
    * {@inheritDoc}
@@ -370,11 +379,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitProg(BasicParser.ProgContext ctx) {
-    ArrayList<jav.wacc.AST.FuncAST> funcASTS = new ArrayList<>();
+    ArrayList<FuncAST> funcASTS = new ArrayList<>();
     for (BasicParser.FuncContext funcContext:ctx.func()) {
-      funcASTS.add((jav.wacc.AST.FuncAST) visitFunc(funcContext));
+      funcASTS.add((FuncAST) visitFunc(funcContext));
     }
-    return new jav.wacc.AST.ProgramAST(funcASTS, visitStat(ctx.stat()));
+    return new ProgramAST(funcASTS, visitStat(ctx.stat()));
   }
 
 

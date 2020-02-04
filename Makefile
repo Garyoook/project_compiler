@@ -25,6 +25,7 @@ rules:
 	mvn package
 
 clean:
+	mvn clean
 	$(RM) rules $(OUTPUT_DIR) $(SOURCE_DIR)/antlr
 
 .PHONY: all rules clean

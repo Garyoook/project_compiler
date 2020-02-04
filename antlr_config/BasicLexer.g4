@@ -20,7 +20,6 @@ FALSE: 'false';
 
 // unary operators
 NOT: '!' ;
-NEGATIVE: '-' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
@@ -28,17 +27,21 @@ CHR: 'chr' ;
 // binary operators
 PLUS: '+' ;
 MINUS: '-' ;
+TIME: '*' ;
+DIVIDE: '/' ;
+MOD: '%' ;
+
+//binary bool operator
+GREATER_E: '>=' ;
+SMALLER_E: '<=' ;
+GREATER: '>' ;
+SMALLER: '<' ;
 EQUAL: '==' ;
 NOT_EQUAL: '!=' ;
 B_AND: '&&' ;
 B_OR: '||' ;
-TIME: '*' ;
-DIVIDE: '/' ;
-GREATER: '>' ;
-SMALLER: '<' ;
-MOD: '%' ;
-GREATER_E: '>=' ;
-SMALLER_E: '<=' ;
+
+
 
 // stat
 READ: 'read';
