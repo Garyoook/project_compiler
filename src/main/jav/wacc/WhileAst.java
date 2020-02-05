@@ -11,9 +11,8 @@ public class WhileAst extends AST {
     this.expr = expr;
     this.stat = stat;
 
-    if (!(expr instanceof BoolNode) && !(expr instanceof Binary_BoolOpNode)
-        && !(expr instanceof Low_BinaryOpNode) && !(expr instanceof Lowest_BinaryOpNode)) {
-      System.out.println("#semantic_error#");  exit(200);
+    if (!is_bool(expr)) {
+      System.out.println("wrong type in while condition");  exit(200);
     }
   }
 

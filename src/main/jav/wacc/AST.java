@@ -10,11 +10,11 @@ import static java.lang.System.exit;
 
 
 public abstract class AST {
-  public static SymbolTable symbolTable = new SymbolTable(null, new HashMap<String, BasicParser.TypeContext>());
+  public static SymbolTable symbolTable = new SymbolTable(null, new HashMap<String, SymbolTable.TypeValue>());
 
   public boolean is_int(AST expr1) {
     if (expr1 instanceof IdenNode) {
-      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) expr1).ident).base_type().INT() == null) {
+      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) expr1).ident).getTypeContext().base_type().INT() == null) {
         return false;
       }
     } else
@@ -33,11 +33,16 @@ public abstract class AST {
 
   public boolean is_bool(AST exp) {
     if (exp instanceof IdenNode) {
-      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) exp).ident).base_type().BOOL() == null) {
+      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) exp).ident).getTypeContext().base_type().BOOL() == null) {
         return false;
       }
     } else
-    if (!(exp instanceof Lowest_BinaryOpNode || exp instanceof BoolNode || exp instanceof Binary_BoolOpNode || exp instanceof UnaryNotNode )) {
+    if (!(exp instanceof Lowest_BinaryOpNode ||
+          exp instanceof BoolNode ||
+          exp instanceof Binary_BoolOpNode ||
+          exp instanceof UnaryNotNode ||
+          exp instanceof Low_BinaryOpNode ||
+          (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr)))) {
       return false;
     }
     return true;
@@ -45,7 +50,7 @@ public abstract class AST {
 
   public boolean is_Char(AST exp) {
     if (exp instanceof IdenNode) {
-      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) exp).ident).base_type().CHAR() == null) {
+      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) exp).ident).getTypeContext().base_type().CHAR() == null) {
         return false;
       }
     } else
@@ -55,16 +60,25 @@ public abstract class AST {
     return true;
   }
 
+  public boolean is_String(AST exp) {
+    if (exp instanceof IdenNode) {
+      if (symbolTable.getCurrentSymbolTable().get(((IdenNode) exp).ident).getTypeContext().base_type().STRING() == null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 
   public boolean same_type(AST expr1, AST expr2) {
     if (expr1 instanceof IdenNode) {
-      BasicParser.TypeContext type1 = symbolTable.getCurrentSymbolTable().get(((IdenNode) expr1).ident);
+      BasicParser.TypeContext type1 = symbolTable.getCurrentSymbolTable().get(((IdenNode) expr1).ident).getTypeContext();
         if (type1 == null) {
           System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
           exit(200);
         }
       if (expr2 instanceof IdenNode) {
-        BasicParser.TypeContext type2 = symbolTable.getCurrentSymbolTable().get(((IdenNode) expr2).ident);
+        BasicParser.TypeContext type2 = symbolTable.getCurrentSymbolTable().get(((IdenNode) expr2).ident).getTypeContext();
           if (type2 == null) {
             System.out.println("Semantic error: Variable not defined:" + ((IdenNode) expr1).ident);
             exit(200);

@@ -13,10 +13,11 @@ public class Low_BinaryOpNode extends AST{
     this.expr1 = expr1;
     this.expr2 = expr2;
 
-    if (! (is_int(expr1) && is_int(expr1) || is_Char(expr1) && is_Char(expr2))) {
+    if (!(is_int(expr1) && is_int(expr1) || is_Char(expr1) && is_Char(expr2) || is_String(expr1) && is_String(expr2) || is_bool(expr1) && is_bool(expr2))) {
       System.out.println("wrong type in " + operContext.getText());
       exit(200);
     }
+
 
   }
   @Override

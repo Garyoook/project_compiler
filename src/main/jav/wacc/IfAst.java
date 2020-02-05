@@ -12,10 +12,12 @@ public class IfAst extends AST {
     this.expr = expr;
     this.thenbranch = thenbranch;
     this.elsebranch = elsebranch;
-    if (!(expr instanceof BoolNode) && !(expr instanceof Binary_BoolOpNode)
-        && !(expr instanceof Low_BinaryOpNode) && !(expr instanceof Lowest_BinaryOpNode)) {
-      System.out.println("#semantic_error#");  exit(200);
+
+    if (!is_bool(expr)) {
+      System.out.println("wrong type in If condition, should be bool");
+      exit(200);
     }
+
   }
 
   @Override
