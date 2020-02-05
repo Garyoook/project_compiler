@@ -15,9 +15,6 @@ public class High_BinaryOpNode extends AST{
 
    is_int(expr1);
    is_int(expr2);
-   if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
-      System.out.println("#semantic_error#");  exit(200);
-    }
   }
   @Override
   public String toString() {

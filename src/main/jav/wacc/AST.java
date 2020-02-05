@@ -31,10 +31,17 @@ public abstract class AST {
   public boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
       if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(boolType())) {
+        System.out.println("ADLASJDLKASJ");
         return false;
       }
     } else
-    if (!(exp instanceof Lowest_BinaryOpNode || exp instanceof BoolNode || exp instanceof Binary_BoolOpNode || exp instanceof UnaryNotNode )) {
+    if (!(exp instanceof Lowest_BinaryOpNode ||
+          exp instanceof BoolNode ||
+          exp instanceof Binary_BoolOpNode ||
+          exp instanceof UnaryNotNode ||
+          exp instanceof Low_BinaryOpNode ||
+          (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr)))) {
+      System.out.println("BBBBBBB");
       return false;
     }
     return true;
@@ -48,6 +55,13 @@ public abstract class AST {
     } else
     if (!(exp instanceof CharNode)) {
       return false;
+    }
+    return true;
+  }
+
+  public boolean is_String(AST exp) {
+    if (exp instanceof IdentNode) {
+      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(stringType());
     }
     return true;
   }
@@ -72,6 +86,21 @@ public abstract class AST {
         if (expr2 == null) {
           System.out.println("expr2 is a null");
         }
+//        if (type1.equals(intType()) && !(expr2 instanceof IntNode)) {
+//            System.out.println("#semantic_error#");  exit(200);
+//          }
+//          if (type1.equals(boolType()) && !(expr2 instanceof BoolNode)) {
+//            System.out.println("#semantic_error#");  exit(200);
+//          }
+//          if (type1.equals(charType())&& !(expr2 instanceof CharNode)) {
+//            System.out.println("#semantic_error#");  exit(200);
+//          }
+//          if (type1.equals(stringType()) && !(expr2 instanceof StringNode)) {
+//            System.out.println("#semantic_error#");  exit(200);
+//          }
+////          if (type1.pair_type().PAIR() != null) && !(expr2 instanceof PairNode) {
+////
+////        }
       }
     } else {
       if (expr1 == null) {

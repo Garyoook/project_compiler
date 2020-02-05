@@ -17,20 +17,33 @@ public class DeclarationAst extends AST {
     this.name = name;
     this.rhs = rhs;
     symbolTable.getCurrentSymbolTable().put(name, type);
+    if (type.equals(stringType())) {
+      System.out.println(name);
+    }
     if (rhs.expr().size() == 1) {
       CompilerVisitor visitor = new CompilerVisitor();
-      visitor.visitExpr(rhs.expr(0));
-
-      if (rhs.expr(0).hignp_bin_op() != null || rhs.expr(0).binary_bool_oper() != null) {
-        if (type.equals(intType())) {
-          System.out.println("#semantic_error#");
-          exit(200);
-        } else if (type.equals(boolType())) {
-          System.out.println("#semantic_error#");
-          exit(200);
-        }
+      AST ast = visitor.visitExpr(rhs.expr(0));
+      if ((type.equals(boolType())  && !is_bool(ast)) ||
+          (type.equals(intType())   && !is_int(ast)) ||
+          (type.equals(charType())  && !is_Char(ast)) ||
+          (type.equals(stringType())&& !is_String(ast))) {
+        System.out.println("assignment type not compatible");
+        exit(200);
       }
     }
+    if (rhs.expr().size() == 0 && (rhs.call() != null)) {
+      String s1 = rhs.IDENT().getText();
+      Type type1 = symbolTable.getCurrentSymbolTable().get(s1);
+      if (type1 == null) {
+        System.out.println(s1 + " is not defined");
+        exit(200);
+      }
+      if (!type1.equals(type)) {
+        System.out.println("assignment type not compatible");
+        exit(200);
+      }
+    }
+
   }
   @Override
   public String toString() {

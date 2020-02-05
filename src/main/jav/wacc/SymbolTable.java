@@ -22,4 +22,18 @@ public class SymbolTable {
         return encSymbolTable;
     }
 
+    public static class TypeValue extends Type {
+      boolean isFunc;
+      Type type;
+
+      TypeValue(boolean isFunc, Type type) {
+        this.isFunc = isFunc;
+        this.type = type;
+      }
+
+      public Type getType() {
+        return type;
+      }
+    }
+
 }

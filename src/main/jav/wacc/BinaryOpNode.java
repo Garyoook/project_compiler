@@ -14,12 +14,13 @@ public class BinaryOpNode extends AST{
     this.expr2 = expr2;
 
 
-    is_int(expr1);
-    is_int(expr2);
 
-    if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
-      System.out.println("#semantic_error#");  exit(200);
+    if (!(is_int(expr1) && is_int(expr2))) {
+      System.out.println("wrong type in " + operContext.getText());
+      exit(200);
     }
+
+
   }
   @Override
   public String toString() {

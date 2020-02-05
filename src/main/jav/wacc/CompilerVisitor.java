@@ -1,5 +1,6 @@
 package jav.wacc;
 
+import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
 import jav.wacc.Type.ArrayType;
 import jav.wacc.Type.BaseType;
@@ -8,10 +9,15 @@ import jav.wacc.Type.BaseTypeKind;
 import static antlr.BasicParser.*;
 import static jav.wacc.AST.symbolTable;
 import static jav.wacc.Type.*;
+import static java.lang.System.exit;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
+
+  public boolean inFunction = false;
+
   /**
    * {@inheritDoc}
    *
@@ -269,7 +275,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitAssign_rhs(Assign_rhsContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -395,7 +403,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitReturn(ReturnContext ctx) {
+  @Override public AST visitCall(BasicParser.CallContext ctx) {
+    return visitChildren(ctx);
+  }
+
+
+  @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
+    if (!inFunction) {
+      System.out.println("Return can only be used in Function");
+      exit(200);
+    }
     return new ReturnAst(visitExpr(ctx.expr()));
   }
   /**
@@ -421,12 +438,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitFunc(FuncContext ctx) {
-    Param_listContext params = ctx.param_list();
-    for (ParamContext p: ctx.param_list().param()) {
-      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), visitType(p.type()));
+  @Override public AST visitFunc(BasicParser.FuncContext ctx) {
+    inFunction = true;
+
+    BasicParser.Param_listContext params = ctx.param_list();
+    List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
+    for (BasicParser.ParamContext p: pa) {
+      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), new SymbolTable.TypeValue(false, visitType(p.type())));
     }
-    return new FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
+
+    AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
+    inFunction = false;
+    return ast;
   }
   /**
    * {@inheritDoc}
@@ -436,9 +459,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitProg(ProgContext ctx) {
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
-    for (FuncContext funcContext:ctx.func()) {
+    for (BasicParser.FuncContext funcContext:ctx.func()) {
+      symbolTable.getCurrentSymbolTable().put(funcContext.IDENT().getText(), new SymbolTable.TypeValue(true, visitType(funcContext.type())));
+    }
+    for (BasicParser.FuncContext funcContext:ctx.func()) {
       funcASTS.add((FuncAST) visitFunc(funcContext));
     }
+
     return new ProgramAST(funcASTS, visitStat(ctx.stat()));
   }
 

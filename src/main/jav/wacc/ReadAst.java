@@ -11,10 +11,11 @@ public class ReadAst extends AST {
     this.lhs = lhs;
     Type type = symbolTable.getCurrentSymbolTable().get(lhs.getText());
     if (type == null) {
-      System.out.println("#semantic_error#");  exit(200);
+      System.out.println("Variable not defined " + lhs.getText());  exit(200);
     }
-    if(type.equals(intType()) && type.equals(charType())) {
-      System.out.println("#semantic_error#");  exit(200);
+    if (type.equals(boolType())) {
+      System.out.println("Semantic Error: Can't read in Type Bool");
+      exit(200);
     }
   }
 

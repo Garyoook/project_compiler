@@ -15,7 +15,6 @@ class FuncAST extends AST {
     this.funcName = funcName;
     this.parameters = parameters;
     this.functionBody = functionBody;
-
   }
 
   public AST getFunctionBody() {

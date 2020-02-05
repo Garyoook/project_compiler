@@ -74,11 +74,13 @@ pair_elem: FST expr
 
 arg_list: expr (COMMA expr)* ;
 
+call: CALL ;
+
 assign_rhs: expr
 | array_liter
 | NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
 | pair_elem
-| CALL IDENT OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES ;
+| call IDENT OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES ;
 
 assign_lhs: IDENT
 | array_elem

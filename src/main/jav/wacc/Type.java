@@ -35,6 +35,15 @@ public abstract class Type extends AST {
         }
 
         @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof BaseType)) {
+                return false;
+            } else {
+                return ((BaseType) obj).getKind() == this.getKind();
+            }
+        }
+
+        @Override
         public String toString() {
             return kind.toString().toLowerCase();
         }
