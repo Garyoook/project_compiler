@@ -78,6 +78,6 @@ public class Wacc {
 
     AST ast = visitor.visitProg(basicParser.prog());
 
-    System.out.println(ast.toString());
+//    System.out.println(ast);
   }
 }

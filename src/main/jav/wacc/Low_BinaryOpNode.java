@@ -14,9 +14,6 @@ public class Low_BinaryOpNode extends AST{
     this.expr2 = expr2;
 
 
-    if ((expr1 instanceof Lowest_BinaryOpNode) || (expr2 instanceof Lowest_BinaryOpNode)) {
-      System.out.println("#semantic_error#");  exit(200);
-    }
     if (!same_type(expr1, expr2) || !same_type(expr2, expr1)) {
       System.out.println("#semantic_error#");  exit(200);
     }

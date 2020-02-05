@@ -23,7 +23,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitArray_liter(BasicParser.Array_literContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitArray_liter(BasicParser.Array_literContext ctx) {
+    return new ArrayAST();
+  }
   /**
    * {@inheritDoc}
    *
@@ -127,6 +129,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     if (ctx.array_elem() != null) {
       return (visitArray_elem(ctx.array_elem()));
     } else
+    if (ctx.string_liter() != null) {
+      return (visitString_liter(ctx.string_liter()));
+    } else
     if (ctx.ident() != null) {
       return (visitIdent(ctx.ident()));
     } else
@@ -149,8 +154,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitString_liter(BasicParser.String_literContext ctx) {
-    return new StringNode(ctx.getText());
+  @Override public AST visitString_liter(BasicParser.String_literContext ctx) { return new StringNode(ctx.getText());
   }
   /**
    * {@inheritDoc}
@@ -264,7 +268,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitDeclaration(BasicParser.DeclarationContext ctx) {
-    return new DeclarationAst(ctx.type(), ctx.IDENT().getText(), ctx.assign_rhs());
+    return new DeclarationAst(new Type(ctx.type(), null), ctx.IDENT().getText(), ctx.assign_rhs());
   }
   /**
    * {@inheritDoc}
@@ -368,7 +372,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     BasicParser.Param_listContext params = ctx.param_list();
     for (BasicParser.ParamContext p: ctx.param_list().param()) {
-      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), p.type());
+      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), new Type(p.type(), null));
     }
     return new FuncAST(ctx.type(), ctx.IDENT().getText(), params == null ? new ArrayList<>() : params.param(), visitStat(ctx.stat()));
   }

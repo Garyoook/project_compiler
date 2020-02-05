@@ -8,7 +8,7 @@ public class ReadAst extends AST {
   private final BasicParser.Assign_lhsContext lhs;
   public ReadAst(BasicParser.Assign_lhsContext lhs) {
     this.lhs = lhs;
-    BasicParser.Base_typeContext type = symbolTable.getCurrentSymbolTable().get(lhs.getText()).base_type();
+    BasicParser.Base_typeContext type = symbolTable.getCurrentSymbolTable().get(lhs.getText()).getTypeContext().base_type();
     if (type == null) {
       System.out.println("#semantic_error#");  exit(200);
     }

@@ -14,7 +14,7 @@ public class IfAst extends AST {
     this.elsebranch = elsebranch;
     if (!(expr instanceof BoolNode) && !(expr instanceof Binary_BoolOpNode)
         && !(expr instanceof Low_BinaryOpNode) && !(expr instanceof Lowest_BinaryOpNode)) {
-      System.out.println("#semantic_error#");  exit(200);
+      System.out.println("#semantic_error# in IfAST");  exit(200);
     }
   }
 
