@@ -65,6 +65,8 @@ public class Wacc {
       }
     };
 
+    lexer.removeErrorListeners();
+
     lexer.addErrorListener(errorListener);
 
     CommonTokenStream stream = new CommonTokenStream(lexer);

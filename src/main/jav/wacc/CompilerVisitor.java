@@ -466,6 +466,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Syntax error, function no return");
       exit(100);
     }
+    hasReturned = false;
     return ast;
   }
   /**

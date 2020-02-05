@@ -77,6 +77,7 @@ if __name__ == '__main__':
     if (not os.path.isdir('wacc_examples')):
         p = subprocess.Popen('git clone https://gitlab.doc.ic.ac.uk/lab1920_spring/wacc_examples.git', shell=True, stdout=subprocess.PIPE)
         stdout, stderr = p.communicate()
+    os.system("make")
     if sys.argv[1] == "valid":
         test_valid()
     if sys.argv[1] == "semantic":

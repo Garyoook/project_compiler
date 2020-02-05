@@ -17,6 +17,10 @@ public class ReadAst extends AST {
       System.out.println("Semantic Error: Can't read in Type Bool");
       exit(200);
     }
+    if (type instanceof PairType) {
+      System.out.println("Semantic Error: Can't read in a Pair");
+      exit(200);
+    }
   }
 
   @Override

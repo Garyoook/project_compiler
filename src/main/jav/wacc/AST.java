@@ -30,6 +30,10 @@ public abstract class AST {
 
   public boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
+      if (symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident) == null) {
+        System.out.println("semantic: variable not defined: " + ((IdentNode) exp).ident);
+        exit(200);
+      }
       if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(boolType())) {
         return false;
       }
@@ -40,7 +44,7 @@ public abstract class AST {
           exp instanceof UnaryNotNode ||
           exp instanceof Low_BinaryOpNode ||
           (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr)))) {
-      System.out.println("BBBBBBB");
+
       return false;
     }
     return true;
