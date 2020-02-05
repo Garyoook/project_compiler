@@ -27,7 +27,7 @@ unary_not: NOT ;
 unary_chr: CHR ;
 
 int_sign: PLUS | MINUS ;
-int_liter: (int_sign)? (DIGIT)+ ;
+int_liter: (int_sign)? ALLINT ;
 char_liter: CHAR_LITER;
 string_liter: STR_LITER;
 ident: IDENT;

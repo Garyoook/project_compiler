@@ -25,7 +25,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPair_liter(Pair_literContext ctx) {
-    return new PairAST(null, null);
+    return new PairAST(ctx.getText(),null, null);
   }
   /**
    * {@inheritDoc}
@@ -309,8 +309,14 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
+  boolean inIfThenElse = false;
+  boolean hasReturned = false;
+
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
-    return new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
+    inIfThenElse = true;
+    AST ast =  new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
+    inIfThenElse = false;
+    return ast;
   }
   /**
    * {@inheritDoc}
@@ -407,11 +413,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return visitChildren(ctx);
   }
 
+  boolean thenHasReturn = false;
 
   @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
     if (!inFunction) {
       System.out.println("Return can only be used in Function");
       exit(200);
+    } else {
+      if (inIfThenElse) {
+        if (thenHasReturn) {hasReturned = true;} else {thenHasReturn = true;}
+      } else {
+        hasReturned = true;
+      }
     }
     return new ReturnAst(visitExpr(ctx.expr()));
   }
@@ -444,11 +457,15 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     BasicParser.Param_listContext params = ctx.param_list();
     List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
     for (BasicParser.ParamContext p: pa) {
-      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), new SymbolTable.TypeValue(false, visitType(p.type())));
+      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), visitType(p.type()));
     }
 
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
     inFunction = false;
+    if (!hasReturned) {
+      System.out.println("Syntax error, function no return");
+      exit(100);
+    }
     return ast;
   }
   /**
@@ -460,7 +477,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitProg(ProgContext ctx) {
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
     for (BasicParser.FuncContext funcContext:ctx.func()) {
-      symbolTable.getCurrentSymbolTable().put(funcContext.IDENT().getText(), new SymbolTable.TypeValue(true, visitType(funcContext.type())));
+      symbolTable.getCurrentSymbolTable().put(funcContext.IDENT().getText(), visitType(funcContext.type()));
     }
     for (BasicParser.FuncContext funcContext:ctx.func()) {
       funcASTS.add((FuncAST) visitFunc(funcContext));
@@ -471,6 +488,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
 
   public AST visitStat(StatContext statContext) {
+    if (inFunction && hasReturned) {
+      System.out.println("Syntax Error: Shoudn't be anything after return");
+      exit(100);
+    }
     if (statContext != null) {
       if (statContext instanceof ReadContext) {
         return visitRead((ReadContext) statContext);

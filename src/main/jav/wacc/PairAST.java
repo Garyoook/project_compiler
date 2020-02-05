@@ -5,10 +5,11 @@ import antlr.BasicParser;
 public class PairAST extends AST {
     private BasicParser.Pair_elemContext fst;
     private BasicParser.Pair_elemContext snd;
-
-    public PairAST(BasicParser.Pair_elemContext fst, BasicParser.Pair_elemContext snd) {
-        this.fst = fst;
-        this.snd = snd;
+    public String name;
+    public PairAST(String name, BasicParser.Pair_elemContext fst, BasicParser.Pair_elemContext snd) {
+      this.name = name;
+      this.fst = fst;
+      this.snd = snd;
     }
 
     public void addFst(BasicParser.Pair_elemContext fst) {

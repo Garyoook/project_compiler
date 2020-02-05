@@ -10,19 +10,21 @@ ASKIP: 'skip';
 
 // type
 INT: 'int';
-DIGIT: '0'..'9' ;
 STRING: 'string' ;
 CHAR: 'char';
 BOOL: 'bool';
 TRUE: 'true';
 FALSE: 'false';
 
+fragment DIGIT: '0'..'9' ;
 
 // unary operators
 NOT: '!' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
+
+ALLINT: (DIGIT)+ ;
 
 // binary operators
 PLUS: '+' ;

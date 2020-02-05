@@ -13,11 +13,10 @@ public class AssignAST extends AST {
   public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
     this.lhs = lhs;
     this.rhs = rhs;
-//    if (symbolTable.getCurrentSymbolTable().get(lhs.getText()).isFunc) {
-//      System.out.println(lhs.getText() + " Function can't be assigned");
-//      exit(200);
-//    }
     Type type = symbolTable.getCurrentSymbolTable().get(lhs.getText());
+    if (lhs.array_elem() != null) {
+      type = symbolTable.getCurrentSymbolTable().get(lhs.array_elem().IDENT().getText());
+    }
     if (type == null) {
       System.out.println(lhs.getText() + " is not defined");
       exit(200);

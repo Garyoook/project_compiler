@@ -17,9 +17,6 @@ public class DeclarationAst extends AST {
     this.name = name;
     this.rhs = rhs;
     symbolTable.getCurrentSymbolTable().put(name, type);
-    if (type.equals(stringType())) {
-      System.out.println(name);
-    }
     if (rhs.expr().size() == 1) {
       CompilerVisitor visitor = new CompilerVisitor();
       AST ast = visitor.visitExpr(rhs.expr(0));

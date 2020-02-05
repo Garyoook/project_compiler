@@ -31,7 +31,6 @@ public abstract class AST {
   public boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
       if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(boolType())) {
-        System.out.println("ADLASJDLKASJ");
         return false;
       }
     } else
@@ -44,6 +43,15 @@ public abstract class AST {
       System.out.println("BBBBBBB");
       return false;
     }
+    return true;
+  }
+
+  public boolean is_Pair(AST exp) {
+//    if (exp instanceof PairAST) {
+//      if (!symbolTable.getCurrentSymbolTable().get(((Pa) exp).ident).equals(charType())) {
+//        return false;
+//      }
+//    }
     return true;
   }
 
