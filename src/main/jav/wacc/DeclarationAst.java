@@ -2,6 +2,7 @@ package jav.wacc;
 
 import antlr.BasicParser;
 
+import static jav.wacc.Type.*;
 import static java.lang.System.exit;
 
 public class DeclarationAst extends AST {
@@ -21,10 +22,10 @@ public class DeclarationAst extends AST {
       visitor.visitExpr(rhs.expr(0));
 
       if (rhs.expr(0).hignp_bin_op() != null || rhs.expr(0).binary_bool_oper() != null) {
-        if (type.getTypeContext().base_type().INT() != null) {
+        if (type.equals(intType())) {
           System.out.println("#semantic_error#");
           exit(200);
-        } else if (type.getTypeContext().base_type().BOOL() != null) {
+        } else if (type.equals(boolType())) {
           System.out.println("#semantic_error#");
           exit(200);
         }
@@ -33,6 +34,6 @@ public class DeclarationAst extends AST {
   }
   @Override
   public String toString() {
-    return "DECLEAR: type: " + type.getTypeContext().getText() + " name: " + name + "\n";
+    return "DECLEAR: type: " + type + " name: " + name + "\n";
   }
 }

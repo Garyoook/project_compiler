@@ -18,4 +18,8 @@ public class SymbolTable {
         return symbolTable;
     }
 
+    public SymbolTable getEncSymbolTable() {
+        return encSymbolTable;
+    }
+
 }

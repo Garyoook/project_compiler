@@ -1,8 +1,8 @@
 package jav.wacc;
 
-public class IdenNode extends AST {
+public class IdentNode extends AST {
   String ident;
-  IdenNode(String ident) {
+  IdentNode(String ident) {
     this.ident = ident;
   }
 
