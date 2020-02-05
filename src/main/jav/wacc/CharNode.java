@@ -3,6 +3,7 @@ package jav.wacc;
 public class
 CharNode extends AST {
   char value;
+
   CharNode(char value) {
     this.value = value;
   }

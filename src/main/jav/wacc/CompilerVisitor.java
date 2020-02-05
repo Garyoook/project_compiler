@@ -93,9 +93,29 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
+  @Override public AST visitUnary_not(BasicParser.Unary_notContext ctx) { return visitChildren(ctx); }
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The default implementation returns the result of calling
+   * {@link #visitChildren} on {@code ctx}.</p>
+   */
+  @Override public AST visitUnary_chr(BasicParser.Unary_chrContext ctx) { return visitChildren(ctx); }
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The default implementation returns the result of calling
+   * {@link #visitChildren} on {@code ctx}.</p>
+   */
   @Override public AST visitExpr(BasicParser.ExprContext ctx) {
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
+    } else
+    if (ctx.unary_chr() != null) {
+      return (new UnaryChrNode(ctx.unary_chr(), visitExpr(ctx.expr(0))));
+    } else
+    if (ctx.unary_not() != null) {
+      return (new UnaryNotNode(ctx.unary_not(), visitExpr(ctx.expr(0))));
     } else
       if (ctx.lowest_binbool_op() != null) {
       return (new Lowest_BinaryOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
@@ -123,6 +143,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     } else
     if (ctx.pair_liter() != null) {
       return (visitPair_liter(ctx.pair_liter()));
+    } else
+    if (ctx.string_liter() != null) {
+      return (visitString_liter(ctx.string_liter()));
     } else
     if (ctx.array_elem() != null) {
       return (visitArray_elem(ctx.array_elem()));
@@ -171,7 +194,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitPair_elem_type(BasicParser.Pair_elem_typeContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitPair_elem_type(BasicParser.Pair_elem_typeContext ctx) {
+    return visitChildren(ctx); }
   /**
    * {@inheritDoc}
    *

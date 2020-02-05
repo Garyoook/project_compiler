@@ -22,7 +22,9 @@ binary_oper: PLUS | MINUS ;
 binary_bool_oper: GREATER| SMALLER | GREATER_E | SMALLER_E ;
 low_binbool_op: EQUAL | NOT_EQUAL ;
 lowest_binbool_op: B_AND | B_OR ;
-unary_oper: NOT | MINUS | LEN | ORD | CHR ;
+unary_oper: MINUS | LEN | ORD ;
+unary_not: NOT ;
+unary_chr: CHR ;
 
 int_sign: PLUS | MINUS ;
 int_liter: (int_sign)? (DIGIT)+ ;
@@ -37,6 +39,8 @@ expr: string_liter
 | pair_liter
 | array_elem
 | unary_oper expr
+| unary_chr expr
+| unary_not expr
 | expr hignp_bin_op expr
 | expr binary_oper expr
 | expr binary_bool_oper expr
