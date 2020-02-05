@@ -2,12 +2,7 @@ package jav.wacc;
 
 import antlr.BasicLexer;
 import antlr.BasicParser;
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -70,15 +65,18 @@ public class Wacc {
     lexer.addErrorListener(errorListener);
 
     CommonTokenStream stream = new CommonTokenStream(lexer);
+    try {
+      BasicParser basicParser = new BasicParser(stream);
+      basicParser.addErrorListener(errorListener);
 
-    BasicParser basicParser = new BasicParser(stream);
+      CompilerVisitor visitor = new CompilerVisitor();
 
-    basicParser.addErrorListener(errorListener);
+      AST ast = visitor.visitProg(basicParser.prog());
+    } catch (NumberFormatException e) {
+      System.out.println("Syantax error: Integer overflow");
+      exit(100);
+    }
 
-
-    CompilerVisitor visitor = new CompilerVisitor();
-
-    AST ast = visitor.visitProg(basicParser.prog());
 
 //    System.out.println(ast.toString());
   }
