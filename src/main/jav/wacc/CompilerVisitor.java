@@ -344,10 +344,14 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   boolean hasReturned = false;
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
+
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     inIfThenElse = true;
     AST ast =  new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
     inIfThenElse = false;
     thenHasReturn = false;
+    symbolTable = symbolTable.getEncSymbolTable();
+
     return ast;
   }
   /**
@@ -613,10 +617,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
 
   public AST visitStat(StatContext statContext) {
-//    if (inFunction && hasReturned) {
-//      System.out.println("Syntax Error: Shoudn't be anything after return");
-//      exit(100);
-//    }
+    if (inFunction && hasReturned) {
+      System.out.println("Syntax Error: Shoudn't be anything after return");
+      exit(100);
+    }
     if (statContext != null) {
       if (statContext instanceof ReadContext) {
         return visitRead((ReadContext) statContext);
