@@ -277,7 +277,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitPair_elem(Pair_elemContext ctx) {
     AST expr = visitExpr(ctx.expr());
-    System.out.println(expr + "sadasdsad");
     return visitChildren(ctx);
   }
   /**
@@ -347,11 +346,33 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     symbolTable.inIfThenElse = true;
-    AST ast =  new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
-    symbolTable.inIfThenElse = false;
-    symbolTable.thenHasReturn = false;
-    symbolTable.hasReturned = false;
+
+    AST thenAst = visitStat(ctx.stat(0));
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
     symbolTable = symbolTable.getEncSymbolTable();
+
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    symbolTable.thenHasReturn = s.thenHasReturn;
+    symbolTable.inFunction = s.inFunction;
+    symbolTable.hasReturned = s.hasReturned;
+    symbolTable.inIfThenElse = s.inIfThenElse;
+
+    AST elseAST = visitStat(ctx.stat(1));
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.getEncSymbolTable();
+    symbolTable.thenHasReturn = false;
+
+    AST ast =  new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST );
+
 
     return ast;
   }
@@ -433,6 +454,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitSeq_compose(Seq_composeContext ctx) {
     ArrayList<AST> seqs = new ArrayList<>();
+    StatContext statContext1 = ctx.stat(ctx.stat().size());
+
     for (StatContext statContext:ctx.stat()) {
       seqs.add(visitStat(statContext));
     }
@@ -445,6 +468,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitExit(ExitContext ctx) {
+    if (symbolTable.inIfThenElse) {
+      if (symbolTable.thenHasReturn) {hasReturned = true;} else {symbolTable.thenHasReturn = true;}
+    } else {
+      hasReturned = true;
+    }
     return new ExitAst(visitExpr(ctx.expr()));
   }
   /**
@@ -536,7 +564,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("return type not compatible");
       exit(200);
     }
-
     return new ReturnAst(visitExpr(ctx.expr()));
   }
   /**
@@ -566,8 +593,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     inFunction = true;
+
     currentFuncName = ctx.IDENT().getText();
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    symbolTable.inFunction = true;
     BasicParser.Param_listContext params = ctx.param_list();
     List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
     for (BasicParser.ParamContext p: pa) {
@@ -576,13 +605,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
     inFunction = false;
+    symbolTable.inFunction = false;
     currentFuncName = null;
     if (!hasReturned) {
       System.out.println("Syntax error, function no return");
       exit(100);
     }
-    symbolTable.thenHasReturn = false;
-    symbolTable.hasReturned = false;
 
     symbolTable = symbolTable.getEncSymbolTable();
     thenHasReturn = false;
@@ -621,8 +649,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
 
   public AST visitStat(StatContext statContext) {
-    if (inFunction && hasReturned) {
-      System.out.println("Syntax Error: Shoudn't be anything after return");
+    if (symbolTable.inFunction && hasReturned) {
+      System.out.println("Syntax Error: Shouldn't be anything after return");
       exit(100);
     }
     if (statContext != null) {
