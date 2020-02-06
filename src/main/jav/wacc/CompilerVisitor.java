@@ -263,7 +263,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitPair_elem(Pair_elemContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitPair_elem(Pair_elemContext ctx) {
+    AST expr = visitExpr(ctx.expr());
+    System.out.println(expr + "sadasdsad");
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -278,6 +282,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
+//    if (ctx.pair_elem() != null) {
+//      if ((ctx.pair_elem().expr().pair_liter() == null)) {
+//        System.out.println("Semantic error: assigning from a null context");
+//        exit(200);
+//      }
+//      if (ctx.pair_elem().expr().pair_liter().getText().equals("null")) {
+//        System.out.println("Semantic error: assigning from a null pair literal");
+//        exit(200);
+//      }
+//    }
     return visitChildren(ctx);
   }
   /**
@@ -303,6 +317,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssignment(AssignmentContext ctx) {
+//    visitAssign_rhs(ctx.assign_rhs());
     return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
   }
   /**
@@ -336,6 +351,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitDeclaration(DeclarationContext ctx) {
+//    visitAssign_rhs(ctx.assign_rhs());
     return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
   }
   /**
@@ -402,7 +418,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitFree(FreeContext ctx) {
+  @Override public AST visitFree(FreeContext ctx)  {
+//    if (!is_Pair(visitExpr(ctx.expr()))) {
+//      System.out.println("Semantic error: Freeing non-pair type");
+//      exit(200);
+//    }
     return new FreeAst(visitExpr(ctx.expr()));
   }
   /**

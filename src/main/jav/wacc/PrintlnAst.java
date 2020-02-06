@@ -1,5 +1,6 @@
 package jav.wacc;
 
+
 import static java.lang.System.exit;
 
 public class PrintlnAst extends AST {
@@ -15,7 +16,6 @@ public class PrintlnAst extends AST {
     if (expr instanceof ArrayAST) {
       System.out.println(("Semantic error: " + ((IdentNode) expr).ident) + " array can't be printed");
       exit(200);
-
     }
     this.expr = expr;
 

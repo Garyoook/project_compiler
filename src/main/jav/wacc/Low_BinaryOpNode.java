@@ -17,7 +17,8 @@ public class Low_BinaryOpNode extends AST{
             is_Char(expr1) && is_Char(expr2) ||
             is_String(expr1) && is_String(expr2) ||
             is_bool(expr1) && is_bool(expr2) ||
-            is_Pair(expr1) && is_Pair(expr2))) {
+            is_Pair(expr1) && expr2 != null)
+            ) {
       System.out.println("wrong type in " + operContext.getText());
       exit(200);
     }

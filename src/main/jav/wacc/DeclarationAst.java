@@ -44,6 +44,6 @@ public class DeclarationAst extends AST {
   }
   @Override
   public String toString() {
-    return "DECLEAR: type: " + type + " name: " + name + "\n";
+    return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";
   }
 }

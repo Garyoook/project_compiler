@@ -18,8 +18,23 @@ public class AssignAST extends AST {
       type = symbolTable.getCurrentSymbolTable().get(lhs.array_elem().IDENT().getText());
     }
     if (lhs.pair_elem() != null) {
-//      System.out.println(rhs.);
-//      type = rhs.expr()
+      CompilerVisitor visitor = new CompilerVisitor();
+      AST ast = visitor.visitAssign_rhs(rhs);
+      if (is_bool(ast)) {
+        type = boolType();
+      }
+      if (is_Pair(ast)) {
+        type = pairType();
+      }
+      if (is_Char(ast)) {
+        type = charType();
+      }
+      if ((is_int(ast))) {
+        type = intType();
+      }
+      if(is_String(ast)) {
+        type = stringType();
+      }
     }
     if (type == null) {
       System.out.println(lhs.getText() + " is not defined");
@@ -34,7 +49,6 @@ public class AssignAST extends AST {
               (type.equals(stringType()) && !is_String(ast)) ) {
         System.out.println("assignment type not compatible");
         exit(200);
-
       }
     }
   }

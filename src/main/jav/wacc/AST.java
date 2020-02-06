@@ -1,5 +1,6 @@
 package jav.wacc;
 
+
 import java.util.HashMap;
 
 import static jav.wacc.Type.*;
@@ -9,7 +10,7 @@ import static java.lang.System.exit;
 public abstract class AST {
   public static SymbolTable symbolTable = new SymbolTable(null, new HashMap<String, Type>());
 
-  public boolean is_int(AST expr1) {
+  public static boolean is_int(AST expr1) {
     if (expr1 instanceof IdentNode) {
       if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) expr1).ident).equals(intType())) {
         return false;
@@ -28,50 +29,38 @@ public abstract class AST {
     return true;
   }
 
-  public boolean is_bool(AST exp) {
+  public static boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
       if (symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident) == null) {
         System.out.println("semantic: variable not defined: " + ((IdentNode) exp).ident);
         exit(200);
       }
-      if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(boolType())) {
-        return false;
-      }
+      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(boolType());
     } else
-    if (!(exp instanceof Lowest_BinaryOpNode ||
-          exp instanceof BoolNode ||
-          exp instanceof Binary_BoolOpNode ||
-          exp instanceof UnaryNotNode ||
-          exp instanceof Low_BinaryOpNode ||
-          (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr)))) {
-
-      return false;
-    }
-    return true;
+      return exp instanceof Lowest_BinaryOpNode ||
+              exp instanceof BoolNode ||
+              exp instanceof Binary_BoolOpNode ||
+              exp instanceof UnaryNotNode ||
+              exp instanceof Low_BinaryOpNode ||
+              (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr));
   }
 
-  public boolean is_Pair(AST exp) {
-//    if (exp instanceof PairAST) {
-//      if (!symbolTable.getCurrentSymbolTable().get(((Pa) exp).ident).equals(charType())) {
-//        return false;
-//      }
-//    }
-    return true;
-  }
-
-  public boolean is_Char(AST exp) {
+  public static boolean is_Pair(AST exp) {
     if (exp instanceof IdentNode) {
-      if (!symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(charType())) {
-        return false;
-      }
-    } else
-    if (!(exp instanceof CharNode)) {
-      return false;
+      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident) instanceof PairType;
+    } else {
+      return exp instanceof PairAST;
     }
-    return true;
   }
 
-  public boolean is_String(AST exp) {
+  public static boolean is_Char(AST exp) {
+    if (exp instanceof IdentNode) {
+      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(charType());
+    } else
+      return exp instanceof CharNode;
+  }
+
+  public static boolean is_String(AST exp) {
     if (exp instanceof IdentNode) {
       return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident).equals(stringType());
     }
@@ -79,7 +68,7 @@ public abstract class AST {
   }
 
 
-  public boolean same_type(AST expr1, AST expr2) {
+  public static boolean same_type(AST expr1, AST expr2) {
     if (expr1 instanceof IdentNode) {
       Type type1 = symbolTable.getCurrentSymbolTable().get(((IdentNode) expr1).ident);
         if (type1 == null) {
