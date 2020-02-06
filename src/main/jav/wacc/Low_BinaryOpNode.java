@@ -2,6 +2,7 @@ package jav.wacc;
 
 import antlr.BasicParser;
 
+import static java.lang.System.clearProperty;
 import static java.lang.System.exit;
 
 public class Low_BinaryOpNode extends AST{
@@ -13,12 +14,14 @@ public class Low_BinaryOpNode extends AST{
     this.expr1 = expr1;
     this.expr2 = expr2;
 
+
     if (!(is_int(expr1) && is_int(expr1) ||
             is_Char(expr1) && is_Char(expr2) ||
             is_String(expr1) && is_String(expr2) ||
             is_bool(expr1) && is_bool(expr2) ||
-            is_Pair(expr1) && expr2 != null)
+            is_Pair(expr1) && is_Pair(expr2))
             ) {
+
       System.out.println("wrong type in " + operContext.getText());
       exit(200);
     }

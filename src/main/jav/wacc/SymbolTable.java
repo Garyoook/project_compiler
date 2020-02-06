@@ -49,7 +49,7 @@ public class SymbolTable {
       }
     }
 
-    public Type helperFunction(String name, SymbolTable symbolTable) {
+    private Type helperFunction(String name, SymbolTable symbolTable) {
       if (symbolTable == null) {
         System.out.println("variable not exist " + name);
         exit(200);

@@ -52,7 +52,7 @@ public abstract class AST {
 
   public static boolean is_Pair(AST exp) {
     if (exp instanceof IdentNode) {
-      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident) instanceof PairType;
+      return symbolTable.getVariable(((IdentNode) exp).ident) instanceof PairType;
     } else {
       return exp instanceof PairAST;
     }

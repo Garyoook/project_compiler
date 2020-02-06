@@ -10,7 +10,9 @@ import static antlr.BasicParser.*;
 import static jav.wacc.AST.symbolTable;
 import static jav.wacc.Type.*;
 import static java.lang.System.exit;
+import static java.lang.System.setOut;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,7 +85,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitArray_elem(Array_elemContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitArray_elem(Array_elemContext ctx) {
+
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -173,6 +178,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     if (ctx.OPEN_PARENTHESES() != null) {
       return new ExprWithParen(visitExpr(ctx.expr(0)));
     } else
+    if (ctx.array_elem() != null) {
+      return visitArray_elem(ctx.array_elem());
+    }
     return null;
   }
 
@@ -255,6 +263,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public ArrayType visitArray_type(Array_typeContext ctx) {
     if (ctx.array_type() != null) {
       return new ArrayType(visitArray_type(ctx.array_type()));
+    } else if (ctx.pair_type() != null) {
+      return new ArrayType(visitPair_type(ctx.pair_type()));
     } else {
       return new ArrayType(visitBase_type(ctx.base_type()));
     }
@@ -337,6 +347,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     inIfThenElse = true;
     AST ast =  new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
     inIfThenElse = false;
+    thenHasReturn = false;
     return ast;
   }
   /**
@@ -365,13 +376,26 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
             exit(200);
           }
           AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
+
           Type type = parameter.get(i);
+
+          if (ctx.assign_rhs().arg_list().expr(i-1).array_elem() == null) {
           if ((is_bool(ast) && !type.equals(boolType()) ||
               is_Char(ast) && !type.equals(charType()) ||
               is_int(ast) && !type.equals(intType())) ||
               is_String(ast) && !type.equals(stringType())) {
             System.out.println("Semantic Error: Wrong type in function parameter");
             exit(200);
+          }} else {
+            Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i-1).array_elem().IDENT().getText());
+            if ((type1.equals(boolType()) && !type.equals(boolType()) ||
+                type1.equals(charType()) && !type.equals(charType()) ||
+                type1.equals(intType()) && !type.equals(intType())) ||
+                type1.equals(stringType()) && !type.equals(stringType())) {
+              System.out.println("Semantic Error: Wrong type in function parameter");
+              exit(200);
+            }
+
           }
         }
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
@@ -380,7 +404,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-
 
     return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
   }
@@ -391,7 +414,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitWhileloop(WhileloopContext ctx) {
-    return new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
+
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
+    symbolTable = symbolTable.getEncSymbolTable();
+    return ast;
   }
   /**
    * {@inheritDoc}
@@ -549,8 +576,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Syntax error, function no return");
       exit(100);
     }
-
     symbolTable = symbolTable.getEncSymbolTable();
+    thenHasReturn = false;
 
     hasReturned = false;
     return ast;
@@ -586,10 +613,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
 
   public AST visitStat(StatContext statContext) {
-    if (inFunction && hasReturned) {
-      System.out.println("Syntax Error: Shoudn't be anything after return");
-      exit(100);
-    }
+//    if (inFunction && hasReturned) {
+//      System.out.println("Syntax Error: Shoudn't be anything after return");
+//      exit(100);
+//    }
     if (statContext != null) {
       if (statContext instanceof ReadContext) {
         return visitRead((ReadContext) statContext);

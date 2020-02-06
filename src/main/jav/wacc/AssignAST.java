@@ -14,8 +14,11 @@ public class AssignAST extends AST {
     this.lhs = lhs;
     this.rhs = rhs;
     Type type = null;
+
     if (lhs.pair_elem() != null) {
       type = symbolTable.getVariable(lhs.pair_elem().expr().getText());
+    } else if (lhs.array_elem() != null) {
+      type = symbolTable.getVariable(lhs.array_elem().IDENT().getText());
     } else {
       type = symbolTable.getVariable(lhs.getText());
     }
