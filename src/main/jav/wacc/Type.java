@@ -19,6 +19,9 @@ public abstract class Type extends AST {
     public static BaseType stringType() {
         return new BaseType(BaseTypeKind.STRING);
     }
+    public static PairType pairType() {
+        return new PairType(null, null);
+    }
 
     public enum BaseTypeKind {
         INT, CHAR, BOOL, STRING
@@ -84,65 +87,18 @@ public abstract class Type extends AST {
         }
 
         @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof PairType)) {
+                return false;
+            } else {
+                return this.getLeftType().equals(((PairType) obj).getLeftType())
+                        && this.getRightType().equals(((PairType) obj).getRightType());
+            }
+        }
+
+        @Override
         public String toString() {
             return "pair(" + leftType + ", " + rightType + ")";
         }
     }
-
-//    private BasicParser.TypeContext typeContext;
-//    private String stringValue;
-//    private int intValue;
-//    private char charValue;
-//
-//    public Type(BasicParser.TypeContext typeContext, String value) {
-//        this.typeContext = typeContext;
-//        this.stringValue = value;
-//    }
-//    public Type(BasicParser.TypeContext typeContext, int value) {
-//        this.typeContext = typeContext;
-//        this.intValue = value;
-//    }
-//    public Type(BasicParser.TypeContext typeContext, char value) {
-//        this.typeContext = typeContext;
-//        this.charValue = value;
-//    }
-//
-//    public String getStringValue() {
-//        return stringValue;
-//    }
-//
-//    public int getIntValue() {
-//        return intValue;
-//    }
-//
-//    public BasicParser.TypeContext getTypeContext() {
-//        if (typeContext == null) {
-//            System.out.println("Semantic error: Variable not defined");
-//            exit(200);
-//        }
-//        return typeContext;
-//    }
-//
-//    public char getCharValue() {
-//        return charValue;
-//    }
-////    @Override
-////    public boolean equals(Object o) {
-////        if (this instanceof IntNode) {
-////            return (o instanceof IntNode);
-////        }
-////        if (this instanceof CharNode) {
-////            return (o instanceof CharNode);
-////        }
-////        if (this instanceof StringNode) {
-////            return (o instanceof StringNode);
-////        }
-////        if (this instanceof PairAST) {
-////            return (o instanceof PairAST);
-////        }
-////        if (this instanceof BoolNode) {
-////            return (o instanceof BoolNode);
-////        }
-////        return false;
-////    }
 }

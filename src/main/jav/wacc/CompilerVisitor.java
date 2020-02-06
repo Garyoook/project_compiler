@@ -213,8 +213,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public Type visitPair_elem_type(Pair_elem_typeContext ctx) {
     if (ctx.array_type() != null) {
       return visitArray_type(ctx.array_type());
-    } else {
+    } else if (ctx.base_type() != null) {
       return visitBase_type(ctx.base_type());
+    } else {
+      return new PairType(null, null);
     }
   }
   /**
