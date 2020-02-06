@@ -265,7 +265,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitPair_elem(Pair_elemContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitPair_elem(Pair_elemContext ctx) {
+    AST expr = visitExpr(ctx.expr());
+    System.out.println(expr + "sadasdsad");
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -280,6 +284,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
+//    if (ctx.pair_elem() != null) {
+//      if ((ctx.pair_elem().expr().pair_liter() == null)) {
+//        System.out.println("Semantic error: assigning from a null context");
+//        exit(200);
+//      }
+//      if (ctx.pair_elem().expr().pair_liter().getText().equals("null")) {
+//        System.out.println("Semantic error: assigning from a null pair literal");
+//        exit(200);
+//      }
+//    }
     return visitChildren(ctx);
   }
   /**
@@ -439,8 +453,19 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitFree(FreeContext ctx) {
-    return new FreeAst(visitExpr(ctx.expr()));
+  @Override public AST visitFree(FreeContext ctx)  {
+    AST expr = visitExpr(ctx.expr());
+    if (expr instanceof IdentNode) {
+      Type type = symbolTable.getVariable(((IdentNode) expr).ident);
+      if (!(type instanceof  PairType) && !(type instanceof ArrayType)) {
+        System.out.println("Can only free pair or array");
+        exit(200);
+      }
+    } else if (!(expr instanceof ArrayAST) && !is_Pair(expr)) {
+        System.out.println("Can only free pair or array");
+        exit(200);
+    }
+    return new FreeAst(visitExpr((ctx.expr())));
   }
   /**
    * {@inheritDoc}

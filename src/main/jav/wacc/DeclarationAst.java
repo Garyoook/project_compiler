@@ -52,9 +52,17 @@ public class DeclarationAst extends AST {
       }
     }
 
+    if (rhs.pair_elem() != null) {
+      if (rhs.pair_elem().expr().getText().equals("null")){
+        System.out.println("Semantic Error: Cannot call fst on a null");
+        exit(200);
+      }
+
+    }
+
   }
   @Override
   public String toString() {
-    return "DECLEAR: type: " + type + " name: " + name + "\n";
+    return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";
   }
 }

@@ -5,9 +5,9 @@ import antlr.BasicParser;
 public class PairAST extends AST {
     private BasicParser.Pair_elemContext fst;
     private BasicParser.Pair_elemContext snd;
-    public String name;
-    public PairAST(String name, BasicParser.Pair_elemContext fst, BasicParser.Pair_elemContext snd) {
-      this.name = name;
+    public String ident;
+    public PairAST(String ident, BasicParser.Pair_elemContext fst, BasicParser.Pair_elemContext snd) {
+      this.ident = ident;
       this.fst = fst;
       this.snd = snd;
     }
@@ -22,6 +22,6 @@ public class PairAST extends AST {
 
     @Override
     public String toString() {
-        return "Pair: (" + fst.getText() + ", " + snd.getText() + ")";
+        return ident + "(" + fst.getText() + ", " + snd.getText() + ")";
     }
 }

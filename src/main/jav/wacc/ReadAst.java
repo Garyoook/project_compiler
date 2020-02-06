@@ -9,7 +9,13 @@ public class ReadAst extends AST {
   private final BasicParser.Assign_lhsContext lhs;
   public ReadAst(BasicParser.Assign_lhsContext lhs) {
     this.lhs = lhs;
-    Type type = symbolTable.getVariable(lhs.getText());
+
+    Type type = null;
+    if (lhs.pair_elem() != null) {
+      type = symbolTable.getVariable(lhs.pair_elem().expr().getText());
+    } else {
+      type = symbolTable.getVariable(lhs.getText());
+    }
     if (type == null) {
       System.out.println("Variable not defined " + lhs.getText());  exit(200);
     }
@@ -18,8 +24,14 @@ public class ReadAst extends AST {
       exit(200);
     }
     if (type instanceof PairType) {
-      System.out.println("Semantic Error: Can't read in a Pair");
-      exit(200);
+      if (lhs.pair_elem() == null) {
+        System.out.println("Semantic Error: Can't read into a null");
+        exit(200);
+      }
+      if (lhs.pair_elem().fst() == null && lhs.pair_elem().snd() == null){
+        System.out.println("Semantic Error: Can't read in a Pair");
+        exit(200);
+      }
     }
   }
 

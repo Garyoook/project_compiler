@@ -51,12 +51,11 @@ public abstract class AST {
   }
 
   public static boolean is_Pair(AST exp) {
-//    if (exp instanceof PairAST) {
-//      if (!symbolTable.getCurrentSymbolTable().get(((Pa) exp).ident).equals(charType())) {
-//        return false;
-//      }
-//    }
-    return true;
+    if (exp instanceof IdentNode) {
+      return symbolTable.getCurrentSymbolTable().get(((IdentNode) exp).ident) instanceof PairType;
+    } else {
+      return exp instanceof PairAST;
+    }
   }
 
   public static boolean is_Char(AST exp) {

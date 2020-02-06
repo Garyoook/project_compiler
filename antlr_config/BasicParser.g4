@@ -69,8 +69,11 @@ type: array_type
 array_type: (base_type | pair_type) OPEN_SQUARE CLOSE_SQUARE
  | array_type OPEN_SQUARE CLOSE_SQUARE ;
 
-pair_elem: FST expr
-| SND expr;
+fst: FST ;
+snd: SND ;
+
+pair_elem: fst expr
+| snd expr;
 
 arg_list: expr (COMMA expr)* ;
 
