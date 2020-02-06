@@ -346,10 +346,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
 
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
-    inIfThenElse = true;
+    symbolTable.inIfThenElse = true;
     AST ast =  new IfAst(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)));
-    inIfThenElse = false;
-    thenHasReturn = false;
+    symbolTable.inIfThenElse = false;
+    symbolTable.thenHasReturn = false;
+    symbolTable.hasReturned = false;
     symbolTable = symbolTable.getEncSymbolTable();
 
     return ast;
@@ -515,8 +516,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Return can only be used in Function");
       exit(200);
     } else {
-      if (inIfThenElse) {
-        if (thenHasReturn) {hasReturned = true;} else {thenHasReturn = true;}
+      if (symbolTable.inIfThenElse) {
+        if (symbolTable.thenHasReturn) {hasReturned = true;} else {symbolTable.thenHasReturn = true;}
       } else {
         hasReturned = true;
       }
@@ -580,6 +581,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Syntax error, function no return");
       exit(100);
     }
+    symbolTable.thenHasReturn = false;
+    symbolTable.hasReturned = false;
+
     symbolTable = symbolTable.getEncSymbolTable();
     thenHasReturn = false;
 

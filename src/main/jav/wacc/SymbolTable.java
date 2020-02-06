@@ -10,6 +10,10 @@ import static java.lang.System.exit;
 public class SymbolTable {
     private SymbolTable encSymbolTable;
     private HashMap<String, Type> symbolTable;
+    public boolean inFunction = false;
+    public boolean inIfThenElse = false;
+    public boolean hasReturned = false;
+    public boolean thenHasReturn = false;
 
     public SymbolTable(SymbolTable encSymbolTable, HashMap<String, Type> symbolTable) {
         this.encSymbolTable = encSymbolTable;
