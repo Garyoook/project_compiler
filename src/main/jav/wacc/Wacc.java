@@ -78,8 +78,5 @@ public class Wacc {
       System.out.println("Syantax error: Integer overflow");
       exit(100);
     }
-
-
-
   }
 }
