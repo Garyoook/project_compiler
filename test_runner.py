@@ -89,7 +89,10 @@ if __name__ == '__main__':
         test_syntax_error()
         test_semantic_err()
     print("\nPassed {}/{} cases".format(n_passed, n_cases))
-    print("Failed on:")
+    if len(failed_cases) == 0:
+        print("Failed on: 0 cases")
+    else:
+        print("Failed on:")
     for file_name in failed_cases:
         print(file_name)
 
