@@ -72,12 +72,14 @@ public class Wacc {
       CompilerVisitor visitor = new CompilerVisitor();
 
       AST ast = visitor.visitProg(basicParser.prog());
+
+//      System.out.println(ast.toString());
     } catch (NumberFormatException e) {
       System.out.println("Syantax error: Integer overflow");
       exit(100);
     }
 
 
-//    System.out.println(ast.toString());
+
   }
 }

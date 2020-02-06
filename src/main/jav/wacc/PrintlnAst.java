@@ -7,7 +7,7 @@ public class PrintlnAst extends AST {
 
   public PrintlnAst(AST expr) {
     if (expr instanceof IdentNode) {
-      if (symbolTable.getCurrentSymbolTable().get(((IdentNode) expr).ident) == null) {
+      if (symbolTable.getVariable(((IdentNode) expr).ident) == null) {
         System.out.println(("Semantic error: " + ((IdentNode) expr).ident) + " not defined");
         exit(200);
       }

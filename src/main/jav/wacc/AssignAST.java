@@ -13,14 +13,15 @@ public class AssignAST extends AST {
   public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
     this.lhs = lhs;
     this.rhs = rhs;
-    Type type = symbolTable.getCurrentSymbolTable().get(lhs.getText());
+    Type type = symbolTable.getVariable(lhs.getText());
     if (lhs.array_elem() != null) {
-      type = symbolTable.getCurrentSymbolTable().get(lhs.array_elem().IDENT().getText());
+      type = symbolTable.getVariable(lhs.array_elem().IDENT().getText());
     }
     if (lhs.pair_elem() != null) {
 //      System.out.println(rhs.);
 //      type = rhs.expr()
     }
+
     if (type == null) {
       System.out.println(lhs.getText() + " is not defined");
       exit(200);

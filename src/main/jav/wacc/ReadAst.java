@@ -9,7 +9,7 @@ public class ReadAst extends AST {
   private final BasicParser.Assign_lhsContext lhs;
   public ReadAst(BasicParser.Assign_lhsContext lhs) {
     this.lhs = lhs;
-    Type type = symbolTable.getCurrentSymbolTable().get(lhs.getText());
+    Type type = symbolTable.getVariable(lhs.getText());
     if (type == null) {
       System.out.println("Variable not defined " + lhs.getText());  exit(200);
     }

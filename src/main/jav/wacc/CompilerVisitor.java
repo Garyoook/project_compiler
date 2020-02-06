@@ -12,11 +12,13 @@ import static jav.wacc.Type.*;
 import static java.lang.System.exit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   public boolean inFunction = false;
+  public String currentFuncName = null;
 
   /**
    * {@inheritDoc}
@@ -303,6 +305,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssignment(AssignmentContext ctx) {
+    if (ctx.assign_rhs().call() != null) {
+      visitCall(ctx.assign_rhs().call());
+    }
     return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
   }
   /**
@@ -336,6 +341,33 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitDeclaration(DeclarationContext ctx) {
+    if (ctx.assign_rhs().call() != null) {
+      List<Type> parameter = functionTable.get(ctx.assign_rhs().IDENT().getText());
+      if (parameter.size() > 1) {
+        int i = 0;
+        for (i = 1; i < parameter.size(); i++) {
+          if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
+            System.out.println("semantic Error: args number not matched");
+            exit(200);
+          }
+          AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
+          Type type = parameter.get(i);
+          if ((is_bool(ast) && !type.equals(boolType()) ||
+              is_Char(ast) && !type.equals(charType()) ||
+              is_int(ast) && !type.equals(intType())) ||
+              is_String(ast) && !type.equals(stringType())) {
+            System.out.println("Semantic Error: Wrong type in function parameter");
+            exit(200);
+          }
+        }
+        if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
+          System.out.println("semantic Error: args number not matched");
+          exit(200);
+        }
+      }
+    }
+
+
     return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
   }
   /**
@@ -393,8 +425,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitBlock(BlockContext ctx) {
-    return new BlockAst(visitStat(ctx.stat()));
+  @Override public AST visitBlock(BlockContext ctx)
+  {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    AST ast = new BlockAst(visitStat(ctx.stat()));
+    symbolTable = symbolTable.getEncSymbolTable();
+
+    return ast;
   }
   /**
    * {@inheritDoc}
@@ -428,6 +465,21 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         hasReturned = true;
       }
     }
+
+    if (currentFuncName == null) {
+      System.out.println("Return can only be used in Function");
+      exit(200);
+    }
+    Type type = functionTable.get(currentFuncName).get(0);
+    AST ast = visitExpr(ctx.expr());
+    if ((type.equals(boolType())  && !is_bool(ast)) ||
+        (type.equals(intType())   && !is_int(ast)) ||
+        (type.equals(charType())  && !is_Char(ast)) ||
+        (type.equals(stringType()) && !is_String(ast))) {
+      System.out.println("return type not compatible");
+      exit(200);
+    }
+
     return new ReturnAst(visitExpr(ctx.expr()));
   }
   /**
@@ -453,21 +505,28 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
+  public static HashMap<String, List<Type>> functionTable = new HashMap<>();
+
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     inFunction = true;
-
+    currentFuncName = ctx.IDENT().getText();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     BasicParser.Param_listContext params = ctx.param_list();
     List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
     for (BasicParser.ParamContext p: pa) {
-      symbolTable.getCurrentSymbolTable().put(p.IDENT().getText(), visitType(p.type()));
+      symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
     }
 
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
     inFunction = false;
+    currentFuncName = null;
     if (!hasReturned) {
       System.out.println("Syntax error, function no return");
       exit(100);
     }
+
+    symbolTable = symbolTable.getEncSymbolTable();
+
     hasReturned = false;
     return ast;
   }
@@ -480,7 +539,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitProg(ProgContext ctx) {
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
     for (BasicParser.FuncContext funcContext:ctx.func()) {
-      symbolTable.getCurrentSymbolTable().put(funcContext.IDENT().getText(), visitType(funcContext.type()));
+      List<Type> types = new ArrayList<>();
+      types.add(visitType(funcContext.type()));
+      if (funcContext.param_list() != null) {
+        for (ParamContext p : funcContext.param_list().param()) {
+          types.add(visitType(p.type()));
+        }
+      }
+      if (functionTable.get(funcContext.IDENT().getText()) != null) {
+        System.out.println("semantic error: function redefined");
+        exit(200);
+      }
+      functionTable.put(funcContext.IDENT().getText(), types);
     }
     for (BasicParser.FuncContext funcContext:ctx.func()) {
       funcASTS.add((FuncAST) visitFunc(funcContext));
