@@ -2,6 +2,8 @@ package doc.wacc;
 
 import antlr.BasicLexer;
 import antlr.BasicParser;
+import doc.wacc.astNodes.AST;
+import doc.wacc.utils.CompilerVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
