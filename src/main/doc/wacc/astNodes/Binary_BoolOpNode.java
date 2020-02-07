@@ -13,7 +13,8 @@ public class Binary_BoolOpNode extends AST{
     this.expr1 = expr1;
     this.expr2 = expr2;
     if (!(is_bool(expr1) && is_bool(expr2) || is_int(expr1) && is_int(expr2) || is_Char(expr1) && is_Char(expr2))) {
-      System.out.println("Semantic error: wrong type in " + operContext.getText());
+      System.out.println("Semantic error: wrong type in " + operContext.getText() +
+              "\nExit code 200 returned");
       exit(200);
     }
   }

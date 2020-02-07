@@ -35,7 +35,8 @@ public class Wacc {
     ANTLRErrorListener errorListener = new ANTLRErrorListener() {
       @Override
       public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-        System.out.println("Syntax Error: in ANTLR error listener");
+        System.out.println("Syntax Error: parse error in ANTLR error listener\n" +
+                "Exit code 100 returned");
         exit(100);
       }
 
@@ -64,9 +65,11 @@ public class Wacc {
       basicParser.addErrorListener(errorListener);
       CompilerVisitor visitor = new CompilerVisitor();
 
+      System.out.println("Compiling...");
       visitor.visitProg(basicParser.prog());
     } catch (NumberFormatException e) {
-      System.out.println("Syntax error: Integer overflow");
+      System.out.println("Syntax error: Integer overflow"  +
+              "\nExit code 100 returned");
       exit(100);
     }
   }

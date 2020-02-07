@@ -21,7 +21,8 @@ public class DeclarationAst extends AST {
          type.equals(Type.intType()) ||
          type.equals(Type.charType()) ||
          type.equals(Type.stringType())) && rhs.array_liter() != null) {
-      System.out.println("Semantic error: assignment type not compatible");
+      System.out.println("Semantic error: assignment type not compatible" +
+              "\nExit code 200 returned");
       exit(200);
     }
 
@@ -31,12 +32,14 @@ public class DeclarationAst extends AST {
         type1 = ((Type.ArrayType)type1).getType();
         if (type instanceof Type.PairType) {
           if (!(type1 instanceof Type.PairType)) {
-            System.out.println("Semantic error: assignment type not compatible " + type);
+            System.out.println("Semantic error: assignment type not compatible " + type +
+                    "\nExit code 200 returned");
             exit(200);
           }
         } else {
           if (!type1.equals(type)) {
-            System.out.println("Semantic error: assignment type not compatible " + type);
+            System.out.println("Semantic error: assignment type not compatible " + type +
+                    "\nExit code 200 returned");
             exit(200);
           }
         }
@@ -47,7 +50,8 @@ public class DeclarationAst extends AST {
             (type.equals(Type.intType())   && !is_int(ast)) ||
             (type.equals(Type.charType())  && !is_Char(ast)) ||
             (type.equals(Type.stringType()) && !is_String(ast))) {
-          System.out.println("Semantic error: assignment type not compatible " + rhs.expr(0).getText());
+          System.out.println("Semantic error: assignment type not compatible " + rhs.expr(0).getText() +
+                  "\nExit code 200 returned");
           exit(200);
         }
       }
@@ -57,27 +61,32 @@ public class DeclarationAst extends AST {
       String s1 = rhs.IDENT().getText();
       Type type1 = CompilerVisitor.functionTable.get(s1).get(0);
       if (type1 == null) {
-        System.out.println("Semantic error: " + s1 + " is not defined");
+        System.out.println("Semantic error: " + s1 + " is not defined" +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (type1 instanceof Type.PairType || type instanceof Type.PairType) {
         if (!(type1 instanceof Type.PairType && type instanceof Type.PairType)) {
-          System.out.println("Semantic error: assignment type not compatible");
+          System.out.println("Semantic error: assignment type not compatible" +
+                  "\nExit code 200 returned");
           exit(200);
         }
       } else {
         if (!type1.equals(type)) {
-          System.out.println("Semantic error: assignment type not compatible");
+          System.out.println("Semantic error: assignment type not compatible" +
+                  "\nExit code 200 returned");
           exit(200);
         }
       }
     }
 
-    if (rhs.pair_elem() != null && (rhs.pair_elem().expr().getText().equals("null"))) {
-      System.out.println("Semantic Error: Cannot call fst on a null");
+    if ((rhs.pair_elem() != null) && (rhs.pair_elem().expr().getText().equals("null"))) {
+      System.out.println("Semantic Error: Cannot call fst on a null" +
+          "\nExit code 200 returned");
       exit(200);
     }
   }
+
   @Override
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";

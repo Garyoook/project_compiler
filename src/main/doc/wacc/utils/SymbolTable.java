@@ -23,7 +23,8 @@ public class SymbolTable {
 
     public void putVariable(String name, Type type) {
       if (symbolTable.get(name) != null){
-        System.out.println("Semantic error: variable double declared : " + name);
+        System.out.println("Semantic error: variable double declared : " + name +
+                "\nExit code 200 returned");
         exit(200);
       } else {
         symbolTable.put(name, type);
@@ -36,11 +37,13 @@ public class SymbolTable {
 
     private Type sbTableHelper(String name, SymbolTable symbolTable) {
       if (symbolTable == null) {
-        System.out.println("Semantic error: variable not exist " + name);
+        System.out.println("Semantic error: variable not exist " + name +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (symbolTable.symbolTable == null) {
-        System.out.println("Semantic error: variable not exist " + name);
+        System.out.println("Semantic error: variable not exist " + name +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (symbolTable.symbolTable.get(name) != null) {

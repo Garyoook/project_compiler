@@ -17,7 +17,8 @@ public class WhileAst extends AST {
     this.stat = stat;
 
     if (!is_bool(expr)) {
-      System.out.println("Semantic error: wrong type in while condition");
+      System.out.println("Semantic error: wrong type in while condition" +
+              "\nExit code 200 returned");
       exit(200);
     }
   }

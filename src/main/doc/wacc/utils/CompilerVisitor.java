@@ -143,7 +143,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public Type visitPair_type(Pair_typeContext ctx) {
     return new PairType(visitPair_elem_type(ctx.pair_elem_type(0)), visitPair_elem_type(ctx.pair_elem_type(1)));
   }
- 
+
   @Override public Type visitPair_elem_type(Pair_elem_typeContext ctx) {
     if (ctx.array_type() != null) {
       return visitArray_type(ctx.array_type());
@@ -153,12 +153,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new PairType(null, null);
     }
   }
- 
+
   @Override public BaseType visitBase_type(Base_typeContext ctx) {
     BaseTypeKind kind = BaseTypeKind.valueOf(ctx.getText().toUpperCase());
     return new BaseType(kind);
   }
- 
+
   @Override public Type visitType(TypeContext ctx) {
     if (ctx.pair_type() != null) {
       return visitPair_type(ctx.pair_type());
@@ -168,7 +168,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return visitBase_type(ctx.base_type());
     }
   }
-  
+
   @Override public ArrayType visitArray_type(Array_typeContext ctx) {
     if (ctx.array_type() != null) {
       return new ArrayType(visitArray_type(ctx.array_type()));
@@ -178,23 +178,23 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new ArrayType(visitBase_type(ctx.base_type()));
     }
   }
-  
+
   @Override public AST visitPair_elem(Pair_elemContext ctx) {
     return visitChildren(ctx);
   }
- 
+
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
-  
+
   @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
     return visitChildren(ctx);
   }
- 
+
   @Override public AST visitAssign_lhs(Assign_lhsContext ctx) { return visitChildren(ctx); }
- 
+
   @Override public AST visitRead(ReadContext ctx) {
     return new ReadAst(ctx.assign_lhs());
   }
- 
+
   @Override public AST visitAssignment(AssignmentContext ctx) {
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
@@ -228,11 +228,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
     return new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST);
   }
- 
+
   @Override public AST visitAskip(AskipContext ctx) {
     return new ASkipAst();
   }
-  
+
   @Override public AST visitDeclaration(DeclarationContext ctx) {
     if (ctx.assign_rhs().call() != null) {
       List<Type> parameter = functionTable.get(ctx.assign_rhs().IDENT().getText());
@@ -242,7 +242,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         for (i = 1; i < parameter.size(); i++) {
           //to check whether the number of parameter provided is smaller than the number of parameter needed
           if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
-            System.out.println("semantic Error: args number not matched");
+            System.out.println("semantic Error: args number not matched" +
+                    "\nExit code 200 returned");
             exit(200);
           }
 
@@ -259,33 +260,35 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
             }
           } else {
             Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i-1).array_elem().IDENT().getText());
-            
+
             if ((type1.equals(boolType()) && !type.equals(boolType()) ||
                 type1.equals(charType()) && !type.equals(charType()) ||
                 type1.equals(intType()) && !type.equals(intType())) ||
                 type1.equals(stringType()) && !type.equals(stringType())) {
-              System.out.println("Semantic Error: Wrong type in function parameter");
+              System.out.println("Semantic Error: Wrong type in function parameter" +
+                      "\nExit code 200 returned");
               exit(200);
             }
           }
         }
         //to check whether the number of parameter provided is greater than the number of parameter needed
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
-          System.out.println("semantic Error: args number not matched");
+          System.out.println("semantic Error: args number not matched" +
+                  "\nExit code 200 returned");
           exit(200);
         }
       }
     }
     return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
   }
- 
+
   @Override public AST visitWhileloop(WhileloopContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
     symbolTable = symbolTable.previousScope();
     return ast;
   }
- 
+
   @Override public AST visitSeq_compose(Seq_composeContext ctx) {
     ArrayList<AST> seqs = new ArrayList<>();
     StatContext statContext1 = ctx.stat(ctx.stat().size());
@@ -391,7 +394,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentFuncName = null;
 
     if (!hasReturned) {
-      System.out.println("Syntax error: function no return");
+      System.out.println("Syntax error: function no return" +
+              "\nExit code 100 returned");
       exit(100);
     }
     symbolTable = symbolTable.previousScope();
@@ -412,7 +416,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
       if (functionTable.get(funcContext.IDENT().getText()) != null) {
-        System.out.println("Semantic error: function redefined");
+        System.out.println("Semantic error: function redefined" +
+                "\nExit code 200 returned");
         exit(200);
       }
       functionTable.put(funcContext.IDENT().getText(), types);
@@ -427,7 +432,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   public AST visitStat(StatContext statContext) {
     if (symbolTable.inFunction && hasReturned) {
-      System.out.println("Syntax Error: Shouldn't be anything after return");
+      System.out.println("Syntax Error: Shouldn't be anything after return" +
+              "\nExit code 100 returned");
       exit(100);
     }
 
