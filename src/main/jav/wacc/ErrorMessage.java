@@ -1,39 +1,40 @@
 package jav.wacc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.exit;
 
 public class ErrorMessage {
+  private static List<String> syntacticError;
+  private static List<String> semanticError;
 
-  private static List<String> errorMessages = new ArrayList<>();
-  private static boolean syntactic = false;
-
-  public static void add(String error, int exitCode) {
-    errorMessages.add(error + ", exit(" + exitCode + ")");
-    if (exitCode == 100) {
-      syntactic = true;
+  public static void add(String errorMessage, int exitCode) {
+    if (exitCode==100) {
+      syntacticError.add(errorMessage);
+    } else {
+      semanticError.add(errorMessage);
     }
   }
 
-  public static String errorWriter() {
+  public static void errorWriter() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Total " + errorMessages.size() + " errors.\n");
-    for (String e : errorMessages) {
-      sb.append(e);
-      sb.append('\n');
-    }
-    return sb.toString();
-  }
-
-  public static void tryExit() {
-    if (errorMessages.size()>0) {
-      if (syntactic) {
-        exit(100);
-      } else {
-        exit(200);
+    if (syntacticError.size()>0) {
+      sb.append("Errors detected during compilation! Exit code 100 returned.");
+      for (String e : syntacticError) {
+        sb.append(e+'\n');
+      }
+    } else {
+      sb.append("Errors detected during compilation! Exit code 200 returned.");
+      for (String e : semanticError) {
+        sb.append(e+'\n');
       }
     }
+    System.out.println(sb.toString());
+    if (syntacticError.size()>0) {
+      exit(100);
+    } else {
+      exit(200);
+    }
   }
+
 }
