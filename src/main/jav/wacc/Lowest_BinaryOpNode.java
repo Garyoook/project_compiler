@@ -15,7 +15,7 @@ public class Lowest_BinaryOpNode extends AST {
     this.expr2 = expr2;
 
     if (!(is_bool(expr1) && is_bool(expr2))) {
-      System.out.println("wrong type, should be Bool in" + getClass());
+      System.out.println("Semantic error: wrong type, should be Bool in" + getClass());
       exit(200);
     }
 

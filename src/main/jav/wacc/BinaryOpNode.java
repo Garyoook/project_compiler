@@ -16,7 +16,7 @@ public class BinaryOpNode extends AST{
 
 
     if (!(is_int(expr1) && is_int(expr2))) {
-      System.out.println("wrong type in " + operContext.getText());
+      System.out.println("Semantic error: wrong type in " + operContext.getText());
       exit(200);
     }
 

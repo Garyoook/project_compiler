@@ -25,7 +25,7 @@ public class DeclarationAst extends AST {
          type.equals(intType()) ||
          type.equals(charType()) ||
          type.equals(stringType())) && rhs.array_liter() != null) {
-      System.out.println("assignment type not compatible");
+      System.out.println("Semantic error: assignment type not compatible");
       exit(200);
     }
 
@@ -35,12 +35,12 @@ public class DeclarationAst extends AST {
         type1 = ((ArrayType)type1).getType();
         if (type instanceof PairType) {
           if (!(type1 instanceof PairType)) {
-            System.out.println("1assignment type not compatible " + type);
+            System.out.println("Semantic error: assignment type not compatible " + type);
             exit(200);
           }
         } else {
           if (!type1.equals(type)) {
-            System.out.println("2assignment type not compatible " + type);
+            System.out.println("Semantic error: assignment type not compatible " + type);
             exit(200);
           }
         }
@@ -51,7 +51,7 @@ public class DeclarationAst extends AST {
             (type.equals(intType())   && !is_int(ast)) ||
             (type.equals(charType())  && !is_Char(ast)) ||
             (type.equals(stringType()) && !is_String(ast))) {
-          System.out.println("assignment type not compatible " + rhs.expr(0).getText());
+          System.out.println("Semantic error: assignment type not compatible " + rhs.expr(0).getText());
           exit(200);
         }
       }
@@ -62,17 +62,17 @@ public class DeclarationAst extends AST {
 
       Type type1 = functionTable.get(s1).get(0);
       if (type1 == null) {
-        System.out.println(s1 + " is not defined");
+        System.out.println("Semantic error: " + s1 + " is not defined");
         exit(200);
       }
       if (type1 instanceof PairType || type instanceof PairType) {
         if (!(type1 instanceof PairType && type instanceof PairType)) {
-          System.out.println("assignment type not compatible");
+          System.out.println("Semantic error: assignment type not compatible");
           exit(200);
         }
       } else {
         if (!type1.equals(type)) {
-          System.out.println("assignment type not compatible");
+          System.out.println("Semantic error: assignment type not compatible");
           exit(200);
         }
       }
