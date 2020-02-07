@@ -87,18 +87,5 @@
                 </executions>
             </plugin>
         </plugins>
-
-<!--        <finalName>WACC_49</finalName>-->
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>src/main/antlr</directory>-->
-<!--            </resource>-->
-<!--            <resource>-->
-<!--                <directory>src</directory>-->
-<!--            </resource>-->
-<!--            <resource>-->
-<!--                <directory>antlr_config</directory>-->
-<!--            </resource>-->
-<!--        </resources>-->
     </build>
 </project>

@@ -1,7 +1,7 @@
 import antlr.BasicLexer;
 import antlr.BasicParser;
-import jav.wacc.AST;
-import jav.wacc.CompilerVisitor;
+import doc.wacc.AST;
+import doc.wacc.CompilerVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;

@@ -8,7 +8,7 @@ if ARGV.length != 1
     exit
 end
 
-output = system('java -cp target/wacc_49-1.0-SNAPSHOT.jar:lib/* jav.wacc.Wacc ' + ARGV[0])
+output = system('java -cp target/wacc_49-1.0-SNAPSHOT.jar:lib/* doc.wacc.Wacc ' + ARGV[0])
 
 puts "exit(%d)" %[$?.exitstatus]
 
