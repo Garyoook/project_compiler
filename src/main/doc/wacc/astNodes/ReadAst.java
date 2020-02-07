@@ -21,16 +21,19 @@ public class ReadAst extends AST {
       System.out.println("Variable not defined " + lhs.getText());  exit(200);
     }
     if (type.equals(boolType())) {
-      System.out.println("Semantic Error: Can't read in Type Bool");
+      System.out.println("Semantic Error: Can't read in Type Bool" +
+              "\nExit code 200 returned");
       exit(200);
     }
     if (type instanceof PairType) {
       if (lhs.pair_elem() == null) {
-        System.out.println("Semantic Error: Can't read into a null");
+        System.out.println("Semantic Error: Can't read into a null" +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (lhs.pair_elem().fst() == null && lhs.pair_elem().snd() == null){
-        System.out.println("Semantic Error: Can't read in a Pair");
+        System.out.println("Semantic Error: Can't read in a Pair " +
+                "\nExit code 200 returned");
         exit(200);
       }
     }

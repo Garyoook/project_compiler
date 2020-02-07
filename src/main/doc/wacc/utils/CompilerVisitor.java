@@ -397,7 +397,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         int i = 0;
         for (i = 1; i < parameter.size(); i++) {
           if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
-            System.out.println("semantic Error: args number not matched");
+            System.out.println("semantic Error: args number not matched" +
+                    "\nExit code 200 returned");
             exit(200);
           }
           AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
@@ -409,7 +410,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
               is_Char(ast) && !type.equals(charType()) ||
               is_int(ast) && !type.equals(intType())) ||
               is_String(ast) && !type.equals(stringType())) {
-            System.out.println("Semantic Error: Wrong type in function parameter");
+            System.out.println("Semantic Error: Wrong type in function parameter" +
+                    "\nExit code 200 returned");
             exit(200);
           }} else {
             Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i-1).array_elem().IDENT().getText());
@@ -417,14 +419,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
                 type1.equals(charType()) && !type.equals(charType()) ||
                 type1.equals(intType()) && !type.equals(intType())) ||
                 type1.equals(stringType()) && !type.equals(stringType())) {
-              System.out.println("Semantic Error: Wrong type in function parameter");
+              System.out.println("Semantic Error: Wrong type in function parameter" +
+                      "\nExit code 200 returned");
               exit(200);
             }
 
           }
         }
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
-          System.out.println("semantic Error: args number not matched");
+          System.out.println("semantic Error: args number not matched" +
+                  "\nExit code 200 returned");
           exit(200);
         }
       }
@@ -607,7 +611,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     symbolTable.inFunction = false;
     currentFuncName = null;
     if (!hasReturned) {
-      System.out.println("Syntax error: function no return");
+      System.out.println("Syntax error: function no return" +
+              "\nExit code 100 returned");
       exit(100);
     }
 
@@ -634,7 +639,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
       if (functionTable.get(funcContext.IDENT().getText()) != null) {
-        System.out.println("Semantic error: function redefined");
+        System.out.println("Semantic error: function redefined" +
+                "\nExit code 200 returned");
         exit(200);
       }
       functionTable.put(funcContext.IDENT().getText(), types);
@@ -649,7 +655,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   public AST visitStat(StatContext statContext) {
     if (symbolTable.inFunction && hasReturned) {
-      System.out.println("Syntax Error: Shouldn't be anything after return");
+      System.out.println("Syntax Error: Shouldn't be anything after return" +
+              "\nExit code 100 returned");
       exit(100);
     }
     if (statContext != null) {

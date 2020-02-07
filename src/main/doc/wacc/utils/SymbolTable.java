@@ -38,31 +38,34 @@ public class SymbolTable {
     }
 
     public Type getVariable(String name) {
-      return helperFunction(name, this);
+      return sbTableHelper(name, this);
     }
 
     public void putVariable(String name, Type type) {
       if (symbolTable.get(name) != null){
-        System.out.println("Semantic error: variable double declared : " + name);
+        System.out.println("Semantic error: variable double declared : " + name +
+                "\nExit code 200 returned");
         exit(200);
       } else {
         symbolTable.put(name, type);
       }
     }
 
-    private Type helperFunction(String name, SymbolTable symbolTable) {
+    private Type sbTableHelper(String name, SymbolTable symbolTable) {
       if (symbolTable == null) {
-        System.out.println("Semantic error: variable not exist " + name);
+        System.out.println("Semantic error: variable not exist " + name +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (symbolTable.symbolTable == null) {
-        System.out.println("Semantic error: variable not exist " + name);
+        System.out.println("Semantic error: variable not exist " + name +
+                "\nExit code 200 returned");
         exit(200);
       }
       if (symbolTable.symbolTable.get(name) != null) {
         return symbolTable.symbolTable.get(name);
       } else {
-        return helperFunction(name, symbolTable.encSymbolTable);
+        return sbTableHelper(name, symbolTable.encSymbolTable);
       }
     }
 

@@ -8,7 +8,8 @@ public class ExitAst extends AST {
   public ExitAst(AST expr) {
     this.expr = expr;
     if (!is_int(expr)) {
-      System.out.println("Semantic error: Type incompatible: exit code should be an int");
+      System.out.println("Semantic error: Type incompatible: exit code should be an int" +
+              "\nExit code 200 returned");
       exit(200);
     }
   }

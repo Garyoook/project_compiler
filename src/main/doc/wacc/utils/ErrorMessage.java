@@ -5,34 +5,30 @@ import java.util.List;
 import static java.lang.System.exit;
 
 public class ErrorMessage {
-  private static List<String> syntacticError;
-  private static List<String> semanticError;
+  private static List<String> syntacticErrorList;
+  private static List<String> semanticErrorList;
 
-  public static void add(String errorMessage, int exitCode) {
-    if (exitCode==100) {
-      syntacticError.add(errorMessage);
-    } else {
-      semanticError.add(errorMessage);
-    }
+  public static void addSyntaxError(String errorMessage) {
+    syntacticErrorList.add(errorMessage);
+  }
+
+  public static void addSemanticError(String errorMessage) {
+     semanticErrorList.add(errorMessage);
   }
 
   public static void errorWriter() {
     StringBuilder sb = new StringBuilder();
-    if (syntacticError.size()>0) {
-      sb.append("Errors detected during compilation! Exit code 100 returned.");
-      for (String e : syntacticError) {
-        sb.append(e+'\n');
-      }
-    } else {
-      sb.append("Errors detected during compilation! Exit code 200 returned.");
-      for (String e : semanticError) {
-        sb.append(e+'\n');
+    if (syntacticErrorList.size() == 0) {
+      if (semanticErrorList.size() > 0) {
+        for (String msg : semanticErrorList) {
+          sb.append(msg).append("\n");
+        }
+      } else {
+        sb.append("done\n");
       }
     }
     System.out.println(sb.toString());
-    if (syntacticError.size()>0) {
-      exit(100);
-    } else {
+    if (semanticErrorList.size() > 0) {
       exit(200);
     }
   }
