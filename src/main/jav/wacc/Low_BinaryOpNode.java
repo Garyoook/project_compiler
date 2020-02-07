@@ -22,7 +22,7 @@ public class Low_BinaryOpNode extends AST{
             is_Pair(expr1) && is_Pair(expr2))
             ) {
 
-      System.out.println("wrong type in " + operContext.getText());
+      System.out.println("Semantic error: wrong type in " + operContext.getText());
       exit(200);
     }
 

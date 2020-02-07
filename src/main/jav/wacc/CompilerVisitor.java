@@ -608,7 +608,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     symbolTable.inFunction = false;
     currentFuncName = null;
     if (!hasReturned) {
-      System.out.println("Syntax error, function no return");
+      System.out.println("Syntax error: function no return");
       exit(100);
     }
 
@@ -635,7 +635,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
       if (functionTable.get(funcContext.IDENT().getText()) != null) {
-        System.out.println("semantic error: function redefined");
+        System.out.println("Semantic error: function redefined");
         exit(200);
       }
       functionTable.put(funcContext.IDENT().getText(), types);

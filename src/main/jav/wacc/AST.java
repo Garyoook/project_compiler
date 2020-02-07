@@ -31,7 +31,7 @@ public abstract class AST {
   public static boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
       if (symbolTable.getVariable(((IdentNode) exp).ident) == null) {
-        System.out.println("semantic: variable not defined: " + ((IdentNode) exp).ident);
+        System.out.println("Semantic error: variable not defined: " + ((IdentNode) exp).ident);
         exit(200);
       }
       if (!symbolTable.getVariable(((IdentNode) exp).ident).equals(boolType())) {

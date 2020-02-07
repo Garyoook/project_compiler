@@ -47,7 +47,7 @@ public class AssignAST extends AST {
     }
 
     if (type == null) {
-      System.out.println(lhs.getText() + " is not defined");
+      System.out.println("Semantic error: " + lhs.getText() + " is not defined");
       exit(200);
     }
     if (rhs.expr().size() == 1) {
@@ -57,7 +57,7 @@ public class AssignAST extends AST {
               (type.equals(intType()) && !is_int(ast)) ||
               (type.equals(charType()) && !is_Char(ast)) ||
               (type.equals(stringType()) && !is_String(ast)) ) {
-        System.out.println("assignment type not compatible");
+        System.out.println("Semantic error: assignment type not compatible");
         exit(200);
       }
     }

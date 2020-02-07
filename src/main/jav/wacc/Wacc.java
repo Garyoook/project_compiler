@@ -40,7 +40,7 @@ public class Wacc {
     ANTLRErrorListener errorListener = new ANTLRErrorListener() {
       @Override
       public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-        System.out.println("#Syntax Error#");
+        System.out.println("Syntax Error: in ANTLR error listener");
         exit(100);
       }
 
@@ -75,7 +75,7 @@ public class Wacc {
 
 //      System.out.println(ast.toString());
     } catch (NumberFormatException e) {
-      System.out.println("Syantax error: Integer overflow");
+      System.out.println("Syntax error: Integer overflow");
       exit(100);
     }
 
