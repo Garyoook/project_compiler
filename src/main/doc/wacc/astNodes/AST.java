@@ -5,6 +5,8 @@ import doc.wacc.utils.Type;
 
 import java.util.HashMap;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 
@@ -34,6 +36,8 @@ public abstract class AST {
     if (exp instanceof IdentNode) {
       if (symbolTable.getVariable(((IdentNode) exp).getIdent()) == null) {
         System.out.println("Semantic error: variable not defined: " + ((IdentNode) exp).getIdent() +
+                " at line:" + currentLine + ":" +
+                currentCharPos +
                 "\nExit code 200 returned");
         exit(200);
       }

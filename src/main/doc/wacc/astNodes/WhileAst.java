@@ -5,6 +5,8 @@ import doc.wacc.utils.Type;
 
 import java.util.HashMap;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class WhileAst extends AST {
@@ -19,6 +21,7 @@ public class WhileAst extends AST {
 
     if (!is_bool(expr)) {
       System.out.println("Semantic error: wrong type in while condition" +
+              " at line:" + currentLine + ":" + currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }

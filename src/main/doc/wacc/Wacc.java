@@ -69,7 +69,7 @@ public class Wacc {
 
       CompilerVisitor visitor = new CompilerVisitor();
 
-      System.out.println("Compiling...");
+      System.out.println("Compiling from source: " + args[0] + ":");
       AST ast = visitor.visitProg(basicParser.prog());
 
 //      System.out.println(ast.toString());

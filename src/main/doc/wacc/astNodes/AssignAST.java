@@ -4,11 +4,14 @@ import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.Type;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class AssignAST extends AST {
   private final BasicParser.Assign_lhsContext lhs;
   private final BasicParser.Assign_rhsContext rhs;
+
   public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
     this.lhs = lhs;
     this.rhs = rhs;
@@ -47,6 +50,8 @@ public class AssignAST extends AST {
 
     if (type == null) {
       System.out.println("Semantic error: " + lhs.getText() + " is not defined" +
+              " at line:" + currentLine + ":" +
+              currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }
@@ -58,6 +63,8 @@ public class AssignAST extends AST {
               (type.equals(Type.charType()) && !is_Char(ast)) ||
               (type.equals(Type.stringType()) && !is_String(ast)) ) {
         System.out.println("Semantic error: assignment type not compatible" +
+                " at line:" + currentLine + ":" + currentCharPos +
+                "expected: " +
                 "\nExit code 200 returned");
         exit(200);
       }

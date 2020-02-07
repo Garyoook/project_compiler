@@ -2,6 +2,8 @@ package doc.wacc.astNodes;
 
 import antlr.BasicParser;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class Lowest_BinaryOpNode extends AST {
@@ -15,7 +17,8 @@ public class Lowest_BinaryOpNode extends AST {
     this.expr2 = expr2;
 
     if (!(is_bool(expr1) && is_bool(expr2))) {
-      System.out.println("Semantic error: wrong type, should be Bool in" + getClass() +
+      System.out.println("Semantic error: wrong type, should be Bool in" + getClass()+
+              " at line:" + currentLine + ":" + currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }

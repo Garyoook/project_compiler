@@ -1,6 +1,8 @@
 package doc.wacc.astNodes;
 
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class PrintlnAst extends AST {
@@ -10,12 +12,14 @@ public class PrintlnAst extends AST {
     if (expr instanceof IdentNode) {
       if (symbolTable.getVariable(((IdentNode) expr).getIdent()) == null) {
         System.out.println(("Semantic error: " + ((IdentNode) expr).getIdent()) + " not defined" +
+                " at line:" + currentLine + ":" + currentCharPos +
                 "\nExit code 200 returned");
         exit(200);
       }
     }
     if (expr instanceof ArrayAST) {
       System.out.println(("Semantic error: " + ((IdentNode) expr).getIdent()) + " array can't be printed" +
+              " at line:" + currentLine + ":" + currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }

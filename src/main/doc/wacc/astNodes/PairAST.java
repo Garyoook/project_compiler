@@ -12,14 +12,6 @@ public class PairAST extends AST {
       this.snd = snd;
     }
 
-    public void addFst(BasicParser.Pair_elemContext fst) {
-      //////////////////////////////
-    }
-
-  public void addSnd(BasicParser.Pair_elemContext snd) {
-      ////////////////////////////
-  }
-
     @Override
     public String toString() {
         return ident + "(" + fst.getText() + ", " + snd.getText() + ")";

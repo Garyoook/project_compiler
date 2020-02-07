@@ -3,6 +3,8 @@ package doc.wacc.astNodes;
 import antlr.BasicParser;
 import doc.wacc.utils.Type;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static doc.wacc.utils.Type.*;
 import static java.lang.System.exit;
 
@@ -22,17 +24,23 @@ public class ReadAst extends AST {
     }
     if (type.equals(boolType())) {
       System.out.println("Semantic Error: Can't read in Type Bool" +
+              " at line:" + currentLine + ":" + currentCharPos +
+              ", expected: " + type +
               "\nExit code 200 returned");
       exit(200);
     }
     if (type instanceof PairType) {
       if (lhs.pair_elem() == null) {
         System.out.println("Semantic Error: Can't read into a null" +
+                " at line:" + currentLine + ":" + currentCharPos +
+                ", expected: " + type +
                 "\nExit code 200 returned");
         exit(200);
       }
       if (lhs.pair_elem().fst() == null && lhs.pair_elem().snd() == null){
         System.out.println("Semantic Error: Can't read in a Pair " +
+                " at line:" + currentLine + ":" + currentCharPos +
+                ", expected: " + type +
                 "\nExit code 200 returned");
         exit(200);
       }

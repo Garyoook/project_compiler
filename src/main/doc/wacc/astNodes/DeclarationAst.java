@@ -4,6 +4,8 @@ import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.Type;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class DeclarationAst extends AST {
@@ -24,6 +26,8 @@ public class DeclarationAst extends AST {
          type.equals(Type.charType()) ||
          type.equals(Type.stringType())) && rhs.array_liter() != null) {
       System.out.println("Semantic error: assignment type not compatible" +
+              " at line:" + currentLine + ":" + currentCharPos +
+              ", expected: " + type +
               "\nExit code 200 returned");
       exit(200);
     }
@@ -35,12 +39,16 @@ public class DeclarationAst extends AST {
         if (type instanceof Type.PairType) {
           if (!(type1 instanceof Type.PairType)) {
             System.out.println("Semantic error: assignment type not compatible " + type +
+                    " at line:" + currentLine + ":" + currentCharPos +
+                    ", expected: " + type +
                     "\nExit code 200 returned");
             exit(200);
           }
         } else {
           if (!type1.equals(type)) {
             System.out.println("Semantic error: assignment type not compatible " + type +
+                    " at line:" + currentLine + ":" + currentCharPos +
+                    ", expected: " + type +
                     "\nExit code 200 returned");
             exit(200);
           }
@@ -53,6 +61,8 @@ public class DeclarationAst extends AST {
             (type.equals(Type.charType())  && !is_Char(ast)) ||
             (type.equals(Type.stringType()) && !is_String(ast))) {
           System.out.println("Semantic error: assignment type not compatible " + rhs.expr(0).getText() +
+                  " at line:" + currentLine + ":" + currentCharPos +
+                  ", expected: " + type +
                   "\nExit code 200 returned");
           exit(200);
         }
@@ -65,18 +75,23 @@ public class DeclarationAst extends AST {
       Type type1 = CompilerVisitor.functionTable.get(s1).get(0);
       if (type1 == null) {
         System.out.println("Semantic error: " + s1 + " is not defined" +
+                " at line:" + currentLine + ":" + currentCharPos +
                 "\nExit code 200 returned");
         exit(200);
       }
       if (type1 instanceof Type.PairType || type instanceof Type.PairType) {
         if (!(type1 instanceof Type.PairType && type instanceof Type.PairType)) {
           System.out.println("Semantic error: assignment type not compatible" +
+                  " at line:" + currentLine + ":" + currentCharPos +
+                  ", expected: " + type +
                   "\nExit code 200 returned");
           exit(200);
         }
       } else {
         if (!type1.equals(type)) {
           System.out.println("Semantic error: assignment type not compatible" +
+                  " at line:" + currentLine + ":" + currentCharPos +
+                  ", expected: " + type +
                   "\nExit code 200 returned");
           exit(200);
         }
@@ -86,6 +101,7 @@ public class DeclarationAst extends AST {
     if (rhs.pair_elem() != null) {
       if (rhs.pair_elem().expr().getText().equals("null")){
         System.out.println("Semantic Error: Cannot call fst on a null" +
+                " at line:" + currentLine + ":" + currentCharPos +
                 "\nExit code 200 returned");
         exit(200);
       }

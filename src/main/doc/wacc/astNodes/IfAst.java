@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class IfAst extends AST {
@@ -15,6 +17,7 @@ public class IfAst extends AST {
 
     if (!is_bool(expr)) {
       System.out.println("Semantic error: wrong type in If condition, should be bool" +
+              " at line:" + currentLine + ":" + currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }

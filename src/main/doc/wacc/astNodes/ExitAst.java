@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import static doc.wacc.utils.CompilerVisitor.currentCharPos;
+import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class ExitAst extends AST {
@@ -9,6 +11,7 @@ public class ExitAst extends AST {
     this.expr = expr;
     if (!is_int(expr)) {
       System.out.println("Semantic error: Type incompatible: exit code should be an int" +
+              " at line:" + currentLine + ":" + currentCharPos +
               "\nExit code 200 returned");
       exit(200);
     }

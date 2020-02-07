@@ -17,9 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
-
-  public boolean inFunction = false;
-  public String currentFuncName = null;
+  public static int currentLine = 0;     // global variable for reporting error message
+  public static int currentCharPos = 0;  // global variable for reporting error message
+  public boolean inFunction = false; // for semantic check
+  public String currentFuncName = null; // for semantic check
 
   /**
    * {@inheritDoc}
@@ -96,7 +97,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    */
   @Override public AST visitBinary_oper(Binary_operContext ctx) {
     return null;
-
   }
   /**
    * {@inheritDoc}
@@ -126,6 +126,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitExpr(ExprContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
@@ -196,7 +198,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitString_liter(String_literContext ctx) { return new StringNode(ctx.getText());
+  @Override public AST visitString_liter(String_literContext ctx) {
+    return new StringNode(ctx.getText());
   }
   /**
    * {@inheritDoc}
@@ -211,6 +214,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public Type visitPair_type(Pair_typeContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     return new PairType(visitPair_elem_type(ctx.pair_elem_type(0)), visitPair_elem_type(ctx.pair_elem_type(1)));
   }
   /**
@@ -220,6 +225,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public Type visitPair_elem_type(Pair_elem_typeContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.array_type() != null) {
       return visitArray_type(ctx.array_type());
     } else if (ctx.base_type() != null) {
@@ -235,6 +242,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public BaseType visitBase_type(Base_typeContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     BaseTypeKind kind = BaseTypeKind.valueOf(ctx.getText().toUpperCase());
     return new BaseType(kind);
   }
@@ -245,6 +254,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public Type visitType(TypeContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.pair_type() != null) {
       return visitPair_type(ctx.pair_type());
     } else if (ctx.array_type() != null) {
@@ -260,6 +271,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public ArrayType visitArray_type(Array_typeContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.array_type() != null) {
       return new ArrayType(visitArray_type(ctx.array_type()));
     } else if (ctx.pair_type() != null) {
@@ -275,7 +288,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPair_elem(Pair_elemContext ctx) {
-    AST expr = visitExpr(ctx.expr());
     return visitChildren(ctx);
   }
   /**
@@ -284,7 +296,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitArg_list(Arg_listContext ctx) {
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -292,16 +306,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
-//    if (ctx.pair_elem() != null) {
-//      if ((ctx.pair_elem().expr().pair_liter() == null)) {
-//        System.out.println("Semantic error: assigning from a null context");
-//        exit(200);
-//      }
-//      if (ctx.pair_elem().expr().pair_liter().getText().equals("null")) {
-//        System.out.println("Semantic error: assigning from a null pair literal");
-//        exit(200);
-//      }
-//    }
     return visitChildren(ctx);
   }
   /**
@@ -310,7 +314,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitAssign_lhs(Assign_lhsContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitAssign_lhs(Assign_lhsContext ctx) {
+    return visitChildren(ctx); }
   /**
    * {@inheritDoc}
    *
@@ -318,6 +323,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitRead(ReadContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     return new ReadAst(ctx.assign_lhs());
   }
   /**
@@ -327,6 +334,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitAssignment(AssignmentContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
     }
@@ -342,7 +351,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   boolean hasReturned = false;
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
-
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     symbolTable.inIfThenElse = true;
 
@@ -391,6 +401,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitDeclaration(DeclarationContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (ctx.assign_rhs().call() != null) {
       List<Type> parameter = functionTable.get(ctx.assign_rhs().IDENT().getText());
       if (parameter.size() > 1) {
@@ -398,6 +410,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         for (i = 1; i < parameter.size(); i++) {
           if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
             System.out.println("semantic Error: args number not matched" +
+                    " at line:" + currentLine + ":" +
+                    currentCharPos + " -- " +
+                    "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
                     "\nExit code 200 returned");
             exit(200);
           }
@@ -411,6 +426,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
               is_int(ast) && !type.equals(intType())) ||
               is_String(ast) && !type.equals(stringType())) {
             System.out.println("Semantic Error: Wrong type in function parameter" +
+                    " at line:" + currentLine + ":" +
+                    currentCharPos + " -- " +
+                    "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
                     "\nExit code 200 returned");
             exit(200);
           }} else {
@@ -427,7 +445,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
           }
         }
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
-          System.out.println("semantic Error: args number not matched" +
+          System.out.println("semantic Error: args number not matched. " +
+                  " at line:" + currentLine + ":" +
+                  currentCharPos + " -- " +
+                  "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
                   "\nExit code 200 returned");
           exit(200);
         }
@@ -443,6 +464,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitWhileloop(WhileloopContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
 
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
@@ -471,6 +494,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitExit(ExitContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (symbolTable.inIfThenElse) {
       if (symbolTable.thenHasReturn) {hasReturned = true;} else {symbolTable.thenHasReturn = true;}
     } else {
@@ -485,6 +510,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPrint(PrintContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     return new PrintAst(visitExpr(ctx.expr()));
   }
   /**
@@ -494,6 +521,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitPrintln(PrintlnContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     return new PrintlnAst(visitExpr(ctx.expr()));
   }
   /**
@@ -502,8 +531,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitBlock(BlockContext ctx)
-  {
+  @Override public AST visitBlock(BlockContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>());
     AST ast = new BlockAst(visitStat(ctx.stat()));
     symbolTable = symbolTable.getEncSymbolTable();
@@ -517,15 +545,23 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitFree(FreeContext ctx)  {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     AST expr = visitExpr(ctx.expr());
     if (expr instanceof IdentNode) {
       Type type = symbolTable.getVariable(((IdentNode) expr).getIdent());
       if (!(type instanceof  PairType) && !(type instanceof ArrayType)) {
-        System.out.println("Can only free pair or array");
+        System.out.println("Semantic Error: Can only free pair or array" +
+                " at line:" + currentLine + ":" +
+                currentCharPos +
+                "\nExit code 200 returned");
         exit(200);
       }
     } else if (!(expr instanceof ArrayAST) && !is_Pair(expr)) {
-        System.out.println("Can only free pair or array");
+        System.out.println("Semantic Error: Can only free pair or array" +
+                " at line:" + currentLine + ":" +
+                currentCharPos +
+                "\nExit code 200 returned");
         exit(200);
     }
     return new FreeAst(visitExpr((ctx.expr())));
@@ -543,8 +579,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   boolean thenHasReturn = false;
 
   @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     if (!inFunction) {
-      System.out.println("Return can only be used in Function");
+      System.out.println("Syntax Error: Return can only be used in Function" +
+              " at line:" + currentLine + ":" +
+              currentCharPos +
+              "\nExit code 100 returned");
       exit(200);
     } else {
       if (symbolTable.inIfThenElse) {
@@ -555,7 +596,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
 
     if (currentFuncName == null) {
-      System.out.println("Return can only be used in Function");
+      System.out.println("Syntax Error: Return can only be used in Function"+
+              " at line:" + currentLine + ":" +
+              currentCharPos +
+              "\nExit code 100 returned");
       exit(200);
     }
     Type type = functionTable.get(currentFuncName).get(0);
@@ -564,7 +608,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         (type.equals(intType())   && !is_int(ast)) ||
         (type.equals(charType())  && !is_Char(ast)) ||
         (type.equals(stringType()) && !is_String(ast))) {
-      System.out.println("return type not compatible");
+      System.out.println("Semantic Error: return type not compatible"+
+              " at line:" + currentLine + ":" +
+              currentCharPos +
+              "\nExit code 200 returned");
       exit(200);
     }
     return new ReturnAst(visitExpr(ctx.expr()));
@@ -575,7 +622,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * <p>The default implementation returns the result of calling
    * {@link #visitChildren} on {@code ctx}.</p>
    */
-  @Override public AST visitParam(ParamContext ctx) { return visitChildren(ctx); }
+  @Override public AST visitParam(ParamContext ctx) {
+    return visitChildren(ctx);
+  }
   /**
    * {@inheritDoc}
    *
@@ -583,7 +632,6 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitParam_list(Param_listContext ctx) {
-
     return visitChildren(ctx);
   }
   /**
@@ -595,6 +643,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   public static HashMap<String, List<Type>> functionTable = new HashMap<>();
 
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     inFunction = true;
 
     currentFuncName = ctx.IDENT().getText();
@@ -612,6 +662,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentFuncName = null;
     if (!hasReturned) {
       System.out.println("Syntax error: function no return" +
+              " at line:" + currentLine + ":" +
+              currentCharPos +
               "\nExit code 100 returned");
       exit(100);
     }
@@ -629,6 +681,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
    * {@link #visitChildren} on {@code ctx}.</p>
    */
   @Override public AST visitProg(ProgContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
     for (BasicParser.FuncContext funcContext:ctx.func()) {
       List<Type> types = new ArrayList<>();
@@ -640,6 +694,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (functionTable.get(funcContext.IDENT().getText()) != null) {
         System.out.println("Semantic error: function redefined" +
+                " at line:" + currentLine + ":" +
+                currentCharPos + " -- " +
+                "in function " + ctx.getText() + ";" +
                 "\nExit code 200 returned");
         exit(200);
       }
@@ -654,8 +711,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
 
   public AST visitStat(StatContext statContext) {
+    currentLine = statContext.getStart().getLine();
+    currentCharPos = statContext.getStart().getCharPositionInLine();
     if (symbolTable.inFunction && hasReturned) {
       System.out.println("Syntax Error: Shouldn't be anything after return" +
+              " at line:" + statContext.getStart().getLine() + ":" +
+              statContext.getStart().getCharPositionInLine() +
               "\nExit code 100 returned");
       exit(100);
     }
