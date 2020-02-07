@@ -10,7 +10,6 @@ import static antlr.BasicParser.*;
 import static jav.wacc.AST.symbolTable;
 import static jav.wacc.Type.*;
 import static java.lang.System.exit;
-import static java.lang.System.setOut;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
