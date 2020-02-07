@@ -22,7 +22,7 @@ all: rules
 
 # runs the antlr build script then attempts to compile all .java files within src
 rules:
-	mvn compile
+	mvn package
 
 clean:
 	mvn clean
