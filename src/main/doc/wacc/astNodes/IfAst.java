@@ -17,7 +17,6 @@ public class IfAst extends AST {
       System.out.println("Semantic error: wrong type in If condition, should be bool");
       exit(200);
     }
-
   }
 
   @Override

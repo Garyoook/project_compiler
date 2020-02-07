@@ -1,10 +1,14 @@
 package doc.wacc.astNodes;
 
 public class ExprWithParen extends AST {
-  AST expr;
+  private AST expr;
 
   public ExprWithParen(AST expr) {
     this.expr = expr;
+  }
+
+  public AST getExpr() {
+    return expr;
   }
 
   @Override

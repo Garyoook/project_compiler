@@ -17,28 +17,8 @@ public class SymbolTable {
         this.symbolTable = symbolTable;
     }
 
-    public HashMap<String, Type> getCurrentSymbolTable() {
-        return symbolTable;
-    }
-
-    public SymbolTable getEncSymbolTable() {
+    public SymbolTable previousScope() {
         return encSymbolTable;
-    }
-
-    public static class TypeValue extends Type {
-      boolean isFunc;
-      Type type;
-      TypeValue(boolean isFunc, Type type) {
-        this.isFunc = isFunc;
-        this.type = type;
-      }
-      public Type getType() {
-        return type;
-      }
-    }
-
-    public Type getVariable(String name) {
-      return helperFunction(name, this);
     }
 
     public void putVariable(String name, Type type) {
@@ -50,7 +30,11 @@ public class SymbolTable {
       }
     }
 
-    private Type helperFunction(String name, SymbolTable symbolTable) {
+    public Type getVariable(String name) {
+      return sbTableHelper(name, this);
+    }
+
+    private Type sbTableHelper(String name, SymbolTable symbolTable) {
       if (symbolTable == null) {
         System.out.println("Semantic error: variable not exist " + name);
         exit(200);
@@ -62,8 +46,14 @@ public class SymbolTable {
       if (symbolTable.symbolTable.get(name) != null) {
         return symbolTable.symbolTable.get(name);
       } else {
-        return helperFunction(name, symbolTable.encSymbolTable);
+        return sbTableHelper(name, symbolTable.encSymbolTable);
       }
     }
 
+    public void inheritFlags(SymbolTable s) {
+      this.thenHasReturn = s.thenHasReturn;
+      this.inFunction = s.inFunction;
+      this.hasReturned = s.hasReturned;
+      this.inIfThenElse = s.inIfThenElse;
+    }
 }

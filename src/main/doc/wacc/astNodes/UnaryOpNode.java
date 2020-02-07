@@ -3,8 +3,9 @@ package doc.wacc.astNodes;
 import antlr.BasicParser;
 
 public class UnaryOpNode extends AST{
-  BasicParser.Unary_operContext operContext;
-  AST expr;
+  private BasicParser.Unary_operContext operContext;
+  private AST expr;
+
   public UnaryOpNode(BasicParser.Unary_operContext operContext, AST expr) {
     this.operContext = operContext;
     this.expr = expr;

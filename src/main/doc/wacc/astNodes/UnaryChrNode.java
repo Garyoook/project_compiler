@@ -3,8 +3,9 @@ package doc.wacc.astNodes;
 import antlr.BasicParser;
 
 public class UnaryChrNode extends AST{
-  BasicParser.Unary_chrContext operContext;
-  AST expr;
+  private BasicParser.Unary_chrContext operContext;
+  private AST expr;
+
   public UnaryChrNode(BasicParser.Unary_chrContext operContext, AST expr) {
     this.operContext = operContext;
     this.expr = expr;

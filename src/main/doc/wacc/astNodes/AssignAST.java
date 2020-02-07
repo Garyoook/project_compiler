@@ -9,6 +9,7 @@ import static java.lang.System.exit;
 public class AssignAST extends AST {
   private final BasicParser.Assign_lhsContext lhs;
   private final BasicParser.Assign_rhsContext rhs;
+
   public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
     this.lhs = lhs;
     this.rhs = rhs;

@@ -7,7 +7,6 @@ public abstract class Type extends AST {
     public static BaseType intType() {
         return new BaseType(BaseTypeKind.INT);
     }
-
     public static BaseType charType() {
         return new BaseType(BaseTypeKind.CHAR);
     }

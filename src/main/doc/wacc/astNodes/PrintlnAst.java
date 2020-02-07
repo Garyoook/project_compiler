@@ -18,7 +18,6 @@ public class PrintlnAst extends AST {
       exit(200);
     }
     this.expr = expr;
-
   }
 
   @Override

@@ -9,6 +9,7 @@ public class IdentNode extends AST {
   public String getIdent() {
     return this.ident;
   }
+
   @Override
   public String toString() {
     return ident;

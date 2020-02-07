@@ -18,33 +18,20 @@ import java.util.List;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
-  public boolean inFunction = false;
-  public String currentFuncName = null;
+  public static HashMap<String, List<Type>> functionTable = new HashMap<>();
+  private boolean inFunction = false;
+  private String currentFuncName = null;
+  private boolean hasReturned = false;
+  private boolean thenHasReturn = false;
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
   @Override public AST visitPair_liter(Pair_literContext ctx) {
     return new PairAST(ctx.getText(),null, null);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitArray_liter(Array_literContext ctx) {
     return new ArrayAST(ctx.expr());
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitBool_liter(Bool_literContext ctx) {
     if (ctx.getText().equals("false")) {
       return new BoolNode(false);
@@ -55,19 +42,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return null;
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitInt_sign(Int_signContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitInt_liter(Int_literContext ctx) {
     if (ctx.int_sign() == null) {
       return new IntNode(Integer.parseInt(ctx.getText()));
@@ -78,53 +55,21 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  @Override public AST visitArray_elem(Array_elemContext ctx) {
 
+  @Override public AST visitArray_elem(Array_elemContext ctx) {
     return visitChildren(ctx);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitBinary_oper(Binary_operContext ctx) {
     return null;
-
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitUnary_oper(Unary_operContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitUnary_not(Unary_notContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitUnary_chr(Unary_chrContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitExpr(ExprContext ctx) {
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
@@ -190,35 +135,15 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitChar_liter(Char_literContext ctx) {
     return new CharNode(ctx.getText().charAt(0));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  @Override public AST visitString_liter(String_literContext ctx) { return new StringNode(ctx.getText());
+
+  @Override public AST visitString_liter(String_literContext ctx) {
+    return new StringNode(ctx.getText());
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public Type visitPair_type(Pair_typeContext ctx) {
     return new PairType(visitPair_elem_type(ctx.pair_elem_type(0)), visitPair_elem_type(ctx.pair_elem_type(1)));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public Type visitPair_elem_type(Pair_elem_typeContext ctx) {
     if (ctx.array_type() != null) {
       return visitArray_type(ctx.array_type());
@@ -228,22 +153,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new PairType(null, null);
     }
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public BaseType visitBase_type(Base_typeContext ctx) {
     BaseTypeKind kind = BaseTypeKind.valueOf(ctx.getText().toUpperCase());
     return new BaseType(kind);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public Type visitType(TypeContext ctx) {
     if (ctx.pair_type() != null) {
       return visitPair_type(ctx.pair_type());
@@ -253,12 +168,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return visitBase_type(ctx.base_type());
     }
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+  
   @Override public ArrayType visitArray_type(Array_typeContext ctx) {
     if (ctx.array_type() != null) {
       return new ArrayType(visitArray_type(ctx.array_type()));
@@ -268,82 +178,32 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new ArrayType(visitBase_type(ctx.base_type()));
     }
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+  
   @Override public AST visitPair_elem(Pair_elemContext ctx) {
-    AST expr = visitExpr(ctx.expr());
     return visitChildren(ctx);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+  
   @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
-//    if (ctx.pair_elem() != null) {
-//      if ((ctx.pair_elem().expr().pair_liter() == null)) {
-//        System.out.println("Semantic error: assigning from a null context");
-//        exit(200);
-//      }
-//      if (ctx.pair_elem().expr().pair_liter().getText().equals("null")) {
-//        System.out.println("Semantic error: assigning from a null pair literal");
-//        exit(200);
-//      }
-//    }
     return visitChildren(ctx);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitAssign_lhs(Assign_lhsContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitRead(ReadContext ctx) {
     return new ReadAst(ctx.assign_lhs());
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitAssignment(AssignmentContext ctx) {
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
     }
     return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  boolean inIfThenElse = false;
-  boolean hasReturned = false;
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
-
-    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     symbolTable.inIfThenElse = true;
 
     AST thenAst = visitStat(ctx.stat(0));
@@ -353,13 +213,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
 
     SymbolTable s = symbolTable;
-    symbolTable = symbolTable.getEncSymbolTable();
-
-    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
-    symbolTable.thenHasReturn = s.thenHasReturn;
-    symbolTable.inFunction = s.inFunction;
-    symbolTable.hasReturned = s.hasReturned;
-    symbolTable.inIfThenElse = s.inIfThenElse;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    symbolTable.inheritFlags(s);
 
     AST elseAST = visitStat(ctx.stat(1));
     if (symbolTable.hasReturned) {
@@ -367,52 +223,43 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
 
     symbolTable.thenHasReturn = false;
-    symbolTable = symbolTable.getEncSymbolTable();
+    symbolTable = symbolTable.previousScope();
     symbolTable.thenHasReturn = false;
 
-    AST ast =  new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST );
-
-
-    return ast;
+    return new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitAskip(AskipContext ctx) {
     return new ASkipAst();
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+  
   @Override public AST visitDeclaration(DeclarationContext ctx) {
     if (ctx.assign_rhs().call() != null) {
       List<Type> parameter = functionTable.get(ctx.assign_rhs().IDENT().getText());
+
       if (parameter.size() > 1) {
         int i = 0;
         for (i = 1; i < parameter.size(); i++) {
+          //to check whether the number of parameter provided is smaller than the number of parameter needed
           if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
             System.out.println("semantic Error: args number not matched");
             exit(200);
           }
-          AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
 
+          AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
           Type type = parameter.get(i);
 
           if (ctx.assign_rhs().arg_list().expr(i-1).array_elem() == null) {
-          if ((is_bool(ast) && !type.equals(boolType()) ||
-              is_Char(ast) && !type.equals(charType()) ||
-              is_int(ast) && !type.equals(intType())) ||
-              is_String(ast) && !type.equals(stringType())) {
-            System.out.println("Semantic Error: Wrong type in function parameter");
-            exit(200);
-          }} else {
+            if ((is_bool(ast) && !type.equals(boolType()) ||
+                is_Char(ast) && !type.equals(charType()) ||
+                is_int(ast) && !type.equals(intType())) ||
+                is_String(ast) && !type.equals(stringType())) {
+              System.out.println("Semantic Error: Wrong type in function parameter");
+              exit(200);
+            }
+          } else {
             Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i-1).array_elem().IDENT().getText());
+            
             if ((type1.equals(boolType()) && !type.equals(boolType()) ||
                 type1.equals(charType()) && !type.equals(charType()) ||
                 type1.equals(intType()) && !type.equals(intType())) ||
@@ -420,37 +267,25 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
               System.out.println("Semantic Error: Wrong type in function parameter");
               exit(200);
             }
-
           }
         }
+        //to check whether the number of parameter provided is greater than the number of parameter needed
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
           System.out.println("semantic Error: args number not matched");
           exit(200);
         }
       }
     }
-
     return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
-
-    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
-    symbolTable = symbolTable.getEncSymbolTable();
+    symbolTable = symbolTable.previousScope();
     return ast;
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+ 
   @Override public AST visitSeq_compose(Seq_composeContext ctx) {
     ArrayList<AST> seqs = new ArrayList<>();
     StatContext statContext1 = ctx.stat(ctx.stat().size());
@@ -460,12 +295,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return new SeqStateAst(seqs);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitExit(ExitContext ctx) {
     if (symbolTable.inIfThenElse) {
       if (symbolTable.thenHasReturn) {hasReturned = true;} else {symbolTable.thenHasReturn = true;}
@@ -474,44 +304,22 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return new ExitAst(visitExpr(ctx.expr()));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitPrint(PrintContext ctx) {
     return new PrintAst(visitExpr(ctx.expr()));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitPrintln(PrintlnContext ctx) {
     return new PrintlnAst(visitExpr(ctx.expr()));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  @Override public AST visitBlock(BlockContext ctx)
-  {
-    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
-    AST ast = new BlockAst(visitStat(ctx.stat()));
-    symbolTable = symbolTable.getEncSymbolTable();
 
+  @Override public AST visitBlock(BlockContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    AST ast = new BlockAst(visitStat(ctx.stat()));
+    symbolTable = symbolTable.previousScope();
     return ast;
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitFree(FreeContext ctx)  {
     AST expr = visitExpr(ctx.expr());
     if (expr instanceof IdentNode) {
@@ -526,17 +334,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return new FreeAst(visitExpr((ctx.expr())));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitCall(BasicParser.CallContext ctx) {
     return visitChildren(ctx);
   }
-
-  boolean thenHasReturn = false;
 
   @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
     if (!inFunction) {
@@ -554,6 +355,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Return can only be used in Function");
       exit(200);
     }
+
     Type type = functionTable.get(currentFuncName).get(0);
     AST ast = visitExpr(ctx.expr());
     if ((type.equals(boolType())  && !is_bool(ast)) ||
@@ -565,64 +367,40 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return new ReturnAst(visitExpr(ctx.expr()));
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  @Override public AST visitParam(ParamContext ctx) { return visitChildren(ctx); }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  @Override public AST visitParam_list(Param_listContext ctx) {
 
+  @Override public AST visitParam(ParamContext ctx) { return visitChildren(ctx); }
+
+  @Override public AST visitParam_list(Param_listContext ctx) {
     return visitChildren(ctx);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
-  public static HashMap<String, List<Type>> functionTable = new HashMap<>();
 
   @Override public AST visitFunc(BasicParser.FuncContext ctx) {
     inFunction = true;
-
     currentFuncName = ctx.IDENT().getText();
-    symbolTable = new SymbolTable(symbolTable, new HashMap<>());
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     symbolTable.inFunction = true;
     BasicParser.Param_listContext params = ctx.param_list();
     List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
+
     for (BasicParser.ParamContext p: pa) {
       symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
     }
-
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
     inFunction = false;
     symbolTable.inFunction = false;
     currentFuncName = null;
+
     if (!hasReturned) {
       System.out.println("Syntax error: function no return");
       exit(100);
     }
-
-    symbolTable = symbolTable.getEncSymbolTable();
+    symbolTable = symbolTable.previousScope();
     thenHasReturn = false;
-
     hasReturned = false;
+
     return ast;
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling
-   * {@link #visitChildren} on {@code ctx}.</p>
-   */
+
   @Override public AST visitProg(ProgContext ctx) {
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
     for (BasicParser.FuncContext funcContext:ctx.func()) {
@@ -652,6 +430,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       System.out.println("Syntax Error: Shouldn't be anything after return");
       exit(100);
     }
+
     if (statContext != null) {
       if (statContext instanceof ReadContext) {
         return visitRead((ReadContext) statContext);
@@ -695,8 +474,4 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
     return null;
   }
-
-
-
-
 }
