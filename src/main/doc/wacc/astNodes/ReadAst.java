@@ -10,10 +10,11 @@ import static java.lang.System.exit;
 
 public class ReadAst extends AST {
   private final BasicParser.Assign_lhsContext lhs;
+
   public ReadAst(BasicParser.Assign_lhsContext lhs) {
     this.lhs = lhs;
-
     Type type = null;
+
     if (lhs.pair_elem() != null) {
       type = symbolTable.getVariable(lhs.pair_elem().expr().getText());
     } else {

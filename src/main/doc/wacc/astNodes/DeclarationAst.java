@@ -13,8 +13,6 @@ public class DeclarationAst extends AST {
   private final String name;
   private final BasicParser.Assign_rhsContext rhs;
 
-
-
   public DeclarationAst(Type type, String name, BasicParser.Assign_rhsContext rhs) {
     this.type = type;
     this.name = name;
@@ -71,7 +69,6 @@ public class DeclarationAst extends AST {
 
     if (rhs.expr().size() == 0 && (rhs.call() != null)) {
       String s1 = rhs.IDENT().getText();
-
       Type type1 = CompilerVisitor.functionTable.get(s1).get(0);
       if (type1 == null) {
         System.out.println("Semantic error: " + s1 + " is not defined" +
@@ -98,8 +95,7 @@ public class DeclarationAst extends AST {
       }
     }
 
-    if (rhs.pair_elem() != null) {
-      if (rhs.pair_elem().expr().getText().equals("null")){
+    if ((rhs.pair_elem() != null) && (rhs.pair_elem().expr().getText().equals("null"))) {
         System.out.println("Semantic Error: Cannot call fst on a null" +
                 " at line:" + currentLine + ":" + currentCharPos +
                 "\nExit code 200 returned");
@@ -107,7 +103,6 @@ public class DeclarationAst extends AST {
       }
     }
 
-  }
   @Override
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";

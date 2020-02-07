@@ -9,7 +9,6 @@ public class ArrayAST extends AST {
     private List<BasicParser.ExprContext> exprs;
 
     public ArrayAST(List<BasicParser.ExprContext> exprs) {
-        assert this.exprs != null;
         this.exprs.addAll(exprs);
     }
 

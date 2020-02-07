@@ -7,9 +7,9 @@ import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class Lowest_BinaryOpNode extends AST {
-  BasicParser.Lowest_binbool_opContext oper;
-  AST expr1;
-  AST expr2;
+  private BasicParser.Lowest_binbool_opContext oper;
+  private AST expr1;
+  private AST expr2;
 
   public Lowest_BinaryOpNode(BasicParser.Lowest_binbool_opContext operContext, AST expr1, AST expr2) {
     this.oper = operContext;

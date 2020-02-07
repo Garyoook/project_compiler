@@ -50,7 +50,7 @@ public abstract class AST {
           exp instanceof Binary_BoolOpNode ||
           exp instanceof UnaryNotNode ||
           exp instanceof Low_BinaryOpNode ||
-          (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).expr)))) {
+          (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).getExpr())))) {
 
       return false;
     }
@@ -84,9 +84,6 @@ public abstract class AST {
     if (is_bool(exp) || is_Char(exp) || is_int(exp) ) {
       return false;
     }
-
-
-
     return true;
   }
 

@@ -10,8 +10,6 @@ public class FuncAST extends AST {
   private final List<BasicParser.ParamContext> parameters;
   private final AST functionBody;
 
-
-
   public FuncAST(BasicParser.TypeContext returnType, String funcName, List<BasicParser.ParamContext> parameters, AST functionBody) {
     this.returnType = returnType;
     this.funcName = funcName;

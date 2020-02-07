@@ -31,7 +31,6 @@ public class Wacc {
       e.printStackTrace();
     }
     ANTLRInputStream input = new ANTLRInputStream(sb.toString());
-//
     BasicLexer lexer = new BasicLexer(input);
 
     ANTLRErrorListener errorListener = new ANTLRErrorListener() {
@@ -59,14 +58,12 @@ public class Wacc {
     };
 
     lexer.removeErrorListeners();
-
     lexer.addErrorListener(errorListener);
-
     CommonTokenStream stream = new CommonTokenStream(lexer);
+
     try {
       BasicParser basicParser = new BasicParser(stream);
       basicParser.addErrorListener(errorListener);
-
       CompilerVisitor visitor = new CompilerVisitor();
 
       System.out.println("Compiling from source: " + args[0] + ":");

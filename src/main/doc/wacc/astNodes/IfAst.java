@@ -21,7 +21,6 @@ public class IfAst extends AST {
               "\nExit code 200 returned");
       exit(200);
     }
-
   }
 
   @Override

@@ -17,28 +17,8 @@ public class SymbolTable {
         this.symbolTable = symbolTable;
     }
 
-    public HashMap<String, Type> getCurrentSymbolTable() {
-        return symbolTable;
-    }
-
-    public SymbolTable getEncSymbolTable() {
+    public SymbolTable previousScope() {
         return encSymbolTable;
-    }
-
-    public static class TypeValue extends Type {
-      boolean isFunc;
-      Type type;
-      TypeValue(boolean isFunc, Type type) {
-        this.isFunc = isFunc;
-        this.type = type;
-      }
-      public Type getType() {
-        return type;
-      }
-    }
-
-    public Type getVariable(String name) {
-      return sbTableHelper(name, this);
     }
 
     public void putVariable(String name, Type type) {
@@ -49,6 +29,10 @@ public class SymbolTable {
       } else {
         symbolTable.put(name, type);
       }
+    }
+
+    public Type getVariable(String name) {
+      return sbTableHelper(name, this);
     }
 
     private Type sbTableHelper(String name, SymbolTable symbolTable) {
@@ -69,4 +53,10 @@ public class SymbolTable {
       }
     }
 
+    public void inheritFlags(SymbolTable s) {
+      this.thenHasReturn = s.thenHasReturn;
+      this.inFunction = s.inFunction;
+      this.hasReturned = s.hasReturned;
+      this.inIfThenElse = s.inIfThenElse;
+    }
 }

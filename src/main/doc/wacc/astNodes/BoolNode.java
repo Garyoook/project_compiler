@@ -1,7 +1,7 @@
 package doc.wacc.astNodes;
 
 public class BoolNode extends AST {
-  boolean value;
+  private boolean value;
 
   public BoolNode(boolean value) {
     this.value = value;
