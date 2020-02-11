@@ -16,4 +16,8 @@ public class SeqStateAst extends AST {
     }
     return sb.toString();
   }
+
+  public ArrayList<AST> getSeqs() {
+    return seqs;
+  }
 }

@@ -250,7 +250,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public AST visitAskip(AskipContext ctx) {
-    return new ASkipAst();
+    return new SkipAst();
   }
 
   @Override public AST visitDeclaration(DeclarationContext ctx) {

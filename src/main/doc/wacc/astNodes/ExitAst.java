@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.utils.CompilerVisitor;
+
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
@@ -16,6 +18,10 @@ public class ExitAst extends AST {
               "\nExit code 200 returned");
       exit(200);
     }
+  }
+
+  public AST getExpr() {
+    return expr;
   }
 
   @Override
