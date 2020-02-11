@@ -1,7 +1,5 @@
 package doc.wacc.astNodes;
 
-import doc.wacc.ASTVisitor;
-
 public class StringNode extends AST {
   private String value;
 
@@ -12,10 +10,5 @@ public class StringNode extends AST {
   @Override
   public String toString() {
     return value;
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

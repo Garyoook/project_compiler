@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.Type;
 
@@ -107,10 +106,5 @@ public class DeclarationAst extends AST {
   @Override
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

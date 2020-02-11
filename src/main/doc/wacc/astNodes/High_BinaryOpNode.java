@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 
 import static java.lang.System.exit;
 
@@ -24,10 +23,5 @@ public class High_BinaryOpNode extends AST{
   @Override
   public String toString() {
     return expr1 + operContext.getText() + expr2;
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

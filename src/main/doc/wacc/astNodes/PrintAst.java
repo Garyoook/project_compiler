@@ -1,7 +1,5 @@
 package doc.wacc.astNodes;
 
-import doc.wacc.ASTVisitor;
-
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
@@ -30,10 +28,5 @@ public class PrintAst extends AST {
   @Override
   public String toString() {
     return "Print: " + expr + "\n";
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

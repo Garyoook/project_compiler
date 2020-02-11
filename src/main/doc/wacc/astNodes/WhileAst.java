@@ -1,6 +1,5 @@
 package doc.wacc.astNodes;
 
-import doc.wacc.ASTVisitor;
 import doc.wacc.utils.SymbolTable;
 import doc.wacc.utils.Type;
 
@@ -33,10 +32,5 @@ public class WhileAst extends AST {
     sb.append("while (").append(expr).append("): ");
     sb.append("{ ").append(stat).append("}\n");
     return sb.toString();
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

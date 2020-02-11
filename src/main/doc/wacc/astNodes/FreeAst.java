@@ -1,7 +1,5 @@
 package doc.wacc.astNodes;
 
-import doc.wacc.ASTVisitor;
-
 public class FreeAst extends AST {
   private AST expr;
 
@@ -12,10 +10,5 @@ public class FreeAst extends AST {
   @Override
   public String toString() {
     return "Free expr: " + expr + "\n";
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 import doc.wacc.utils.Type;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
@@ -52,10 +51,5 @@ public class ReadAst extends AST {
   @Override
   public String toString() {
     return "reading from: " + lhs.IDENT().getText() + "\n";
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

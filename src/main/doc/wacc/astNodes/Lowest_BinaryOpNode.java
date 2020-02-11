@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
@@ -26,8 +25,4 @@ public class Lowest_BinaryOpNode extends AST {
 
   }
 
-  @Override
-  public void Accept(ASTVisitor v) {
-
-  }
 }

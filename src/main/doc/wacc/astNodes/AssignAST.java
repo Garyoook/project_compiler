@@ -1,19 +1,18 @@
 package doc.wacc.astNodes;
 
-import doc.wacc.ASTVisitor;
+import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.Type;
 
-import static antlr.BasicParser.*;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
 
 public class AssignAST extends AST {
-  private final Assign_lhsContext lhs;
-  private final Assign_rhsContext rhs;
+  private final BasicParser.Assign_lhsContext lhs;
+  private final BasicParser.Assign_rhsContext rhs;
 
-  public AssignAST(Assign_lhsContext lhs, Assign_rhsContext rhs) {
+  public AssignAST(BasicParser.Assign_lhsContext lhs, BasicParser.Assign_rhsContext rhs) {
     this.lhs = lhs;
     this.rhs = rhs;
     Type type = null;
@@ -70,10 +69,6 @@ public class AssignAST extends AST {
         exit(200);
       }
     }
-  }
-
-  public void Accept(ASTVisitor v) {
-    v.visitAssignNode(lhs, rhs);
   }
 
   @Override

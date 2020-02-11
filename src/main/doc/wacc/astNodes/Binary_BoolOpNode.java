@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
@@ -25,10 +24,5 @@ public class Binary_BoolOpNode extends AST{
   @Override
   public String toString() {
     return expr1 + operContext.getText() + expr2;
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }

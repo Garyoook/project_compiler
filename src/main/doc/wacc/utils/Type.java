@@ -1,6 +1,5 @@
 package doc.wacc.utils;
 
-import doc.wacc.ASTVisitor;
 import doc.wacc.astNodes.AST;
 
 public abstract class Type extends AST {
@@ -48,11 +47,6 @@ public abstract class Type extends AST {
         public String toString() {
             return kind.toString().toLowerCase();
         }
-
-        @Override
-        public void Accept(ASTVisitor v) {
-
-        }
     }
 
     public static class ArrayType extends Type {
@@ -69,11 +63,6 @@ public abstract class Type extends AST {
         @Override
         public String toString() {
             return type + "[]";
-        }
-
-        @Override
-        public void Accept(ASTVisitor v) {
-
         }
     }
 
@@ -107,11 +96,6 @@ public abstract class Type extends AST {
         @Override
         public String toString() {
             return "pair(" + leftType + ", " + rightType + ")";
-        }
-
-        @Override
-        public void Accept(ASTVisitor v) {
-
         }
     }
 }

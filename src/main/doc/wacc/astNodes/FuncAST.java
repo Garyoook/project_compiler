@@ -1,7 +1,6 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
-import doc.wacc.ASTVisitor;
 
 import java.util.List;
 
@@ -43,10 +42,5 @@ public class FuncAST extends AST {
     }
     return "function: " + this.getReturnType().getText() + " " +this.getFuncName()+"("
             + params + "): " + this.functionBody;
-  }
-
-  @Override
-  public void Accept(ASTVisitor v) {
-
   }
 }
