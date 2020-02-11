@@ -103,6 +103,10 @@ public class DeclarationAst extends AST {
       }
     }
 
+  public BasicParser.Assign_rhsContext getRhs() {
+    return rhs;
+  }
+
   @Override
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getText() + "\n";

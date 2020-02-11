@@ -7,6 +7,14 @@ public class StringNode extends AST {
     this.value = value;
   }
 
+  public String getValue() {
+    return value;
+  }
+
+  public int getStringLength() {
+    return value.length();
+  }
+
   @Override
   public String toString() {
     return value;
