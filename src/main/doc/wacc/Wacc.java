@@ -3,6 +3,7 @@ package doc.wacc;
 import antlr.BasicLexer;
 import antlr.BasicParser;
 import doc.wacc.astNodes.AST;
+import doc.wacc.utils.ASTVisitor;
 import doc.wacc.utils.CompilerVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
@@ -69,7 +70,11 @@ public class Wacc {
       System.out.println("Compiling from source: " + args[0] + ":");
       AST ast = visitor.visitProg(basicParser.prog());
 
-//      System.out.println(ast.toString());
+      ASTVisitor translator = new ASTVisitor();
+      translator.visitProgAST(ast);
+      translator.getCodes();
+
+
     } catch (NumberFormatException e) {
       System.out.println("Syntax error: Integer overflow"  +
               "\nExit code 100 returned");
