@@ -1,5 +1,6 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
 import doc.wacc.utils.SymbolTable;
 import doc.wacc.utils.Type;
 
@@ -87,7 +88,5 @@ public abstract class AST {
     return true;
   }
 
-
-
-
+  public abstract void Accept(ASTVisitor v);
 }

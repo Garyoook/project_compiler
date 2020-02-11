@@ -1,6 +1,6 @@
 package doc.wacc.astNodes;
 
-public class BoolNode extends AST {
+public class BoolNode extends ExpressionAST {
   private boolean value;
 
   public BoolNode(boolean value) {

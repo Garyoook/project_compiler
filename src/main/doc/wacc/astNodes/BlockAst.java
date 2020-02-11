@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
+
 public class BlockAst extends AST {
   private AST stat;
 
@@ -10,5 +12,10 @@ public class BlockAst extends AST {
   @Override
   public String toString() {
     return "Block {" + stat + "}\n";
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }

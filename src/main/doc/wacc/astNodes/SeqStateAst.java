@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
+
 import java.util.ArrayList;
 
 public class SeqStateAst extends AST {
@@ -15,5 +17,10 @@ public class SeqStateAst extends AST {
       sb.append(a);
     }
     return sb.toString();
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }

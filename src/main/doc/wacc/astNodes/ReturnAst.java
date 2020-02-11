@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
+
 public class ReturnAst extends AST {
   private AST expr;
 
@@ -10,5 +12,10 @@ public class ReturnAst extends AST {
   @Override
   public String toString() {
     return "return " + expr + "\n";
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }

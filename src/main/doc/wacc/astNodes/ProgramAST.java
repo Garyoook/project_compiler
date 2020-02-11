@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
+
 import java.util.List;
 
 public class ProgramAST extends AST {
@@ -32,5 +34,10 @@ public class ProgramAST extends AST {
     stringBuilder.append("Now start the program \n");
     stringBuilder.append(mainProgram).append("\n");
     return stringBuilder.toString();
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }

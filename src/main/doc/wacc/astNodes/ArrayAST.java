@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.ASTVisitor;
 
 import java.util.List;
 
@@ -20,5 +21,10 @@ public class ArrayAST extends AST {
             sb.append(exp.array_elem().getText()).append("\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public void Accept(ASTVisitor v) {
+
     }
 }

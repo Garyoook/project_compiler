@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.ASTVisitor;
 
 public class UnaryChrNode extends AST{
   private BasicParser.Unary_chrContext operContext;
@@ -14,5 +15,10 @@ public class UnaryChrNode extends AST{
   @Override
   public String toString() {
     return operContext.getText() + expr;
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }

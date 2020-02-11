@@ -1,5 +1,7 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.ASTVisitor;
+
 public class ExprWithParen extends AST {
   private AST expr;
 
@@ -14,5 +16,10 @@ public class ExprWithParen extends AST {
   @Override
   public String toString() {
     return expr.toString();
+  }
+
+  @Override
+  public void Accept(ASTVisitor v) {
+
   }
 }
