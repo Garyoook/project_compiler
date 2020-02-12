@@ -12,11 +12,13 @@ import static java.lang.System.exit;
 public class WhileAst extends AST {
   private AST expr;
   private AST stat;
+  private SymbolTable symbolTable;
 
 
-  public WhileAst(AST expr, AST stat) {
+  public WhileAst(AST expr, AST stat, SymbolTable symbolTable) {
     this.expr = expr;
     this.stat = stat;
+    this.symbolTable = symbolTable;
 
     if (!is_bool(expr)) {
       System.out.println("Semantic error: wrong type in while condition" +

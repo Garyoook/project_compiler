@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.utils.SymbolTable;
 
 import java.util.List;
 
@@ -9,12 +10,14 @@ public class FuncAST extends AST {
   private final String funcName;
   private final List<BasicParser.ParamContext> parameters;
   private final AST functionBody;
+  private SymbolTable symbolTable;
 
-  public FuncAST(BasicParser.TypeContext returnType, String funcName, List<BasicParser.ParamContext> parameters, AST functionBody) {
+  public FuncAST(BasicParser.TypeContext returnType, String funcName, List<BasicParser.ParamContext> parameters, AST functionBody, SymbolTable symbolTable) {
     this.returnType = returnType;
     this.funcName = funcName;
     this.parameters = parameters;
     this.functionBody = functionBody;
+    this.symbolTable = symbolTable;
   }
 
   public AST getFunctionBody() {

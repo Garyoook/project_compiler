@@ -53,6 +53,10 @@ public class ASTVisitor {
   public void visitFuncAST(FuncAST ast) {
   }
 
+  public void visitAssignAst(AssignAST ast) {
+
+  }
+
   public void visitExitAst(ExitAst ast) {
     visitExprAst(ast.getExpr());
     codes.add("\tLDR " + paramReg + ", [sp]");
@@ -117,6 +121,8 @@ public class ASTVisitor {
       for (AST ast1:((SeqStateAst) ast).getSeqs()) {
         visitStat(ast1);
       }
+    } else if (ast instanceof AssignAST) {
+      visitAssignAst((AssignAST)ast);
     }
   }
 

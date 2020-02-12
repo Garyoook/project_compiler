@@ -31,7 +31,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public AST visitArray_liter(Array_literContext ctx) {
-    return new ArrayAST(ctx.expr());
+    List<AST> exprs = new ArrayList<>();
+    for (ExprContext e : ctx.expr()) {
+      exprs.add(visitExpr(e));
+    }
+    return new ArrayAST(exprs);
   }
 
   @Override public AST visitBool_liter(Bool_literContext ctx) {
@@ -222,6 +226,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     symbolTable.inIfThenElse = true;
@@ -235,6 +240,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     SymbolTable s = symbolTable;
     symbolTable = symbolTable.previousScope();
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
     symbolTable.inheritFlags(s);
 
     AST elseAST = visitStat(ctx.stat(1));
@@ -246,7 +252,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     symbolTable = symbolTable.previousScope();
     symbolTable.thenHasReturn = false;
 
-    return new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST);
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
   }
 
   @Override public AST visitAskip(AskipContext ctx) {
@@ -317,7 +326,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
-    AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()));
+    AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()), symbolTable);
     symbolTable = symbolTable.previousScope();
     return ast;
   }
@@ -357,7 +366,14 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   @Override public AST visitBlock(BlockContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
-    AST ast = new BlockAst(visitStat(ctx.stat()));
+    AST stat = visitStat(ctx.stat());
+    List<AST> stats = new ArrayList<>();
+    if (stat instanceof SeqStateAst) {
+      stats = ((SeqStateAst) stat).getSeqs();
+    } else {
+      stats.add(stat);
+    }
+    AST ast = new BlockAst(stats, symbolTable);
     symbolTable = symbolTable.previousScope();
     return ast;
   }
@@ -448,7 +464,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     for (BasicParser.ParamContext p: pa) {
       symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
     }
-    AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()));
+    AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()), symbolTable);
     inFunction = false;
     symbolTable.inFunction = false;
     currentFuncName = null;
