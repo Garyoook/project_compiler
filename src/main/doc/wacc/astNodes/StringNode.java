@@ -12,7 +12,7 @@ public class StringNode extends AST {
   }
 
   public int getStringLength() {
-    return value.length();
+    return value.length() - 2; // to substract the number of quote sign.
   }
 
   @Override

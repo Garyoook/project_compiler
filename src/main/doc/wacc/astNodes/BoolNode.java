@@ -7,6 +7,9 @@ public class BoolNode extends AST {
     this.value = value;
   }
 
+  public boolean getBoolValue() {
+    return value;
+  }
   @Override
   public String toString() {
     return String.valueOf(value);

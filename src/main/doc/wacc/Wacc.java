@@ -69,6 +69,7 @@ public class Wacc {
 
       System.out.println("Compiling from source: " + args[0] + ":");
       AST ast = visitor.visitProg(basicParser.prog());
+//      System.out.println(ast);
 
       ASTVisitor translator = new ASTVisitor();
       translator.visitProgAST(ast);

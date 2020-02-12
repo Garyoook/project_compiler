@@ -137,7 +137,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public AST visitChar_liter(Char_literContext ctx) {
-    return new CharNode(ctx.getText().charAt(0));
+    return new CharNode(ctx.getText().charAt(1));
   }
 
   @Override public AST visitString_liter(String_literContext ctx) {

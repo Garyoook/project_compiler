@@ -55,6 +55,7 @@ public class ASTVisitor {
 
   public void visitExitAst(ExitAst ast) {
     visitExprAst(ast.getExpr());
+    codes.add("\tLDR " + paramReg + ", [sp]");
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL exit");
   }
@@ -76,11 +77,30 @@ public class ASTVisitor {
         spPosition += 4;
         codes.add("\tLDR " + paramReg + ", =msg_" + (stringCounter - 1));
         codes.add("\tSTR " + paramReg + ", [sp]");
-      }
-    } else if (ast.getRhs().array_liter() != null) {
+      } else if (expr instanceof IntNode) {
+        codes.add("\tSUB sp, sp, #4");
+        spPosition += 4;
+        codes.add("\tLDR " + paramReg + ", =" + (ast.getRhs().getText()));
+        codes.add("\tSTR " + paramReg + ", [sp]");
+      } else if (expr instanceof BoolNode) {
+        codes.add("\tSUB sp, sp, #1");
+        spPosition += 1;
+        codes.add("\tMOV " + paramReg + ", #" + (!((BoolNode) expr).getBoolValue() ? 0 : 1));
+        codes.add("\tSTRB " + paramReg + ", [sp]");
+        codes.add("\tADD sp, sp, #1");
+      } else if (expr instanceof CharNode) {
+        codes.add("\tSUB sp, sp, #1");
+        spPosition += 1;
+        codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
+        codes.add("\tSTRB " + paramReg + ", [sp]");
+//        codes.add("\tADD sp, sp, #1");
+        }
+    } else {
+      ast.getRhs().array_liter();
     }
 
   }
+
 
   private boolean isOnlyExpr(DeclarationAst ast) {
     return ast.getRhs().expr().size() == 1;
@@ -109,4 +129,7 @@ public class ASTVisitor {
     variables.add("\t.ascii  " + ast.getValue());
     stringCounter++;
   }
+
+
+
 }

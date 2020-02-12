@@ -7,6 +7,10 @@ public class CharNode extends AST {
     this.value = value;
   }
 
+  public char getCharValue() {
+    return value;
+  }
+
   @Override
   public String toString() {
     return String.valueOf(value);
