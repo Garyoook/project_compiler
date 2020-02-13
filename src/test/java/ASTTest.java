@@ -2,6 +2,7 @@ import antlr.BasicLexer;
 import antlr.BasicParser;
 import doc.wacc.astNodes.AST;
 import doc.wacc.utils.CompilerVisitor;
+import doc.wacc.utils.ErrorMessage;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -29,7 +30,7 @@ public class ASTTest {
     @Test
     public void testSemanticErr() {
         exit.expectSystemExitWithStatus(200);
-        String fp = "wacc_examples/invalid/semanticErr/exit/badCharExit.wacc";
+        String fp = "wacc_examples/invalid/semanticErr/function/functionAssign.wacc";
         emulator(fp);
     }
 
@@ -62,15 +63,13 @@ public class ASTTest {
         ANTLRErrorListener errorListener =
                 new ANTLRErrorListener() {
                     @Override
-                    public void syntaxError(
-                            Recognizer<?, ?> recognizer,
-                            Object o,
-                            int i,
-                            int i1,
-                            String s,
-                            RecognitionException e) {
-                        System.out.println("#Syntax Error#");
-                        exit(100);
+                    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+                                            String msg, RecognitionException e) {
+                      System.out.println("Syntax Error: parse error in ANTLR error listener\n" +
+                          "at line "+line+":"+charPositionInLine+" \nat "+
+                          offendingSymbol+": "+msg +
+                          "\nExit code 100 returned");
+                      exit(100);
                     }
 
                     @Override
@@ -108,10 +107,11 @@ public class ASTTest {
 
             AST ast = visitor.visitProg(basicParser.prog());
 
+            ErrorMessage.errorWriter();
+
             //      System.out.println(ast.toString());
         } catch (NumberFormatException e) {
-            System.out.println("Syantax error: Integer overflow");
-            exit(100);
+          ErrorMessage.addSyntaxError("Integer overflow");
         }
     }
 }

@@ -1,19 +1,20 @@
 package doc.wacc.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.exit;
 
 public class ErrorMessage {
-  private static List<String> syntacticErrorList;
-  private static List<String> semanticErrorList;
+  private static List<String> syntacticErrorList = new ArrayList<>();
+  private static List<String> semanticErrorList = new ArrayList<>();
 
   public static void addSyntaxError(String errorMessage) {
-    syntacticErrorList.add(errorMessage);
+    syntacticErrorList.add("Syntax Error: " + errorMessage);
   }
 
   public static void addSemanticError(String errorMessage) {
-     semanticErrorList.add(errorMessage);
+     semanticErrorList.add("Semantic Error: " + errorMessage);
   }
 
   public static void errorWriter() {
@@ -23,14 +24,24 @@ public class ErrorMessage {
         for (String msg : semanticErrorList) {
           sb.append(msg).append("\n");
         }
-      } else {
-        sb.append("done\n");
+        sb.append("Exit code 200 returned");
       }
+    } else {
+      for (String msg : syntacticErrorList) {
+        sb.append(msg).append("\n");
+      }
+      sb.append("Exit code 100 returned");
     }
     System.out.println(sb.toString());
-    if (semanticErrorList.size() > 0) {
+    if (syntacticErrorList.size() > 0) {
+      exit(100);
+    } else if (semanticErrorList.size() > 0) {
       exit(200);
     }
+  }
+
+  public static boolean hasError() {
+    return (semanticErrorList.size()>0) || (syntacticErrorList.size()>0);
   }
 
 }

@@ -273,12 +273,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         for (i = 1; i < parameter.size(); i++) {
           //to check whether the number of parameter provided is smaller than the number of parameter needed
           if (ctx.assign_rhs().arg_list().expr(i-1) == null) {
-            System.out.println("semantic Error: args number not matched" +
-                    " at line:" + currentLine + ":" +
-                    currentCharPos + " -- " +
-                    "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
-                    "\nExit code 200 returned");
-            exit(200);
+            ErrorMessage.addSemanticError("args number not matched" +
+                " at line:" + currentLine + ":" +
+                currentCharPos + " -- " +
+                "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+            return new ErrorAST();
           }
 
           AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i-1));
@@ -289,12 +288,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
               is_Char(ast) && !type.equals(charType()) ||
               is_int(ast) && !type.equals(intType())) ||
               is_String(ast) && !type.equals(stringType())) {
-            System.out.println("Semantic Error: Wrong type in function parameter" +
+            ErrorMessage.addSemanticError("Wrong type in function parameter" +
                     " at line:" + currentLine + ":" +
                     currentCharPos + " -- " +
-                    "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
-                    "\nExit code 200 returned");
-            exit(200);
+                    "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+            return new ErrorAST();
           }} else {
             Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i-1).array_elem().IDENT().getText());
 
@@ -302,20 +300,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
                 type1.equals(charType()) && !type.equals(charType()) ||
                 type1.equals(intType()) && !type.equals(intType())) ||
                 type1.equals(stringType()) && !type.equals(stringType())) {
-              System.out.println("Semantic Error: Wrong type in function parameter" +
-                      "\nExit code 200 returned");
-              exit(200);
+              ErrorMessage.addSemanticError("Wrong type in function parameter");
+              return new ErrorAST();
             }
           }
         }
         //to check whether the number of parameter provided is greater than the number of parameter needed
         if (ctx.assign_rhs().arg_list().expr(i-1) != null) {
-          System.out.println("semantic Error: args number not matched. " +
+          ErrorMessage.addSemanticError("args number not matched. " +
                   " at line:" + currentLine + ":" +
                   currentCharPos + " -- " +
-                  "in function " + ctx.assign_rhs().IDENT().getText() + ";" +
-                  "\nExit code 200 returned");
-          exit(200);
+                  "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+          return new ErrorAST();
         }
       }
     }
@@ -385,18 +381,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     if (expr instanceof IdentNode) {
       Type type = symbolTable.getVariable(((IdentNode) expr).getIdent());
       if (!(type instanceof  PairType) && !(type instanceof ArrayType)) {
-        System.out.println("Semantic Error: Can only free pair or array" +
+        ErrorMessage.addSemanticError("Can only free pair or array" +
                 " at line:" + currentLine + ":" +
-                currentCharPos +
-                "\nExit code 200 returned");
-        exit(200);
+                currentCharPos);
+        return new ErrorAST();
       }
     } else if (!(expr instanceof ArrayAST) && !is_Pair(expr)) {
-        System.out.println("Semantic Error: Can only free pair or array" +
+      ErrorMessage.addSemanticError("Can only free pair or array" +
                 " at line:" + currentLine + ":" +
-                currentCharPos +
-                "\nExit code 200 returned");
-        exit(200);
+                currentCharPos);
+      return new ErrorAST();
     }
     return new FreeAst(visitExpr((ctx.expr())));
   }
@@ -409,11 +403,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     if (!inFunction) {
-      System.out.println("Syntax Error: Return can only be used in Function" +
+      ErrorMessage.addSemanticError("Return can only be used in Function" +
               " at line:" + currentLine + ":" +
-              currentCharPos +
-              "\nExit code 100 returned");
-      exit(200);
+              currentCharPos);
+      return new ErrorAST();
     } else {
       if (symbolTable.inIfThenElse) {
         if (symbolTable.thenHasReturn) {hasReturned = true;} else {symbolTable.thenHasReturn = true;}
@@ -423,11 +416,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
 
     if (currentFuncName == null) {
-      System.out.println("Syntax Error: Return can only be used in Function"+
+      ErrorMessage.addSemanticError("Return can only be used in Function"+
               " at line:" + currentLine + ":" +
-              currentCharPos +
-              "\nExit code 100 returned");
-      exit(200);
+              currentCharPos);
+      return new ErrorAST();
     }
 
     Type type = functionTable.get(currentFuncName).get(0);
@@ -436,11 +428,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         (type.equals(intType())   && !is_int(ast)) ||
         (type.equals(charType())  && !is_Char(ast)) ||
         (type.equals(stringType()) && !is_String(ast))) {
-      System.out.println("Semantic Error: return type not compatible"+
+      ErrorMessage.addSemanticError("return type not compatible"+
               " at line:" + currentLine + ":" +
-              currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+              currentCharPos);
+      return new ErrorAST();
     }
     return new ReturnAst(visitExpr(ctx.expr()));
   }
@@ -470,11 +461,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentFuncName = null;
 
     if (!hasReturned) {
-      System.out.println("Syntax error: function no return" +
+      ErrorMessage.addSyntaxError("function no return" +
               " at line:" + currentLine + ":" +
-              currentCharPos +
-              "\nExit code 100 returned");
-      exit(100);
+              currentCharPos);
+      return new ErrorAST();
     }
     symbolTable = symbolTable.previousScope();
     thenHasReturn = false;
@@ -496,17 +486,19 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
       if (functionTable.get(funcContext.IDENT().getText()) != null) {
-        System.out.println("Semantic error: function redefined" +
+        ErrorMessage.addSemanticError("function redefined" +
                 " at line:" + currentLine + ":" +
                 currentCharPos + " -- " +
-                "in function " + ctx.getText() + ";" +
-                "\nExit code 200 returned");
-        exit(200);
+                "in function " + ctx.getText() + ";");
+        return new ErrorAST();
       }
       functionTable.put(funcContext.IDENT().getText(), types);
     }
     for (BasicParser.FuncContext funcContext:ctx.func()) {
-      funcASTS.add((FuncAST) visitFunc(funcContext));
+      AST temp = visitFunc(funcContext);
+      if (!(temp instanceof ErrorAST)) {
+        funcASTS.add((FuncAST) visitFunc(funcContext));
+      }
     }
 
     return new ProgramAST(funcASTS, visitStat(ctx.stat()));
@@ -517,11 +509,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = statContext.getStart().getLine();
     currentCharPos = statContext.getStart().getCharPositionInLine();
     if (symbolTable.inFunction && hasReturned) {
-      System.out.println("Syntax Error: Shouldn't be anything after return" +
+      ErrorMessage.addSyntaxError("Shouldn't be anything after return" +
               " at line:" + statContext.getStart().getLine() + ":" +
-              statContext.getStart().getCharPositionInLine() +
-              "\nExit code 100 returned");
-      exit(100);
+              statContext.getStart().getCharPositionInLine());
+      return new ErrorAST();
     }
 
     if (statContext != null) {

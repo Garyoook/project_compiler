@@ -1,5 +1,6 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.utils.ErrorMessage;
 import doc.wacc.utils.SymbolTable;
 import doc.wacc.utils.Type;
 
@@ -21,10 +22,8 @@ public class WhileAst extends AST {
     this.symbolTable = symbolTable;
 
     if (!is_bool(expr)) {
-      System.out.println("Semantic error: wrong type in while condition" +
-              " at line:" + currentLine + ":" + currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+      ErrorMessage.addSemanticError("wrong type in while condition" +
+              " at line:" + currentLine + ":" + currentCharPos);
     }
   }
 

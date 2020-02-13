@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.utils.ErrorMessage;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
@@ -17,10 +18,8 @@ public class BinaryOpNode extends AST{
     this.expr2 = expr2;
 
     if (!(is_int(expr1) && is_int(expr2))) {
-      System.out.println("Semantic error: wrong type in " + operContext.getText() +
-              " at line:" + currentLine + ":" + currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+      ErrorMessage.addSemanticError("wrong type in " + operContext.getText() +
+              " at line:" + currentLine + ":" + currentCharPos);
     }
   }
   @Override

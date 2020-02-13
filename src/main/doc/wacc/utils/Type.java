@@ -19,9 +19,12 @@ public abstract class Type extends AST {
     public static PairType pairType() {
         return new PairType(null, null);
     }
+    public static BaseType errorType() {
+        return new BaseType(BaseTypeKind.ERROR);
+    }
 
     public enum BaseTypeKind {
-        INT, CHAR, BOOL, STRING
+        INT, CHAR, BOOL, STRING, ERROR
     }
 
     public static class BaseType extends Type {

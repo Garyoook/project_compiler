@@ -1,5 +1,6 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.utils.ErrorMessage;
 import doc.wacc.utils.SymbolTable;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
@@ -20,10 +21,8 @@ public class IfAst extends AST {
     this.thenSymbolTable = symbolTable;
 
     if (!is_bool(expr)) {
-      System.out.println("Semantic error: wrong type in If condition, should be bool" +
-              " at line:" + currentLine + ":" + currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+      ErrorMessage.addSemanticError("wrong type in If condition, should be bool" +
+              " at line:" + currentLine + ":" + currentCharPos);
     }
   }
 

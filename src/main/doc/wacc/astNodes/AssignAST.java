@@ -2,6 +2,7 @@ package doc.wacc.astNodes;
 
 import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
+import doc.wacc.utils.ErrorMessage;
 import doc.wacc.utils.Type;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
@@ -49,11 +50,9 @@ public class AssignAST extends AST {
     }
 
     if (type == null) {
-      System.out.println("Semantic error: " + lhs.getText() + " is not defined" +
+      ErrorMessage.addSemanticError(lhs.getText() + " is not defined" +
               " at line:" + currentLine + ":" +
-              currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+              currentCharPos);
     }
     if (rhs.expr().size() == 1) {
       CompilerVisitor visitor = new CompilerVisitor();
@@ -62,11 +61,9 @@ public class AssignAST extends AST {
               (type.equals(Type.intType()) && !is_int(ast)) ||
               (type.equals(Type.charType()) && !is_Char(ast)) ||
               (type.equals(Type.stringType()) && !is_String(ast)) ) {
-        System.out.println("Semantic error: assignment type not compatible" +
+        ErrorMessage.addSemanticError("assignment type not compatible" +
                 " at line:" + currentLine + ":" + currentCharPos +
-                "expected: " +
-                "\nExit code 200 returned");
-        exit(200);
+                "expected: ");
       }
     }
   }

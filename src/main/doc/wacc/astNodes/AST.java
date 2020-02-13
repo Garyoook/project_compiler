@@ -1,5 +1,6 @@
 package doc.wacc.astNodes;
 
+import doc.wacc.utils.ErrorMessage;
 import doc.wacc.utils.SymbolTable;
 import doc.wacc.utils.Type;
 
@@ -35,11 +36,10 @@ public abstract class AST {
   public static boolean is_bool(AST exp) {
     if (exp instanceof IdentNode) {
       if (symbolTable.getVariable(((IdentNode) exp).getIdent()) == null) {
-        System.out.println("Semantic error: variable not defined: " + ((IdentNode) exp).getIdent() +
+        ErrorMessage.addSemanticError("variable not defined: " + ((IdentNode) exp).getIdent() +
                 " at line:" + currentLine + ":" +
-                currentCharPos +
-                "\nExit code 200 returned");
-        exit(200);
+                currentCharPos);
+        return false;
       }
       if (!symbolTable.getVariable(((IdentNode) exp).getIdent()).equals(Type.boolType())) {
         return false;

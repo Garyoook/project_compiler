@@ -5,6 +5,7 @@ import antlr.BasicParser;
 import doc.wacc.astNodes.AST;
 import doc.wacc.utils.ASTVisitor;
 import doc.wacc.utils.CompilerVisitor;
+import doc.wacc.utils.ErrorMessage;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -36,9 +37,12 @@ public class Wacc {
 
     ANTLRErrorListener errorListener = new ANTLRErrorListener() {
       @Override
-      public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+      public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+                              String msg, RecognitionException e) {
         System.out.println("Syntax Error: parse error in ANTLR error listener\n" +
-                "Exit code 100 returned");
+                "\tat line "+line+":"+charPositionInLine+" \n\tat "+
+                offendingSymbol+": "+msg +
+                "\nExit code 100 returned");
         exit(100);
       }
 
@@ -71,15 +75,16 @@ public class Wacc {
       AST ast = visitor.visitProg(basicParser.prog());
 //      System.out.println(ast);
 
-      ASTVisitor translator = new ASTVisitor();
-      translator.visitProgAST(ast);
-      translator.getCodes();
-
-
+      if (!ErrorMessage.hasError()) {
+        ASTVisitor translator = new ASTVisitor();
+        translator.visitProgAST(ast);
+        translator.getCodes();
+      }
     } catch (NumberFormatException e) {
-      System.out.println("Syntax error: Integer overflow"  +
-              "\nExit code 100 returned");
-      exit(100);
+      ErrorMessage.addSyntaxError("Integer overflow");
     }
+
+    ErrorMessage.errorWriter();
+
   }
 }

@@ -40,7 +40,7 @@ public class ASTVisitor {
 
   public void visitProgAST(AST ast) {
     codes.add("\tPUSH {lr}");
-    ProgramAST past= (ProgramAST)ast;
+    ProgramAST past= (ProgramAST) ast;
     for (FuncAST f: past.getFunctions()) {
       visitFuncAST(f);
     }

@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.utils.ErrorMessage;
 
 import static java.lang.System.exit;
 
@@ -15,8 +16,7 @@ public class High_BinaryOpNode extends AST{
     this.expr2 = expr2;
 
     if (!(is_int(expr1) && is_int(expr1))) {
-      System.out.println("Semantic error: wrong type in " + operContext.getText());
-      exit(200);
+      ErrorMessage.addSemanticError("wrong type in " + operContext.getText());
     }
   }
 
