@@ -24,9 +24,15 @@ public class ReadAst extends AST {
 
     if (lhs.getLhsContext().pair_elem() != null) {
       type = symbolTable.getVariable(lhs.getLhsContext().pair_elem().expr().getText());
+      if (lhs.getLhsContext().pair_elem().fst() != null) {
+        type = ((Type.PairType) type).getLeftType();
+      } else if (lhs.getLhsContext().pair_elem().snd() != null) {
+        type = ((Type.PairType) type).getRightType();
+      }
     } else {
       type = symbolTable.getVariable(lhs.getLhsContext().getText());
     }
+    System.out.println(lhs.getLhsContext().pair_elem().expr().getText());
     if (type == null) {
       System.out.println("Variable not defined " + lhs.getLhsContext().getText());  exit(200);
     }

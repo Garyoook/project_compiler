@@ -248,11 +248,11 @@ public class ASTVisitor {
 
   public void visitReadAST(ReadAst ast) {
     Type type = ast.getType();
-    String readType = null;
-    if (type.equals(Type.intType())) {
-      readType = "int";
-    } else if (type.equals(Type.charType())) {
+    String readType = "";
+    if (type.equals(Type.charType())) {
       readType = "char";
+    } else if (type.equals(Type.intType())) {
+      readType = "int";
     }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL p_read_" + readType);
