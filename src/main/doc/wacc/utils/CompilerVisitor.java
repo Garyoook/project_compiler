@@ -84,22 +84,22 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
     if (ctx.unary_chr() != null) {
-      return (new UnaryChrNode(ctx.unary_chr(), visitExpr(ctx.expr(0))));
+      return (new UnaryOpNode(ctx.unary_chr(), visitExpr(ctx.expr(0))));
     } else
     if (ctx.unary_not() != null) {
-      return (new UnaryNotNode(ctx.unary_not(), visitExpr(ctx.expr(0))));
+      return (new UnaryOpNode(ctx.unary_not(), visitExpr(ctx.expr(0))));
     } else
       if (ctx.lowest_binbool_op() != null) {
-      return (new Lowest_BinaryOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new Binary_BoolOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.binary_oper() != null) {
       return (new BinaryOpNode(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.hignp_bin_op() != null) {
-      return (new High_BinaryOpNode(ctx.hignp_bin_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new BinaryOpNode(ctx.hignp_bin_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.low_binbool_op() != null) {
-      return (new Low_BinaryOpNode(ctx.low_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new Binary_BoolOpNode(ctx.low_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.binary_bool_oper() != null) {
       return (new Binary_BoolOpNode(ctx.binary_bool_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
@@ -215,7 +215,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitRead(ReadContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
-    return new ReadAst(ctx.assign_lhs());
+    return new ReadAst(ctx);
   }
 
   @Override public AST visitAssignment(AssignmentContext ctx) {

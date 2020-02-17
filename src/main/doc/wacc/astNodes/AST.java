@@ -19,13 +19,12 @@ public abstract class AST {
         return false;
       }
     } else
-    if (((expr1 instanceof Lowest_BinaryOpNode) ||
-        (expr1 instanceof BoolNode) ||
+    if (((expr1 instanceof BoolNode) ||
         (expr1 instanceof CharNode) ||
         (expr1 instanceof StringNode) ||
         (expr1 instanceof Binary_BoolOpNode) ||
-        (expr1 instanceof UnaryChrNode) ||
-        (expr1 instanceof UnaryNotNode)
+        (expr1 instanceof UnaryOpNode && ((UnaryOpNode) expr1).getChrContext() != null
+                && ((UnaryOpNode) expr1).getUnary_notContext() != null)
     )) {
       return false;
     }
@@ -45,11 +44,9 @@ public abstract class AST {
         return false;
       }
     } else
-    if (!(exp instanceof Lowest_BinaryOpNode ||
-          exp instanceof BoolNode ||
+    if (!(exp instanceof BoolNode ||
           exp instanceof Binary_BoolOpNode ||
-          exp instanceof UnaryNotNode ||
-          exp instanceof Low_BinaryOpNode ||
+          exp instanceof UnaryOpNode && ((UnaryOpNode) exp).getUnary_notContext() != null ||
           (exp instanceof ExprWithParen && is_bool(((ExprWithParen) exp).getExpr())))) {
 
       return false;

@@ -1,27 +1,32 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.Type;
 
+import static antlr.BasicParser.*;
+import static doc.wacc.astNodes.AssignAST.*;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static doc.wacc.utils.Type.*;
 import static java.lang.System.exit;
 
 public class ReadAst extends AST {
-  private final BasicParser.Assign_lhsContext lhs;
+  private AssignLHSAST lhs;
 
-  public ReadAst(BasicParser.Assign_lhsContext lhs) {
-    this.lhs = lhs;
-    Type type = null;
+  public ReadAst(ReadContext ctx) {
+    CompilerVisitor visitor = new CompilerVisitor();
 
-    if (lhs.pair_elem() != null) {
-      type = symbolTable.getVariable(lhs.pair_elem().expr().getText());
+    this.lhs = visitor.visitAssign_lhs(ctx.assign_lhs());
+    Type type;
+
+    if (lhs.getLhsContext().pair_elem() != null) {
+      type = symbolTable.getVariable(lhs.getLhsContext().pair_elem().expr().getText());
     } else {
-      type = symbolTable.getVariable(lhs.getText());
+      type = symbolTable.getVariable(lhs.getLhsContext().getText());
     }
     if (type == null) {
-      System.out.println("Variable not defined " + lhs.getText());  exit(200);
+      System.out.println("Variable not defined " + lhs.getLhsContext().getText());  exit(200);
     }
     if (type.equals(boolType())) {
       System.out.println("Semantic Error: Can't read in Type Bool" +
@@ -31,14 +36,14 @@ public class ReadAst extends AST {
       exit(200);
     }
     if (type instanceof PairType) {
-      if (lhs.pair_elem() == null) {
+      if (lhs.getLhsContext().pair_elem() == null) {
         System.out.println("Semantic Error: Can't read into a null" +
                 " at line:" + currentLine + ":" + currentCharPos +
                 ", expected: " + type +
                 "\nExit code 200 returned");
         exit(200);
       }
-      if (lhs.pair_elem().fst() == null && lhs.pair_elem().snd() == null){
+      if (lhs.getLhsContext().pair_elem().fst() == null && lhs.getLhsContext().pair_elem().snd() == null){
         System.out.println("Semantic Error: Can't read in a Pair " +
                 " at line:" + currentLine + ":" + currentCharPos +
                 ", expected: " + type +
@@ -50,6 +55,6 @@ public class ReadAst extends AST {
 
   @Override
   public String toString() {
-    return "reading from: " + lhs.IDENT().getText() + "\n";
+    return "reading from: " + lhs.getLhsContext().IDENT().getText() + "\n";
   }
 }
