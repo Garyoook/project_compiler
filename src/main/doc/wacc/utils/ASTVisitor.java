@@ -2,11 +2,8 @@ package doc.wacc.utils;
 
 import doc.wacc.astNodes.*;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static doc.wacc.astNodes.AST.is_String;
 
 public class ASTVisitor {
   private AST ast;
@@ -74,7 +71,7 @@ public class ASTVisitor {
   public void visitDeclaration(DeclarationAst ast) {
     if (isOnlyExpr(ast)) {
       CompilerVisitor visitor = new CompilerVisitor();
-      AST expr = visitor.visitExpr(ast.getRhs().expr(0));
+      AST expr = visitor.visitExpr(ast.getAssignRhsAST().getRhsContext().expr(0));
       if (expr instanceof StringNode) {
         visitStringNode((StringNode)expr);
         codes.add("\tSUB sp, sp, #4");
@@ -84,7 +81,7 @@ public class ASTVisitor {
       } else if (expr instanceof IntNode) {
         codes.add("\tSUB sp, sp, #4");
         spPosition += 4;
-        codes.add("\tLDR " + paramReg + ", =" + (ast.getRhs().getText()));
+        codes.add("\tLDR " + paramReg + ", =" + (ast.getAssignRhsAST().getRhsContext().getText()));
         codes.add("\tSTR " + paramReg + ", [sp]");
       } else if (expr instanceof BoolNode) {
         codes.add("\tSUB sp, sp, #1");
@@ -100,14 +97,14 @@ public class ASTVisitor {
 //        codes.add("\tADD sp, sp, #1");
         }
     } else {
-      ast.getRhs().array_liter();
+      ast.getAssignRhsAST().getRhsContext().array_liter();
     }
 
   }
 
 
   private boolean isOnlyExpr(DeclarationAst ast) {
-    return ast.getRhs().expr().size() == 1;
+    return ast.getAssignRhsAST().getRhsContext().expr().size() == 1;
   }
 
   public void visitStat(AST ast) {

@@ -9,6 +9,7 @@ import doc.wacc.astNodes.*;
 
 import static antlr.BasicParser.*;
 import static doc.wacc.astNodes.AST.symbolTable;
+import static doc.wacc.astNodes.AssignAST.*;
 import static doc.wacc.utils.Type.*;
 import static java.lang.System.exit;
 
@@ -203,11 +204,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
 
-  @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
-    return visitChildren(ctx);
+  @Override public AssignRHSAST visitAssign_rhs(Assign_rhsContext ctx) {
+    return new AssignRHSAST(ctx);
   }
 
-  @Override public AST visitAssign_lhs(Assign_lhsContext ctx) { return visitChildren(ctx); }
+  @Override public AssignLHSAST visitAssign_lhs(Assign_lhsContext ctx) {
+    return new AssignLHSAST(ctx);
+  }
 
   @Override public AST visitRead(ReadContext ctx) {
     currentLine = ctx.getStart().getLine();
@@ -221,7 +224,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
     }
-    return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
+    return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
@@ -319,7 +322,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
+    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
@@ -401,18 +404,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new FreeAst(visitExpr((ctx.expr())));
   }
 
-  @Override public AST visitCall(BasicParser.CallContext ctx) {
+  @Override public AST visitCall(CallContext ctx) {
     return visitChildren(ctx);
   }
 
-  @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
+  @Override public AST visitReturn(ReturnContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     if (!inFunction) {
-      System.out.println("Syntax Error: Return can only be used in Function" +
+      System.out.println("Semantic Error: Return can only be used in Function" +
               " at line:" + currentLine + ":" +
               currentCharPos +
-              "\nExit code 100 returned");
+              "\nExit code 200 returned");
       exit(200);
     } else {
       if (symbolTable.inIfThenElse) {
@@ -423,10 +426,10 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
 
     if (currentFuncName == null) {
-      System.out.println("Syntax Error: Return can only be used in Function"+
+      System.out.println("Semantic Error: Return can only be used in Function"+
               " at line:" + currentLine + ":" +
               currentCharPos +
-              "\nExit code 100 returned");
+              "\nExit code 200 returned");
       exit(200);
     }
 
@@ -451,17 +454,17 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return visitChildren(ctx);
   }
 
-  @Override public AST visitFunc(BasicParser.FuncContext ctx) {
+  @Override public AST visitFunc(FuncContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     inFunction = true;
     currentFuncName = ctx.IDENT().getText();
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     symbolTable.inFunction = true;
-    BasicParser.Param_listContext params = ctx.param_list();
-    List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
+    Param_listContext params = ctx.param_list();
+    List<ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
 
-    for (BasicParser.ParamContext p: pa) {
+    for (ParamContext p: pa) {
       symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
     }
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()), symbolTable);
@@ -487,7 +490,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
-    for (BasicParser.FuncContext funcContext:ctx.func()) {
+    for (FuncContext funcContext:ctx.func()) {
       List<Type> types = new ArrayList<>();
       types.add(visitType(funcContext.type()));
       if (funcContext.param_list() != null) {
@@ -505,7 +508,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       functionTable.put(funcContext.IDENT().getText(), types);
     }
-    for (BasicParser.FuncContext funcContext:ctx.func()) {
+    for (FuncContext funcContext:ctx.func()) {
       funcASTS.add((FuncAST) visitFunc(funcContext));
     }
 
