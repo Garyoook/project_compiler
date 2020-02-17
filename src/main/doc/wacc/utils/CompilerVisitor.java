@@ -9,6 +9,7 @@ import doc.wacc.astNodes.*;
 
 import static antlr.BasicParser.*;
 import static doc.wacc.astNodes.AST.symbolTable;
+import static doc.wacc.astNodes.AssignAST.*;
 import static doc.wacc.utils.Type.*;
 import static java.lang.System.exit;
 
@@ -83,22 +84,22 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
     if (ctx.unary_chr() != null) {
-      return (new UnaryChrNode(ctx.unary_chr(), visitExpr(ctx.expr(0))));
+      return (new UnaryOpNode(ctx.unary_chr(), visitExpr(ctx.expr(0))));
     } else
     if (ctx.unary_not() != null) {
-      return (new UnaryNotNode(ctx.unary_not(), visitExpr(ctx.expr(0))));
+      return (new UnaryOpNode(ctx.unary_not(), visitExpr(ctx.expr(0))));
     } else
       if (ctx.lowest_binbool_op() != null) {
-      return (new Lowest_BinaryOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new Binary_BoolOpNode(ctx.lowest_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.binary_oper() != null) {
       return (new BinaryOpNode(ctx.binary_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.hignp_bin_op() != null) {
-      return (new High_BinaryOpNode(ctx.hignp_bin_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new BinaryOpNode(ctx.hignp_bin_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.low_binbool_op() != null) {
-      return (new Low_BinaryOpNode(ctx.low_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
+      return (new Binary_BoolOpNode(ctx.low_binbool_op(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
     } else
     if (ctx.binary_bool_oper() != null) {
       return (new Binary_BoolOpNode(ctx.binary_bool_oper(), visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1))));
@@ -203,16 +204,18 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
 
-  @Override public AST visitAssign_rhs(BasicParser.Assign_rhsContext ctx) {
-    return visitChildren(ctx);
+  @Override public AssignRHSAST visitAssign_rhs(Assign_rhsContext ctx) {
+    return new AssignRHSAST(ctx);
   }
 
-  @Override public AST visitAssign_lhs(Assign_lhsContext ctx) { return visitChildren(ctx); }
+  @Override public AssignLHSAST visitAssign_lhs(Assign_lhsContext ctx) {
+    return new AssignLHSAST(ctx);
+  }
 
   @Override public AST visitRead(ReadContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
-    return new ReadAst(ctx.assign_lhs());
+    return new ReadAst(ctx);
   }
 
   @Override public AST visitAssignment(AssignmentContext ctx) {
@@ -221,7 +224,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
     }
-    return new AssignAST(ctx.assign_lhs(), ctx.assign_rhs());
+    return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
@@ -315,7 +318,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), ctx.assign_rhs());
+    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
@@ -395,11 +398,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new FreeAst(visitExpr((ctx.expr())));
   }
 
-  @Override public AST visitCall(BasicParser.CallContext ctx) {
+  @Override public AST visitCall(CallContext ctx) {
     return visitChildren(ctx);
   }
 
-  @Override public AST visitReturn(BasicParser.ReturnContext ctx) {
+  @Override public AST visitReturn(ReturnContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     if (!inFunction) {
@@ -442,17 +445,17 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return visitChildren(ctx);
   }
 
-  @Override public AST visitFunc(BasicParser.FuncContext ctx) {
+  @Override public AST visitFunc(FuncContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     inFunction = true;
     currentFuncName = ctx.IDENT().getText();
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     symbolTable.inFunction = true;
-    BasicParser.Param_listContext params = ctx.param_list();
-    List<BasicParser.ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
+    Param_listContext params = ctx.param_list();
+    List<ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
 
-    for (BasicParser.ParamContext p: pa) {
+    for (ParamContext p: pa) {
       symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
     }
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()), symbolTable);
@@ -477,7 +480,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
-    for (BasicParser.FuncContext funcContext:ctx.func()) {
+    for (FuncContext funcContext:ctx.func()) {
       List<Type> types = new ArrayList<>();
       types.add(visitType(funcContext.type()));
       if (funcContext.param_list() != null) {
@@ -494,7 +497,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       functionTable.put(funcContext.IDENT().getText(), types);
     }
-    for (BasicParser.FuncContext funcContext:ctx.func()) {
+    for (FuncContext funcContext:ctx.func()) {
       AST temp = visitFunc(funcContext);
       if (!(temp instanceof ErrorAST)) {
         funcASTS.add((FuncAST) visitFunc(funcContext));

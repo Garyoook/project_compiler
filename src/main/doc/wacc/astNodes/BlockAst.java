@@ -13,9 +13,9 @@ public class BlockAst extends AST {
     this.symbolTable = symbolTable;
   }
 
-//
-//  @Override
-//  public String toString() {
-//    return "Block {" + stat + "}\n";
-//  }
+
+  @Override
+  public String toString() {
+    return "Block {" + stats + "}\n";
+  }
 }

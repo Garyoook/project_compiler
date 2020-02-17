@@ -75,11 +75,11 @@ public class Wacc {
       AST ast = visitor.visitProg(basicParser.prog());
 //      System.out.println(ast);
 
-      if (!ErrorMessage.hasError()) {
-        ASTVisitor translator = new ASTVisitor();
-        translator.visitProgAST(ast);
-        translator.getCodes();
-      }
+//      if (!ErrorMessage.hasError()) {
+//        ASTVisitor translator = new ASTVisitor();
+//        translator.visitProgAST(ast);
+//        translator.getCodes();
+//      }
     } catch (NumberFormatException e) {
       ErrorMessage.addSyntaxError("Integer overflow");
     }
