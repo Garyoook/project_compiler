@@ -11,10 +11,11 @@ import static java.lang.System.exit;
 
 public class ReadAst extends AST {
   private final BasicParser.Assign_lhsContext lhs;
+  private Type type;
 
   public ReadAst(BasicParser.Assign_lhsContext lhs) {
     this.lhs = lhs;
-    Type type = null;
+    type = null;
 
     if (lhs.pair_elem() != null) {
       type = symbolTable.getVariable(lhs.pair_elem().expr().getText());
@@ -45,5 +46,9 @@ public class ReadAst extends AST {
   @Override
   public String toString() {
     return "reading from: " + lhs.IDENT().getText() + "\n";
+  }
+
+  public Type getType() {
+    return type;
   }
 }

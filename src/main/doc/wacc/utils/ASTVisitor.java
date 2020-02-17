@@ -133,6 +133,8 @@ public class ASTVisitor {
       PrintlnAst print_ast = (PrintlnAst)ast;
       visitPrintAst(new PrintAst(((PrintlnAst) ast).getExpr()));
       visitPrintlnAst(print_ast);
+    } else if (ast instanceof ReadAst) {
+      visitReadAST((ReadAst) ast);
     }
   }
 
@@ -207,6 +209,27 @@ public class ASTVisitor {
     return current_reg;
   }
 
-
+  public void visitReadAST(ReadAst ast) {
+    Type type = ast.getType();
+    String readType = null;
+    if (type.equals(Type.intType())) {
+      readType = "int";
+    } else if (type.equals(Type.charType())) {
+      readType = "char";
+    }
+    codes.add("\tMOV " + resultReg + ", " + paramReg);
+    codes.add("\tBL p_read_" + readType);
+    variables.add("msg_" + stringCounter + ":");
+    variables.add( "\t.word " + (readType.equals("char")?4:3));
+    variables.add("\t.ascii  \"" + (readType.equals("char")?" %c":"%d") + "\\0\"");
+    stringCounter++;
+    printCodes.add("p_read_" + readType + ":");
+    printCodes.add("\tPUSH {lr}");
+    printCodes.add("\tMOV r1, " + resultReg);
+    printCodes.add("\tLDR " + resultReg + ", =msg_" + (stringCounter-1));
+    printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+    printCodes.add("\tBL scanf");
+    printCodes.add("\tPOP {pc}");
+  }
 
 }
