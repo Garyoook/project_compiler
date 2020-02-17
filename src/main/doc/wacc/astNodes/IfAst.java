@@ -33,6 +33,18 @@ public class IfAst extends AST {
             + elsebranch + ")\n";
   }
 
+  public AST getExpr() {
+    return expr;
+  }
+
+  public AST getThenbranch() {
+    return thenbranch;
+  }
+
+  public AST getElsebranch() {
+    return elsebranch;
+  }
+
   public SymbolTable getSymbolTable() {
     return symbolTable;
   }
