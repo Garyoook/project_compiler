@@ -8,6 +8,7 @@ import static java.lang.System.exit;
 public class SymbolTable {
     private SymbolTable encSymbolTable;
     private HashMap<String, Type> symbolTable;
+    private HashMap<String, Integer> stackTable;
     public boolean inFunction = false;
     public boolean inIfThenElse = false;
     public boolean hasReturned = false;
@@ -16,6 +17,7 @@ public class SymbolTable {
     public SymbolTable(SymbolTable encSymbolTable, HashMap<String, Type> symbolTable) {
         this.encSymbolTable = encSymbolTable;
         this.symbolTable = symbolTable;
+        this.stackTable = new HashMap<>();
     }
 
     public SymbolTable previousScope() {
@@ -23,11 +25,22 @@ public class SymbolTable {
     }
 
     public void putVariable(String name, Type type) {
+
       if (symbolTable.get(name) != null){
         ErrorMessage.addSemanticError("Semantic error: variable double declared : " + name);
       } else {
         symbolTable.put(name, type);
       }
+    }
+
+    public void putStackTable(String name, Integer stacknum) {
+        System.out.println(name);
+        stackTable.put(name, stacknum);
+    }
+
+    public int getStackTable(String name) {
+        System.out.println(name);
+        return stackTable.get(name);
     }
 
     public Type getVariable(String name) {

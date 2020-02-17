@@ -5,7 +5,12 @@ import doc.wacc.astNodes.*;
 import java.util.LinkedList;
 import java.util.List;
 
+import static doc.wacc.astNodes.AST.symbolTable;
+import static doc.wacc.utils.Type.*;
+
 public class ASTVisitor {
+  public static int offset = 0;
+
   private List<String> codes = new LinkedList<>();
   private List<String> variables = new LinkedList<>();
   private List<String> printCodes = new LinkedList<>();
@@ -116,21 +121,52 @@ public class ASTVisitor {
   }
 
   public void visitAssignAst(AssignAST ast) {
-
+    if (!visitExprAst(ast.getRhs().getExpr())) {
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+    }
+    String strcommand = "STR ";
+    if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
+      Type t = symbolTable.getVariable(ast.getLhs().getLhsContext().getText());
+      if (t.equals(boolType()) || t.equals(charType())) {
+        strcommand = "STRB ";
+      }
+      codes.add("\t" + strcommand + paramReg + ", [sp]");
+    } else {
+      codes.add("\t" + strcommand + paramReg + ", [sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
+    }
   }
 
   public void visitExitAst(ExitAst ast) {
+    AST newAST = ast.getExpr();
     visitExprAst(ast.getExpr());
-    codes.add("\tLDR " + paramReg + ", [sp]");
+    if (newAST instanceof IdentNode) {
+      int x = symbolTable.getStackTable(((IdentNode) newAST).getIdent());
+      if (spPosition - x == 0) {
+        codes.add("\tLDR " + paramReg + ", [sp]");
+      } else {
+        codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
+      }
+    } else {
+      codes.add("\tLDR " + paramReg + ", [sp]");
+    }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL exit");
   }
 
-  public void visitExprAst(AST ast) {
+  public boolean visitExprAst(AST ast) {
     if (ast instanceof IntNode) {
       IntNode int_ast = (IntNode)ast;
       codes.add("\tLDR " + paramReg + ", =" + int_ast.getValue());
+      return true;
+    } else {
+      if (ast instanceof BoolNode) {
+        BoolNode bool_ast = (BoolNode)ast;
+        codes.add("\tMOV " + paramReg + ", #" + bool_ast.getBoolValue());
+        return true;
+
+      }
     }
+    return false;
   }
 
   public void visitDeclaration(DeclarationAst ast) {
@@ -140,26 +176,28 @@ public class ASTVisitor {
       if (expr instanceof StringNode) {
         codes.add("\tSUB sp, sp, #4");
         spPosition += 4;
+        symbolTable.putStackTable(ast.getName(), spPosition);
         codes.add("\tLDR " + paramReg + ", =msg_" + stringCounter);
         codes.add("\tSTR " + paramReg + ", [sp]");
         visitStringNode((StringNode)expr);
       } else if (expr instanceof IntNode) {
         codes.add("\tSUB sp, sp, #4");
         spPosition += 4;
+        symbolTable.putStackTable(ast.getName(), spPosition);
         codes.add("\tLDR " + paramReg + ", =" + (ast.getAssignRhsAST().getRhsContext().getText()));
         codes.add("\tSTR " + paramReg + ", [sp]");
       } else if (expr instanceof BoolNode) {
         codes.add("\tSUB sp, sp, #1");
         spPosition += 1;
+        symbolTable.putStackTable(ast.getName(), spPosition);
         codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) expr).getBoolValue());
         codes.add("\tSTRB " + paramReg + ", [sp]");
-        codes.add("\tADD sp, sp, #1");
       } else if (expr instanceof CharNode) {
         codes.add("\tSUB sp, sp, #1");
         spPosition += 1;
+        symbolTable.putStackTable(ast.getName(), spPosition);
         codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
         codes.add("\tSTRB " + paramReg + ", [sp]");
-//        codes.add("\tADD sp, sp, #1");
         }
     } else {
       ast.getAssignRhsAST().getRhsContext().array_liter();
@@ -249,9 +287,9 @@ public class ASTVisitor {
   public void visitReadAST(ReadAst ast) {
     Type type = ast.getType();
     String readType = null;
-    if (type.equals(Type.intType())) {
+    if (type.equals(intType())) {
       readType = "int";
-    } else if (type.equals(Type.charType())) {
+    } else if (type.equals(charType())) {
       readType = "char";
     }
     codes.add("\tMOV " + resultReg + ", " + paramReg);

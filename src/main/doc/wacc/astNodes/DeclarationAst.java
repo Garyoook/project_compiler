@@ -93,6 +93,10 @@ public class DeclarationAst extends AST {
     return rhs;
   }
 
+  public String getName() {
+    return name;
+  }
+
   @Override
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getRhsContext().getText() + "\n";

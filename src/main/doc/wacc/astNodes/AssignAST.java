@@ -12,7 +12,7 @@ import static java.lang.System.exit;
 
 public class AssignAST extends AST {
   private AssignLHSAST lhs;
-  private static AssignRHSAST rhs;
+  private AssignRHSAST rhs;
   public static Type type;
 
   public AssignAST(AssignLHSAST lhs, AssignRHSAST rhs) {
@@ -58,33 +58,15 @@ public class AssignAST extends AST {
 
   }
 
-  public static class AssignLHSAST extends AST{
-    private Assign_lhsContext lhsContext;
-
-
-    public AssignLHSAST(Assign_lhsContext lhsContext) {
-      this.lhsContext = lhsContext;
-
-    }
-
-    public Assign_lhsContext getLhsContext() {
-      return lhsContext;
-    }
+  public AssignRHSAST getRhs() {
+    return rhs;
   }
 
-  public static class AssignRHSAST extends AST{
-    private Assign_rhsContext rhsContext;
 
-    public AssignRHSAST(Assign_rhsContext rhsContext) {
-      this.rhsContext = rhsContext;
-
-
-    }
-
-    public Assign_rhsContext getRhsContext() {
-      return rhsContext;
-    }
+  public AssignLHSAST getLhs() {
+    return lhs;
   }
+
   @Override
   public String toString() {
     return "assigning from: " + lhs.getLhsContext().getText() + " to " + rhs.getRhsContext().IDENT().getText() + "\n";
