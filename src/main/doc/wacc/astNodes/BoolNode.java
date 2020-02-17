@@ -7,8 +7,10 @@ public class BoolNode extends AST {
     this.value = value;
   }
 
-  public boolean getBoolValue() {
-    return value;
+  public int getBoolValue() {
+    if (value) {
+      return 1;
+    } else return 0;
   }
   @Override
   public String toString() {
