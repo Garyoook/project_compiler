@@ -27,4 +27,8 @@ public class PrintAst extends AST {
   public String toString() {
     return "Print: " + expr + "\n";
   }
+
+  public AST getExpr() {
+    return expr;
+  }
 }

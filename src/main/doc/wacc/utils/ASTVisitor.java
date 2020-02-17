@@ -2,20 +2,18 @@ package doc.wacc.utils;
 
 import doc.wacc.astNodes.*;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static doc.wacc.astNodes.AST.is_String;
-
 public class ASTVisitor {
-  private AST ast;
   private List<String> codes = new LinkedList<>();
   private List<String> variables = new LinkedList<>();
+  private List<String> printCodes = new LinkedList<>();
   private String resultReg = "r0";
   private String paramReg = "r4";
   private int stringCounter = 0;
   private int spPosition = 0;
+  private int registerCounter = 0;
 
   public void getCodes() {
     if (spPosition > 0) {
@@ -34,6 +32,12 @@ public class ASTVisitor {
 
     for(String s: codes) {
       System.out.println(s);
+    }
+
+    if (printCodes.size() > 0) {
+      for(String s: printCodes) {
+        System.out.println(s);
+      }
     }
 
   }
@@ -76,11 +80,11 @@ public class ASTVisitor {
       CompilerVisitor visitor = new CompilerVisitor();
       AST expr = visitor.visitExpr(ast.getRhs().expr(0));
       if (expr instanceof StringNode) {
-        visitStringNode((StringNode)expr);
         codes.add("\tSUB sp, sp, #4");
         spPosition += 4;
-        codes.add("\tLDR " + paramReg + ", =msg_" + (stringCounter - 1));
+        codes.add("\tLDR " + paramReg + ", =msg_" + stringCounter);
         codes.add("\tSTR " + paramReg + ", [sp]");
+        visitStringNode((StringNode)expr);
       } else if (expr instanceof IntNode) {
         codes.add("\tSUB sp, sp, #4");
         spPosition += 4;
@@ -123,6 +127,12 @@ public class ASTVisitor {
       }
     } else if (ast instanceof AssignAST) {
       visitAssignAst((AssignAST)ast);
+    } else if (ast instanceof PrintAst) {
+      visitPrintAst((PrintAst)ast);
+    } else if (ast instanceof PrintlnAst) {
+      PrintlnAst print_ast = (PrintlnAst)ast;
+      visitPrintAst(new PrintAst(((PrintlnAst) ast).getExpr()));
+      visitPrintlnAst(print_ast);
     }
   }
 
@@ -134,6 +144,67 @@ public class ASTVisitor {
     variables.add( "\t.word " + ast.getStringLength());
     variables.add("\t.ascii  " + ast.getValue());
     stringCounter++;
+  }
+
+  public void visitPrintAst(PrintAst ast) {
+    AST expr = ast.getExpr();
+    if (expr instanceof StringNode) {
+      codes.add("\tLDR " + paramReg + ", =msg_" + stringCounter);
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+      codes.add("\tBL p_print_string");
+
+      visitStringNode((StringNode) ast.getExpr());
+      printCodes.add("p_print_string:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tLDR " + reg_add() + ", [" + resultReg + "]");
+      printCodes.add("\tADD " + reg_add() + ", " + resultReg + ", #4");
+      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printCodes.add("\tBL printf");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"%.*s\\0\""));
+    } else if (expr instanceof IntNode) {
+      codes.add("\tLDR " + paramReg + ", =" + ((IntNode) expr).getValue());
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+      codes.add("\tBL p_print_int");
+
+      printCodes.add("p_print_int:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tMOV " + reg_add() + ", " + resultReg);
+      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printCodes.add("\tBL printf");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"%d\\0\""));
+    } else if (expr instanceof CharNode) {
+      codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+      codes.add("\tBL putchar");
+    }
+
+  }
+
+  public void visitPrintlnAst(PrintlnAst ast) {
+    codes.add("\tBL p_print_ln");
+    printCodes.add("p_print_ln:");
+    printCodes.add("\tPUSH {lr}");
+    printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+    printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+    printCodes.add("\tBL puts");
+    printCodes.add("\tMOV " + resultReg + ", #0");
+    printCodes.add("\tBL fflush");
+    printCodes.add("\tPOP {pc}");
+    visitStringNode(new StringNode("\"\\0\""));
+  }
+
+  private String reg_add() {
+    String current_reg = "r" + registerCounter;
+    registerCounter++;
+    return current_reg;
   }
 
 

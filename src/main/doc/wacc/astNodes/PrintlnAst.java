@@ -28,4 +28,8 @@ public class PrintlnAst extends AST {
   public String toString() {
     return "Println: " + expr + "\n";
   }
+
+  public AST getExpr() {
+    return expr;
+  }
 }

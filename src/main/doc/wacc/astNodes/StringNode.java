@@ -12,7 +12,14 @@ public class StringNode extends AST {
   }
 
   public int getStringLength() {
-    return value.length() - 2; // to substract the number of quote sign.
+    int counter = 0;
+
+    for (int i = 0; i < value.length(); i++) {
+      if (value.charAt(i) != '\\') {
+        counter++;
+      }
+    }
+    return counter - 2; // to substract the number of quote sign.
   }
 
   @Override
