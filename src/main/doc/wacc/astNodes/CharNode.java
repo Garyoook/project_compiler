@@ -1,14 +1,18 @@
 package doc.wacc.astNodes;
 
 public class CharNode extends AST {
-  private char value;
+  private String value;
 
-  public CharNode(char value) {
+  public CharNode(String value) {
     this.value = value;
   }
 
   public char getCharValue() {
-    return value;
+    System.out.println("DDDDDDD" + value);
+    if (value.length() > 3) {
+      return value.charAt(2);
+    }
+    return value.charAt(1);
   }
 
   @Override

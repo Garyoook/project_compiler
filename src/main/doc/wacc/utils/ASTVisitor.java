@@ -14,6 +14,10 @@ public class ASTVisitor {
   private int stringCounter = 0;
   private int spPosition = 0;
   private int registerCounter = 0;
+  private boolean println = false;
+  private boolean printint = false;
+  private boolean printstring = false;
+  private boolean printBool = false;
 
   public void getCodes() {
     if (spPosition > 0) {
@@ -26,6 +30,60 @@ public class ASTVisitor {
     if (variables.size() > 0) {
       variables.add(0, ".data");
     }
+
+    if(printstring) {
+      printCodes.add("p_print_string:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tLDR " + reg_add() + ", [" + resultReg + "]");
+      printCodes.add("\tADD " + reg_add() + ", " + resultReg + ", #4");
+      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printCodes.add("\tBL printf");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"%.*s\\0\""));
+    }
+
+    if (printint) {
+      printCodes.add("p_print_int:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tMOV " + reg_add() + ", " + resultReg);
+      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printCodes.add("\tBL printf");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"%d\\0\""));
+    }
+
+    if (printBool) {
+      printCodes.add("p_print_bool:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tCMP " + resultReg + ", #0");
+      printCodes.add("\tLDRNE " + resultReg + ", =msg_" + stringCounter);
+      visitStringNode(new StringNode("\"true\\0\""));
+      printCodes.add("\tLDRNE " + resultReg + ", =msg_" + stringCounter);
+      visitStringNode(new StringNode("\"false\\0\""));
+      printCodes.add("\tBL printf");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+    }
+
+    if (println) {
+      printCodes.add("p_print_ln:");
+      printCodes.add("\tPUSH {lr}");
+      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printCodes.add("\tBL puts");
+      printCodes.add("\tMOV " + resultReg + ", #0");
+      printCodes.add("\tBL fflush");
+      printCodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"\\0\""));
+    }
+
     for(String s: variables) {
       System.out.println(s);
     }
@@ -93,7 +151,7 @@ public class ASTVisitor {
       } else if (expr instanceof BoolNode) {
         codes.add("\tSUB sp, sp, #1");
         spPosition += 1;
-        codes.add("\tMOV " + paramReg + ", #" + (!((BoolNode) expr).getBoolValue() ? 0 : 1));
+        codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) expr).getBoolValue());
         codes.add("\tSTRB " + paramReg + ", [sp]");
         codes.add("\tADD sp, sp, #1");
       } else if (expr instanceof CharNode) {
@@ -154,51 +212,30 @@ public class ASTVisitor {
       codes.add("\tBL p_print_string");
 
       visitStringNode((StringNode) ast.getExpr());
-      printCodes.add("p_print_string:");
-      printCodes.add("\tPUSH {lr}");
-      printCodes.add("\tLDR " + reg_add() + ", [" + resultReg + "]");
-      printCodes.add("\tADD " + reg_add() + ", " + resultReg + ", #4");
-      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
-      printCodes.add("\tBL printf");
-      printCodes.add("\tMOV " + resultReg + ", #0");
-      printCodes.add("\tBL fflush");
-      printCodes.add("\tPOP {pc}");
-      visitStringNode(new StringNode("\"%.*s\\0\""));
+      printstring = true;
     } else if (expr instanceof IntNode) {
       codes.add("\tLDR " + paramReg + ", =" + ((IntNode) expr).getValue());
       codes.add("\tMOV " + resultReg + ", " + paramReg);
       codes.add("\tBL p_print_int");
 
-      printCodes.add("p_print_int:");
-      printCodes.add("\tPUSH {lr}");
-      printCodes.add("\tMOV " + reg_add() + ", " + resultReg);
-      printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-      printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
-      printCodes.add("\tBL printf");
-      printCodes.add("\tMOV " + resultReg + ", #0");
-      printCodes.add("\tBL fflush");
-      printCodes.add("\tPOP {pc}");
-      visitStringNode(new StringNode("\"%d\\0\""));
+      printint = true;
     } else if (expr instanceof CharNode) {
       codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
       codes.add("\tMOV " + resultReg + ", " + paramReg);
       codes.add("\tBL putchar");
+    } else if (expr instanceof BoolNode) {
+      codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) expr).getBoolValue());
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+      codes.add("\tBL p_print_bool");
+
+      printBool = true;
     }
 
   }
 
   public void visitPrintlnAst(PrintlnAst ast) {
     codes.add("\tBL p_print_ln");
-    printCodes.add("p_print_ln:");
-    printCodes.add("\tPUSH {lr}");
-    printCodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-    printCodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
-    printCodes.add("\tBL puts");
-    printCodes.add("\tMOV " + resultReg + ", #0");
-    printCodes.add("\tBL fflush");
-    printCodes.add("\tPOP {pc}");
-    visitStringNode(new StringNode("\"\\0\""));
+    println = true;
   }
 
   private String reg_add() {
