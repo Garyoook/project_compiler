@@ -11,10 +11,16 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
 import static java.lang.System.exit;
+import static java.lang.System.setOut;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Wacc {
@@ -75,10 +81,21 @@ public class Wacc {
       AST ast = visitor.visitProg(basicParser.prog());
 //      System.out.println(ast);
 
+      String[] s1 = args[0].split("/");
+      String fileName = s1[s1.length - 1];
+      fileName = fileName.split("\\.")[0];
+      System.out.println(fileName);
       if (!ErrorMessage.hasError()) {
+        File outputFile = new File(fileName+".s");
+        FileWriter myWriter = new FileWriter(outputFile);
         ASTVisitor translator = new ASTVisitor();
         translator.visitProgAST(ast);
-        translator.getcodes();
+        List<String> result = translator.getcodes();
+        for (String s:result) {
+          myWriter.write(s + "\n");
+        }
+        myWriter.close();
+        outputFile.deleteOnExit();
       }
     } catch (NumberFormatException e) {
       ErrorMessage.addSyntaxError("Integer overflow");

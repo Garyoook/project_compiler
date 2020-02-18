@@ -25,7 +25,7 @@ public class ASTVisitor {
   private boolean printstring = false;
   private boolean printBool = false;
 
-  public void getcodes() {
+  public List<String> getcodes() {
     if (spPosition > 0) {
       main.add("\tADD sp, sp, #" + spPosition);
     }
@@ -103,6 +103,13 @@ public class ASTVisitor {
         System.out.println(s);
       }
     }
+
+    List<String> result = new LinkedList<>();
+    result.addAll(variables);
+    result.addAll(main);
+    result.addAll(printcodes);
+
+    return result;
 
   }
 
