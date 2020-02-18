@@ -8,7 +8,6 @@ public class CharNode extends AST {
   }
 
   public char getCharValue() {
-    System.out.println("DDDDDDD" + value);
     if (value.length() > 3) {
       return value.charAt(2);
     }
