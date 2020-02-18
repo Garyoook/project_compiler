@@ -110,25 +110,27 @@ public class ASTVisitor {
     main.add("\tPUSH {lr}");
     ProgramAST past= (ProgramAST) ast;
     main.add(0, "main:");
+    int k = 4;
     for (FuncAST f: past.getFunctions()) {
       LinkedList<String> codes = new LinkedList<>();
 
-      visitFuncAST(f, codes);
+      visitFuncAST(f, codes, k);
+      k++;
       main.addAll(0, codes);
     }
-    visitStat(past.getMainProgram(), main, 4);
+    visitStat(past.getMainProgram(), main, k);
     main.add(0, "main:");
     main.add(0, ".global main");
     main.add(0, "\n.text\n");
   }
 
-  public void visitFuncAST(FuncAST ast, LinkedList<String> codes) {
+  public void visitFuncAST(FuncAST ast, LinkedList<String> codes, int reg_counter) {
 
 //    saveReg();
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
     LinkedList<String> funccodes = new LinkedList<>();
-    visitStat(ast.getFunctionBody(), funccodes);
+    visitStat(ast.getFunctionBody(), funccodes, reg_counter);
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add("\tPUSH {lr}");
     codes.addAll(funccodes);
@@ -282,16 +284,18 @@ public class ASTVisitor {
     } else if (ast instanceof WhileAst) {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
-      visitReturnAST((ReturnAst) ast, codes);
+      visitReturnAST((ReturnAst) ast, codes, reg_counter);
     }
   }
 
-  private void visitReturnAST(ReturnAst ast, List<String> codes) {
-    visitExprAst(ast, codes);
+  private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
+    visitExpr(ast, codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
   }
 
   private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
+    SymbolTable symbolTabletemp = symbolTable;
+    symbolTable = ast.getThenSymbolTable();
     List<String> elseBranch = new LinkedList<>();
     visitExpr(ast.getExpr(), codes, reg_counter);
     if (ast.getExpr() instanceof BoolNode || ast.getExpr() instanceof Binary_BoolOpNode) {
@@ -304,12 +308,14 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter + 1);
+    symbolTable = ast.getElseSymbolTable();
     visitStat(ast.getElsebranch(), elseBranch, reg_counter + 2);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
     }
     codes.add("L" + branchCounter++ + ":");
+    symbolTable = symbolTabletemp;
   }
 
   public void visitSkipAst(AST ast) {
@@ -394,6 +400,8 @@ public class ASTVisitor {
   }
 
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
+    SymbolTable symbolTabletemp = symbolTable;
+    symbolTable = ast.getSymbolTable();
     int loopLabel = branchCounter++;
     int bodyLabel = branchCounter++;
     codes.add("\tB L" + loopLabel);
@@ -407,6 +415,7 @@ public class ASTVisitor {
       codes.add("\tCMP " + paramReg + ", #1");
     }
     codes.add("\tBEQ L" + bodyLabel);
+    symbolTable = symbolTabletemp;
   }
 
 }

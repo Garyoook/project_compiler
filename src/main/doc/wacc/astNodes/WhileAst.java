@@ -27,6 +27,10 @@ public class WhileAst extends AST {
     }
   }
 
+  public SymbolTable getSymbolTable() {
+    return symbolTable;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

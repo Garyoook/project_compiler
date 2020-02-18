@@ -45,8 +45,12 @@ public class IfAst extends AST {
     return elsebranch;
   }
 
-  public SymbolTable getSymbolTable() {
-    return symbolTable;
+  public SymbolTable getThenSymbolTable() {
+    return thenSymbolTable;
+  }
+
+  public SymbolTable getElseSymbolTable() {
+    return elseSymbolTable;
   }
 
   public void setElseSymbolTable(SymbolTable symbolTable) {
