@@ -34,4 +34,12 @@ public class WhileAst extends AST {
     sb.append("{ ").append(stat).append("}\n");
     return sb.toString();
   }
+
+  public AST getExpr() {
+    return expr;
+  }
+
+  public AST getStat() {
+    return stat;
+  }
 }
