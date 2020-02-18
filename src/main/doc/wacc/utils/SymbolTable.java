@@ -39,7 +39,7 @@ public class SymbolTable {
     }
 
     public int getStackTable(String name) {
-        System.out.println(name);
+      System.out.println(name);
         return stackTable.get(name);
     }
 
