@@ -59,4 +59,26 @@ public class Binary_BoolOpNode extends AST{
   public String toString() {
     return expr1 + operContext.getText() + expr2;
   }
+
+  public AST getExpr1() {
+    return expr1;
+  }
+
+  public AST getExpr2() {
+    return expr2;
+  }
+
+  public boolean isEqual() {
+    if (low_binbool_opContext != null) {
+      return low_binbool_opContext.EQUAL() != null;
+    }
+    return false;
+  }
+
+  public boolean isNotEqual() {
+    if (low_binbool_opContext != null) {
+      return low_binbool_opContext.NOT_EQUAL() != null;
+    }
+    return false;
+  }
 }
