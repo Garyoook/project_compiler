@@ -117,7 +117,7 @@ public class ASTVisitor {
     visitStat(past.getMainProgram(), main);
     main.add(0, "main:");
     main.add(0, ".global main");
-    main.add(0, ".text\n");
+    main.add(0, "\n.text\n");
   }
 
   public void visitFuncAST(FuncAST ast) {
@@ -166,7 +166,6 @@ public class ASTVisitor {
         BoolNode bool_ast = (BoolNode)ast;
         codes.add("\tMOV " + paramReg + ", #" + bool_ast.getBoolValue());
         return true;
-
       }
     }
     return false;
@@ -236,6 +235,8 @@ public class ASTVisitor {
       visitReadAST((ReadAst) ast, codes);
     } else if (ast instanceof IfAst) {
       visitIfAst((IfAst)ast, codes);
+    } else if (ast instanceof WhileAst) {
+      visitWhileAST((WhileAst) ast, codes);
     }
   }
 
@@ -328,6 +329,22 @@ public class ASTVisitor {
     printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
     printcodes.add("\tBL scanf");
     printcodes.add("\tPOP {pc}");
+  }
+
+  public void visitWhileAST(WhileAst ast, List<String> codes) {
+    int loopLabel = branchCounter++;
+    int bodyLabel = branchCounter++;
+    codes.add("\tB L" + loopLabel);
+    codes.add("L" + bodyLabel + ":");
+    visitStat(ast.getStat(), codes);
+    codes.add("L" + loopLabel + ":");
+    //expr not implemented
+//    visitExprAst(ast.getExpr(), codes);
+    if (ast.getExpr() instanceof BoolNode) {
+      codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) ast.getExpr()).getBoolValue());
+      codes.add("\tCMP " + paramReg + ", #1");
+    }
+    codes.add("\tBEQ L" + bodyLabel);
   }
 
 }
