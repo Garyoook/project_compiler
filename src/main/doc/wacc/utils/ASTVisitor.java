@@ -303,17 +303,29 @@ public class ASTVisitor {
 
     if (expr instanceof IdentNode) {
       type = symbolTable.getVariable(((IdentNode) expr).getIdent());
+      if (type.equals(stringType())) {
+        codes.add("\tBL p_print_string");
+        printstring = true;
+      } else if (type.equals(intType())) {
+        codes.add("\tBL p_print_int");
+        printint = true;
+      } else if (type.equals(charType())) {
+        codes.add("\tBL putchar");
+      } else if (type.equals(boolType())) {
+        codes.add("\tBL p_print_bool");
+        printBool = true;
+      }
     }
 
-    if (expr instanceof StringNode || type.equals(stringType())) {
+    if (expr instanceof StringNode) {
       codes.add("\tBL p_print_string");
       printstring = true;
-    } else if (expr instanceof IntNode || type.equals(intType())) {
+    } else if (expr instanceof IntNode) {
       codes.add("\tBL p_print_int");
       printint = true;
-    } else if (expr instanceof CharNode || type.equals(charType())) {
+    } else if (expr instanceof CharNode) {
       codes.add("\tBL putchar");
-    } else if (expr instanceof BoolNode || type.equals(boolType())) {
+    } else if (expr instanceof BoolNode) {
       codes.add("\tBL p_print_bool");
       printBool = true;
     }
