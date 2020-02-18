@@ -36,6 +36,10 @@ public class FuncAST extends AST {
     return funcName;
   }
 
+  public SymbolTable getSymbolTable() {
+    return symbolTable;
+  }
+
   @Override
   public String toString() {
     StringBuilder params = new StringBuilder();

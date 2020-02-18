@@ -111,16 +111,34 @@ public class ASTVisitor {
   public void visitProgAST(AST ast) {
     main.add("\tPUSH {lr}");
     ProgramAST past= (ProgramAST) ast;
+    main.add(0, "main:");
     for (FuncAST f: past.getFunctions()) {
-      visitFuncAST(f);
+      LinkedList<String> codes = new LinkedList<>();
+
+      visitFuncAST(f, codes);
+      main.addAll(0, codes);
     }
     visitStat(past.getMainProgram(), main);
-    main.add(0, "main:");
+
     main.add(0, ".global main");
     main.add(0, ".text\n");
   }
 
-  public void visitFuncAST(FuncAST ast) {
+  public void visitFuncAST(FuncAST ast, LinkedList<String> codes) {
+
+//    saveReg();
+    SymbolTable symbolTabletemp = symbolTable;
+    symbolTable = ast.getSymbolTable();
+    LinkedList<String> funccodes = new LinkedList<>();
+    visitStat(ast.getFunctionBody(), funccodes);
+    codes.add("f_" + ast.getFuncName() + ":");
+    codes.add("\tPUSH {lr}");
+    codes.addAll(funccodes);
+    codes.add("\tPOP {PC}");
+    codes.add("\tPOP {PC}");
+    symbolTable = symbolTabletemp;
+    // TODO: 18/02/2020 saveReg restoreReg
+//    restoreReg();
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes) {
@@ -243,7 +261,14 @@ public class ASTVisitor {
       visitReadAST((ReadAst) ast, codes);
     } else if (ast instanceof IfAst) {
       visitIfAst((IfAst)ast, codes);
+    } else if (ast instanceof ReturnAst) {
+      visitReturnAST((ReturnAst) ast, codes);
     }
+  }
+
+  private void visitReturnAST(ReturnAst ast, List<String> codes) {
+    visitExprAst(ast, codes);
+    codes.add("\tMOV " + resultReg + ", " + paramReg);
   }
 
   private void visitIfAst(IfAst ast, List<String> codes) {

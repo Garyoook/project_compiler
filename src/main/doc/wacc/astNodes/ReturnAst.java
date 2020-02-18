@@ -7,6 +7,10 @@ public class ReturnAst extends AST {
     this.expr = expr;
   }
 
+  public AST getExpr() {
+    return expr;
+  }
+
   @Override
   public String toString() {
     return "return " + expr + "\n";
