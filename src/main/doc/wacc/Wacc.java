@@ -78,7 +78,7 @@ public class Wacc {
       if (!ErrorMessage.hasError()) {
         ASTVisitor translator = new ASTVisitor();
         translator.visitProgAST(ast);
-        translator.getCodes();
+        translator.getcodes();
       }
     } catch (NumberFormatException e) {
       ErrorMessage.addSyntaxError("Integer overflow");
