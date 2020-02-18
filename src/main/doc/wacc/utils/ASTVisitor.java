@@ -129,8 +129,15 @@ public class ASTVisitor {
     }
     String strcommand = "STR ";
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
-      Type t = symbolTable.getVariable(ast.getLhs().getLhsContext().getText());
-      if (t.equals(boolType()) || t.equals(charType())) {
+      Type type;
+      if (ast.getLhs().getLhsContext().pair_elem() != null) {
+        type = symbolTable.getVariable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
+      } else if (ast.getLhs().getLhsContext().array_elem() != null) {
+        type = symbolTable.getVariable(ast.getLhs().getLhsContext().array_elem().IDENT().getText());
+      } else {
+        type = symbolTable.getVariable(ast.getLhs().getLhsContext().getText());
+      }
+      if (type.equals(boolType()) || type.equals(charType())) {
         strcommand = "STRB ";
       }
       codes.add("\t" + strcommand + paramReg + ", [sp]");

@@ -34,12 +34,11 @@ public class SymbolTable {
     }
 
     public void putStackTable(String name, Integer stacknum) {
-        System.out.println(name);
         stackTable.put(name, stacknum);
     }
 
     public int getStackTable(String name) {
-        System.out.println(name);
+        if (stackTable.get(name) == null) return 0;
         return stackTable.get(name);
     }
 
