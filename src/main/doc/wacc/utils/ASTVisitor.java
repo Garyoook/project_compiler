@@ -15,8 +15,8 @@ public class ASTVisitor {
 
   private List<String> variables = new LinkedList<>();
   private List<String> printcodes = new LinkedList<>();
-  private String resultReg = "r0";
-  private String paramReg = "r4";
+  private final String resultReg = "r0";
+  private final String paramReg = "r4";
   private int stringCounter = 0;
   private int spPosition = 0;
   private int branchCounter = 0;
@@ -116,7 +116,6 @@ public class ASTVisitor {
   public void visitProgAST(AST ast) {
     main.add("\tPUSH {lr}");
     ProgramAST past= (ProgramAST) ast;
-    main.add(0, "main:");
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
       LinkedList<String> codes = new LinkedList<>();
@@ -149,7 +148,7 @@ public class ASTVisitor {
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
-    if (!visitExpr(ast.getRhs().getExpr(), codes, reg_counter)) {
+    if (!visitExprAST(ast.getRhs().getExpr(), codes, reg_counter)) {
       codes.add("\tMOV " + resultReg + ", " + paramReg);
     }
     String strcommand = "STR ";
@@ -173,7 +172,7 @@ public class ASTVisitor {
 
   public void visitExitAst(ExitAst ast, List<String> codes, int reg_counter) {
     AST newAST = ast.getExpr();
-    visitExpr(ast.getExpr(),codes, reg_counter);
+    visitExprAST(ast.getExpr(),codes, reg_counter);
     if (newAST instanceof IdentNode) {
       int x = symbolTable.getStackTable(((IdentNode) newAST).getIdent());
       if (spPosition - x == 0) {
@@ -188,7 +187,7 @@ public class ASTVisitor {
     codes.add("\tBL exit");
   }
 
-  public boolean visitExpr(AST ast, List<String> codes, int reg_counter) {
+  public boolean visitExprAST(AST ast, List<String> codes, int reg_counter) {
     if (ast instanceof IntNode) {
       IntNode int_ast = (IntNode)ast;
       codes.add("\tLDR " + paramReg + ", =" + int_ast.getValue());
@@ -214,8 +213,8 @@ public class ASTVisitor {
       return true;
     }
     else if (ast instanceof Binary_BoolOpNode) {
-      visitExpr(((Binary_BoolOpNode) ast).getExpr1(), codes, reg_counter);
-      visitExpr(((Binary_BoolOpNode) ast).getExpr2(), codes, reg_counter + 1);
+      visitExprAST(((Binary_BoolOpNode) ast).getExpr1(), codes, reg_counter);
+      visitExprAST(((Binary_BoolOpNode) ast).getExpr2(), codes, reg_counter + 1);
       codes.add("\tCMP r" + (reg_counter - 1) + ", r" + reg_counter);
       if (((Binary_BoolOpNode) ast).isEqual()) {
         codes.add("\tMOVEQ " + paramReg + ", #1");
@@ -296,7 +295,7 @@ public class ASTVisitor {
   }
 
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
-    visitExpr(ast, codes, reg_counter);
+    visitExprAST(ast, codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
   }
 
@@ -304,7 +303,7 @@ public class ASTVisitor {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getThenSymbolTable();
     List<String> elseBranch = new LinkedList<>();
-    visitExpr(ast.getExpr(), codes, reg_counter);
+    visitExprAST(ast.getExpr(), codes, reg_counter);
     if (ast.getExpr() instanceof BoolNode || ast.getExpr() instanceof Binary_BoolOpNode) {
       codes.add("\tCMP " + paramReg + ", #0");
     } else {
@@ -337,7 +336,7 @@ public class ASTVisitor {
 
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
-    visitExpr(ast.getExpr(), codes, reg_counter);
+    visitExprAST(ast.getExpr(), codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     Type type  = null;
 
@@ -415,8 +414,7 @@ public class ASTVisitor {
     codes.add("L" + bodyLabel + ":");
     visitStat(ast.getStat(), codes, reg_counter);
     codes.add("L" + loopLabel + ":");
-    //expr not implemented
-//    visitExprAst(ast.getExpr(), codes);
+//    visitExprAST(ast.getExpr(), codes, reg_counter);
     if (ast.getExpr() instanceof BoolNode) {
       codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) ast.getExpr()).getBoolValue());
       codes.add("\tCMP " + paramReg + ", #1");
