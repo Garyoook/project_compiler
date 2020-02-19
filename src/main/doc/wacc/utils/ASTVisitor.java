@@ -130,6 +130,35 @@ public class ASTVisitor {
     main.add(0, "\n.text\n");
   }
 
+  public void visitStat(AST ast, List<String> codes, int reg_counter) {
+    if (ast instanceof SkipAst) {
+      visitSkipAst(ast);
+    } else if (ast instanceof ExitAst) {
+      visitExitAst((ExitAst)ast, codes, reg_counter);
+    } else if (ast instanceof DeclarationAst) {
+      visitDeclaration((DeclarationAst) ast, codes, reg_counter);
+    } else if (ast instanceof SeqStateAst) {
+      for (AST ast1:((SeqStateAst) ast).getSeqs()) {
+        visitStat(ast1, codes, reg_counter++);
+      }
+    } else if (ast instanceof AssignAST) {
+      visitAssignAst((AssignAST)ast, codes, reg_counter);
+    } else if (ast instanceof PrintAst) {
+      visitPrintAst((PrintAst)ast, codes, reg_counter);
+    } else if (ast instanceof PrintlnAst) {
+      PrintlnAst print_ast = (PrintlnAst)ast;
+      visitPrintAst(new PrintAst(((PrintlnAst) ast).getExpr()), codes, reg_counter);
+      visitPrintlnAst(print_ast, codes, reg_counter + 1);
+    } else if (ast instanceof ReadAst) {
+      visitReadAST((ReadAst) ast, codes, reg_counter);
+    } else if (ast instanceof IfAst) {
+      visitIfAst((IfAst)ast, codes, reg_counter);
+    } else if (ast instanceof WhileAst) {
+      visitWhileAST((WhileAst) ast, codes, reg_counter);
+    } else if (ast instanceof ReturnAst) {
+      visitReturnAST((ReturnAst) ast, codes, reg_counter);
+    }
+  }
   public void visitFuncAST(FuncAST ast, LinkedList<String> codes, int reg_counter) {
 
 //    saveReg();
@@ -252,9 +281,23 @@ public class ASTVisitor {
         spPosition += 1;
         codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
         codes.add("\tSTRB " + paramReg + ", [sp]");
-        }
+      }
     } else {
-      ast.getAssignRhsAST().getRhsContext().array_liter();
+      if (ast.getAssignRhsAST().getRhsContext().array_liter() != null) {
+        codes.add("\tSUB sp, sp, #4");
+        spPosition += 4;
+        codes.add("\tLDR " + resultReg + ", =" + (4+4*ast.getAssignRhsAST().getRhsContext().array_liter().expr().size()));
+        codes.add("\tBL malloc");
+        codes.add("\tMOV " + paramReg + ", " + resultReg);
+        for (int i=0; i<ast.getAssignRhsAST().getRhsContext().array_liter().expr().size(); i++) {
+          CompilerVisitor compilerVisitor = new CompilerVisitor();
+          visitExprAST(compilerVisitor.visitExpr(ast.getAssignRhsAST().getRhsContext().array_liter().expr(i)), codes, reg_counter);
+          codes.add("\tSTR r5, [r4, #" + ((i+1)*4) + "]");
+        }
+        codes.add("\tLDR r5, =" + ast.getAssignRhsAST().getRhsContext().array_liter().expr().size());
+        codes.add("\tSTR r5, [r4]");
+        codes.add("\tSTR " + paramReg + ", [sp]");
+      }
     }
     symbolTable.putStackTable(ast.getName(), spPosition);
   }
@@ -262,36 +305,6 @@ public class ASTVisitor {
 
   private boolean isOnlyExpr(DeclarationAst ast) {
     return ast.getAssignRhsAST().getRhsContext().expr().size() == 1;
-  }
-
-  public void visitStat(AST ast, List<String> codes, int reg_counter) {
-    if (ast instanceof SkipAst) {
-      visitSkipAst(ast);
-    } else if (ast instanceof ExitAst) {
-      visitExitAst((ExitAst)ast, codes, reg_counter);
-    } else if (ast instanceof DeclarationAst) {
-      visitDeclaration((DeclarationAst) ast, codes, reg_counter);
-    } else if (ast instanceof SeqStateAst) {
-      for (AST ast1:((SeqStateAst) ast).getSeqs()) {
-        visitStat(ast1, codes, reg_counter++);
-      }
-    } else if (ast instanceof AssignAST) {
-      visitAssignAst((AssignAST)ast, codes, reg_counter);
-    } else if (ast instanceof PrintAst) {
-      visitPrintAst((PrintAst)ast, codes, reg_counter);
-    } else if (ast instanceof PrintlnAst) {
-      PrintlnAst print_ast = (PrintlnAst)ast;
-      visitPrintAst(new PrintAst(((PrintlnAst) ast).getExpr()), codes, reg_counter);
-      visitPrintlnAst(print_ast, codes, reg_counter + 1);
-    } else if (ast instanceof ReadAst) {
-      visitReadAST((ReadAst) ast, codes, reg_counter);
-    } else if (ast instanceof IfAst) {
-      visitIfAst((IfAst)ast, codes, reg_counter);
-    } else if (ast instanceof WhileAst) {
-      visitWhileAST((WhileAst) ast, codes, reg_counter);
-    } else if (ast instanceof ReturnAst) {
-      visitReturnAST((ReturnAst) ast, codes, reg_counter);
-    }
   }
 
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
@@ -422,5 +435,4 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + bodyLabel);
     symbolTable = symbolTabletemp;
   }
-
 }
