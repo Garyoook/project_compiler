@@ -64,7 +64,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public AST visitArray_elem(Array_elemContext ctx) {
-    return visitChildren(ctx);
+
+    return new ArrayElemNode(ctx.IDENT().getText(), visitExpr(ctx.expr(0)));
   }
 
   @Override public AST visitBinary_oper(Binary_operContext ctx) {
