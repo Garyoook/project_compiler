@@ -38,9 +38,26 @@ public class SymbolTable {
     }
 
     public int getStackTable(String name) {
-        if (stackTable.get(name) == null) return 0;
-        return stackTable.get(name);
+        return stackTableHelper(name, this);
     }
+
+  private int stackTableHelper(String name, SymbolTable symbolTable) {
+    if (symbolTable == null) {
+//      ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
+      System.out.println("no variable");
+      return -1;
+    }
+    if (symbolTable.symbolTable == null) {
+//      ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
+      System.out.println("no variable");
+      return -1;
+    }
+    if (symbolTable.stackTable.get(name) != null) {
+      return symbolTable.stackTable.get(name);
+    } else {
+      return stackTableHelper(name, symbolTable.encSymbolTable);
+    }
+  }
 
     public Type getVariable(String name) {
       return sbTableHelper(name, this);

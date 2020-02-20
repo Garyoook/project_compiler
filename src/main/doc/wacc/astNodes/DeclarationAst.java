@@ -101,4 +101,9 @@ public class DeclarationAst extends AST {
   public String toString() {
     return "DECLEAR: type: " + type + " name: " + name + " assign from: " + rhs.getRhsContext().getText() + "\n";
   }
+
+  public Type getType() {
+    return type;
+  }
+
 }

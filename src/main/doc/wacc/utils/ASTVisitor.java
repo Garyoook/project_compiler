@@ -1,6 +1,5 @@
 package doc.wacc.utils;
 
-import antlr.BasicParser;
 import doc.wacc.astNodes.*;
 
 import java.util.LinkedList;
@@ -35,10 +34,6 @@ public class ASTVisitor {
     main.add("\tPOP {pc}");
     main.add("\t.ltorg");
 
-    if (variables.size() > 0) {
-      variables.add(0, ".data\n");
-    }
-
     if (printCheckArrayBound) {
       printcodes.add("p_check_array_bounds:");
       printcodes.add("\tPUSH {lr}");
@@ -59,6 +54,21 @@ public class ASTVisitor {
       printcodes.add("\tBLCS p_throw_runtime_error");
       printRunTimeErr = true;
       printcodes.add("\tPOP {pc}");
+      printcodes.add("\tPOP {pc}");
+    }
+
+    if(printstring) {
+      printcodes.add("p_print_string:");
+      printcodes.add("\tPUSH {lr}");
+      printcodes.add("\tLDR " + reg_add() + ", [" + resultReg + "]");
+      printcodes.add("\tADD " + reg_add() + ", " + resultReg + ", #4");
+      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printcodes.add("\tBL printf");
+      printcodes.add("\tMOV " + resultReg + ", #0");
+      printcodes.add("\tBL fflush");
+      printcodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"%.*s\\0\""));
     }
 
     if (printint) {
@@ -72,6 +82,19 @@ public class ASTVisitor {
       printcodes.add("\tBL fflush");
       printcodes.add("\tPOP {pc}");
       visitStringNode(new StringNode("\"%d\\0\""));
+    }
+
+
+    if (println) {
+      printcodes.add("p_print_ln:");
+      printcodes.add("\tPUSH {lr}");
+      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printcodes.add("\tBL puts");
+      printcodes.add("\tMOV " + resultReg + ", #0");
+      printcodes.add("\tBL fflush");
+      printcodes.add("\tPOP {pc}");
+      visitStringNode(new StringNode("\"\\0\""));
     }
 
     if (printBool) {
@@ -88,17 +111,6 @@ public class ASTVisitor {
       printcodes.add("\tPOP {pc}");
     }
 
-    if (println) {
-      printcodes.add("p_print_ln:");
-      printcodes.add("\tPUSH {lr}");
-      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
-      printcodes.add("\tBL puts");
-      printcodes.add("\tMOV " + resultReg + ", #0");
-      printcodes.add("\tBL fflush");
-      printcodes.add("\tPOP {pc}");
-      visitStringNode(new StringNode("\"\\0\""));
-    }
 
     if (printRunTimeErr) {
       printcodes.add("p_throw_runtime_error:");
@@ -108,18 +120,10 @@ public class ASTVisitor {
       printcodes.add("\tBL exit");
     }
 
-    if(printstring) {
-      printcodes.add("p_print_string:");
-      printcodes.add("\tPUSH {lr}");
-      printcodes.add("\tLDR " + reg_add() + ", [" + resultReg + "]");
-      printcodes.add("\tADD " + reg_add() + ", " + resultReg + ", #4");
-      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
-      printcodes.add("\tBL printf");
-      printcodes.add("\tMOV " + resultReg + ", #0");
-      printcodes.add("\tBL fflush");
-      printcodes.add("\tPOP {pc}");
-      visitStringNode(new StringNode("\"%.*s\\0\""));
+
+
+    if (variables.size() > 0) {
+      variables.add(0, ".data\n");
     }
 
     for(String s: variables) {
@@ -146,20 +150,18 @@ public class ASTVisitor {
   }
 
   public void visitProgAST(AST ast) {
-    main.add("\tPUSH {lr}");
+    main.add("\n.text\n");
+    main.add(".global main");
+
     ProgramAST past= (ProgramAST) ast;
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
-      LinkedList<String> codes = new LinkedList<>();
-
-      visitFuncAST(f, codes, k);
-      k++;
-      main.addAll(0, codes);
+      visitFuncAST(f, main, k);
     }
+
+    main.add("main:");
+    main.add("\tPUSH {lr}");
     visitStat(past.getMainProgram(), main, k);
-    main.add(0, "main:");
-    main.add(0, ".global main");
-    main.add(0, "\n.text\n");
   }
 
   public void visitStat(AST ast, List<String> codes, int reg_counter) {
@@ -189,20 +191,23 @@ public class ASTVisitor {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
       visitReturnAST((ReturnAst) ast, codes, reg_counter);
+    } else if (ast instanceof CallAST) {
+
     }
   }
-  public void visitFuncAST(FuncAST ast, LinkedList<String> codes, int reg_counter) {
+  public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
 
 //    saveReg();
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    LinkedList<String> funccodes = new LinkedList<>();
-    visitStat(ast.getFunctionBody(), funccodes, reg_counter);
+
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add("\tPUSH {lr}");
-    codes.addAll(funccodes);
+    visitStat(ast.getFunctionBody(), codes, reg_counter);
     codes.add("\tPOP {PC}");
     codes.add("\tPOP {PC}");
+    codes.add("\t.ltorg");
+
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
@@ -307,6 +312,8 @@ public class ASTVisitor {
         codes.add("\tLDR " + paramReg + ", [sp]");
         codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
       }
+    } else if (ast instanceof CallAST) {
+      visitCallAst((CallAST)ast, codes, reg_counter);
     } else if (ast instanceof ArrayElemNode) {
       codes.add("\tADD " + paramReg + ", sp, #0");
       if (((ArrayElemNode) ast).getExpr() instanceof IntNode) {
@@ -327,60 +334,66 @@ public class ASTVisitor {
     return false;
   }
 
-  public void visitDeclaration(DeclarationAst ast, List<String> codes, int reg_counter) {
-    if (isOnlyExpr(ast)) {
-      CompilerVisitor visitor = new CompilerVisitor();
-      AST expr = visitor.visitExpr(ast.getAssignRhsAST().getRhsContext().expr(0));
-      if (expr instanceof StringNode) {
-        codes.add("\tSUB sp, sp, #4");
-        spPosition += 4;
-        codes.add("\tLDR " + paramReg + ", =msg_" + stringCounter);
-        codes.add("\tSTR " + paramReg + ", [sp]");
-        visitStringNode((StringNode)expr);
-      } else if (expr instanceof IntNode) {
-        codes.add("\tSUB sp, sp, #4");
-        spPosition += 4;
-        codes.add("\tLDR " + paramReg + ", =" + (ast.getAssignRhsAST().getRhsContext().getText()));
-        codes.add("\tSTR " + paramReg + ", [sp]");
-      } else if (expr instanceof BoolNode) {
-        codes.add("\tSUB sp, sp, #1");
-        spPosition += 1;
-        codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) expr).getBoolValue());
-        codes.add("\tSTRB " + paramReg + ", [sp]");
-      } else if (expr instanceof CharNode) {
-        codes.add("\tSUB sp, sp, #1");
-        spPosition += 1;
-        codes.add("\tMOV " + paramReg + ", #'" + ((CharNode) expr).getCharValue() + "'");
-        codes.add("\tSTRB " + paramReg + ", [sp]");
-      }
-    } else {
-      // array declaration
-      if (ast.getAssignRhsAST().getRhsContext().array_liter() != null) {
-        codes.add("\tSUB sp, sp, #4");
-        spPosition += 4;
-        codes.add("\tLDR " + resultReg + ", =" + (4+4*ast.getAssignRhsAST().getRhsContext().array_liter().expr().size()));
-        codes.add("\tBL malloc");
-        codes.add("\tMOV " + paramReg + ", " + resultReg);
-        for (int i=0; i<ast.getAssignRhsAST().getRhsContext().array_liter().expr().size(); i++) {
-          CompilerVisitor compilerVisitor = new CompilerVisitor();
-          visitExprAST(compilerVisitor.visitExpr(ast.getAssignRhsAST().getRhsContext().array_liter().expr(i)), codes, reg_counter);
-          codes.add("\tSTR r5, [r4, #" + ((i+1)*4) + "]");
+  private void visitCallAst(CallAST ast, List<String> codes, int reg_counter) {
+    if (ast.hasArgument()) {
+      for (AST argument : ast.getArguments()) {
+        visitExprAST(argument, codes, reg_counter++);
+        if (argument instanceof CharNode || argument instanceof BoolNode)  {
+          codes.add("\tSTRB " + paramReg + ", [sp, #-1]!");
+        } else {
+          codes.add("\tSTR " + paramReg + ", [sp, #-4]!");
         }
-        codes.add("\tLDR r5, =" + ast.getAssignRhsAST().getRhsContext().array_liter().expr().size());
-        codes.add("\tSTR r5, [r4]");
-        codes.add("\tSTR " + paramReg + ", [sp]");
       }
+    }
+    codes.add("\tBL f_" + ast.getFuncName());
+    codes.add("\tMOV " + paramReg + ", " + resultReg);
+  }
+
+
+  public void visitDeclaration(DeclarationAst ast, List<String> codes, int reg_counter) {
+    AST expr = ast.getAssignRhsAST().getExpr();
+    Type type = ast.getType();
+
+    if (ast.getAssignRhsAST().getRhsContext().array_liter() != null) {
+      codes.add("\tSUB sp, sp, #4");
+      spPosition += 4;
+      codes.add("\tLDR " + resultReg + ", =" + (4 + 4 * ast.getAssignRhsAST().getRhsContext().array_liter().expr().size()));
+      codes.add("\tBL malloc");
+      codes.add("\tMOV " + paramReg + ", " + resultReg);
+      for (int i = 0; i < ast.getAssignRhsAST().getRhsContext().array_liter().expr().size(); i++) {
+        CompilerVisitor compilerVisitor = new CompilerVisitor();
+        visitExprAST(compilerVisitor.visitExpr(ast.getAssignRhsAST().getRhsContext().array_liter().expr(i)), codes, reg_counter);
+        codes.add("\tSTR r5, [r4, #" + ((i + 1) * 4) + "]");
+      }
+      codes.add("\tLDR r5, =" + ast.getAssignRhsAST().getRhsContext().array_liter().expr().size());
+      codes.add("\tSTR r5, [r4]");
+      codes.add("\tSTR " + paramReg + ", [sp]");
+
+    } else if (ast.getAssignRhsAST().getRhsContext().pair_elem() != null) {
+    } else if (type.equals(stringType()) || type.equals(intType())) {
+      codes.add("\tSUB sp, sp, #4");
+      spPosition += 4;
+    } else if (type.equals(boolType()) || type.equals(charType())) {
+      codes.add("\tSUB sp, sp, #1");
+      spPosition += 1;
+    }
+
+    if (ast.getAssignRhsAST().call()) {
+      visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
+    } else {
+      visitExprAST(ast.getAssignRhsAST().getExpr(), codes, reg_counter);
+    }
+
+    if (expr instanceof CharNode || expr instanceof BoolNode)  {
+      codes.add("\tSTRB " + paramReg + ", [sp]");
+    } else {
+      codes.add("\tSTR " + paramReg + ", [sp]");
     }
     symbolTable.putStackTable(ast.getName(), spPosition);
   }
 
-
-  private boolean isOnlyExpr(DeclarationAst ast) {
-    return ast.getAssignRhsAST().getRhsContext().expr().size() == 1;
-  }
-
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
-    visitExprAST(ast, codes, reg_counter);
+    visitExprAST(ast.getExpr(), codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
   }
 
