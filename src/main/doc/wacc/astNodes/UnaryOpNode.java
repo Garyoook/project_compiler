@@ -41,4 +41,12 @@ public class UnaryOpNode extends AST{
   public String toString() {
     return operContext.getText() + expr;
   }
+
+  public AST getExpr() {
+    return expr;
+  }
+
+  public boolean isNOT() {
+    return unary_notContext != null;
+  }
 }
