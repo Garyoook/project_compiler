@@ -4,7 +4,6 @@ import doc.wacc.astNodes.*;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BinaryOperator;
 
 import static doc.wacc.astNodes.AST.symbolTable;
 import static doc.wacc.utils.Type.*;
@@ -27,6 +26,8 @@ public class ASTVisitor {
   private boolean printRunTimeErr = false;
   private boolean printCheckArrayBound = false;
   private boolean printOverflowError = false;
+  private boolean printReference = false;
+  private boolean printFree = false;
 
   public List<String> getcodes() {
     if (spPosition > 0) {
@@ -40,23 +41,43 @@ public class ASTVisitor {
       printcodes.add("p_check_array_bounds:");
       printcodes.add("\tPUSH {lr}");
       printcodes.add("\tCMP " + resultReg + ", #0");
-      variables.add("msg_" + stringCounter + ":");
-      variables.add( "\t.word 44");
-      variables.add("\t.ascii \"ArrayIndexOutOfBoundsError: negative index\\n\\0\"");
+      visitStringNode(new StringNode("ArrayIndexOutOfBoundsError: negative index\\n\\0"));
       printcodes.add("\tLDRLT " + resultReg + ", =msg_" + stringCounter);
-      stringCounter++;
       printcodes.add("\tBLLT p_throw_runtime_error");
       printcodes.add("\tLDR r1, [r1]");
       printcodes.add("\tCMP " + resultReg + ", r1");
-      variables.add("msg_" + stringCounter + ":");
-      variables.add( "\t.word 45");
-      variables.add("\t.ascii \"ArrayIndexOutOfBoundsError: index too large\\n\\0\"");
+      visitStringNode(new StringNode("ArrayIndexOutOfBoundsError: index too large\\n\\0"));
       printcodes.add("\tLDRCS " + resultReg + ", =msg_" + stringCounter);
-      stringCounter++;
       printcodes.add("\tBLCS p_throw_runtime_error");
       printRunTimeErr = true;
       printcodes.add("\tPOP {pc}");
       printcodes.add("\tPOP {pc}");
+    }
+
+    if (printFree) {
+      printcodes.add("p_free_pair:");
+      printcodes.add("\tPUSH {lr}");
+      printcodes.add("\tLDREQ " + resultReg + ", =msg_" + stringCounter);
+      visitStringNode(new StringNode("NullReferenceError: dereference a null reference\\n\\0"));
+      printcodes.add("\tBEQ p_throw_runtime_error");
+      printRunTimeErr = true;
+      printcodes.add("\tPUSH {r0}");
+      printcodes.add("\tLDR " + resultReg + ", [" + resultReg + "]");
+      printcodes.add("\tBL free");
+      printcodes.add("\tLDR " + resultReg + ", [sp]");
+      printcodes.add("\tLDR " + resultReg + ", [" + resultReg + ", #4]");
+      printcodes.add("\tBL free");
+      printcodes.add("\tPOP {r0}");
+      printcodes.add("\tBL free");
+      printcodes.add("\tPOP {pc}");
+    }
+
+    if (printRunTimeErr) {
+      printcodes.add("p_throw_runtime_error:");
+      printcodes.add("\tBL p_print_string");
+      printstring = true;
+      printcodes.add("\tMOV " + resultReg + ", #-1");
+      printcodes.add("\tBL exit");
     }
 
     if(printstring) {
@@ -86,6 +107,18 @@ public class ASTVisitor {
       visitStringNode(new StringNode("\"%d\\0\""));
     }
 
+    if (printReference) {
+      printcodes.add("p_print_reference:");
+      printcodes.add("\tPUSH {ld}");
+      printcodes.add("\tMOV r1, " + resultReg);
+      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      visitStringNode(new StringNode("\"%p\\0\""));
+      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
+      printcodes.add("\tBL printf");
+      printcodes.add("\tMOV " + resultReg + ", #0");
+      printcodes.add("\tBL fflush");
+      printcodes.add("\tPOP {pc}");
+    }
 
     if (println) {
       printcodes.add("p_print_ln:");
@@ -118,20 +151,9 @@ public class ASTVisitor {
       printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
       printcodes.add("\tBL p_throw_runtime_error");
       printRunTimeErr = true;
-      variables.add("msg_" + stringCounter + ":");
-      variables.add( "\t.word 82");
-      variables.add("\t.ascii \"AOverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-      stringCounter++;
+      visitStringNode(new StringNode("\t.ascii \"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\""));
     }
 
-
-    if (printRunTimeErr) {
-      printcodes.add("p_throw_runtime_error:");
-      printcodes.add("\tBL p_print_string");
-      printstring = true;
-      printcodes.add("\tMOV " + resultReg + ", #-1");
-      printcodes.add("\tBL exit");
-    }
 
 
 
@@ -204,6 +226,8 @@ public class ASTVisitor {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
       visitReturnAST((ReturnAst) ast, codes, reg_counter);
+    } else if (ast instanceof FreeAst) {
+      visitFreeAST((FreeAst) ast, codes, reg_counter);
     }
   }
 
@@ -226,7 +250,7 @@ public class ASTVisitor {
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
-    if (!visitExprAST(ast.getRhs().getExpr(), codes, reg_counter)) {
+    if (!visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter)) {
      // codes.add("\tMOV " + resultReg + ", " + paramReg);    //difference in while loop;
     }
     String strcommand = "STR ";
@@ -267,16 +291,7 @@ public class ASTVisitor {
   }
 
   public void visitExitAst(ExitAst ast, List<String> codes, int reg_counter) {
-    AST newAST = ast.getExpr();
     visitExprAST(ast.getExpr(),codes, reg_counter);
-    if (newAST instanceof IdentNode) {
-      int x = symbolTable.getStackTable(((IdentNode) newAST).getIdent());
-      if (spPosition - x == 0) {
-        codes.add("\tLDR " + paramReg + ", [sp]");
-      } else {
-        codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
-      }
-    }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL exit");
   }
@@ -374,7 +389,7 @@ public class ASTVisitor {
 
 
   public void visitDeclaration(DeclarationAst ast, List<String> codes, int reg_counter) {
-    AST expr = ast.getAssignRhsAST().getExpr();
+    AST expr = ast.getAssignRhsAST().getExpr1();
     Type type = ast.getType();
 
     if (ast.getAssignRhsAST().getRhsContext().array_liter() != null) {
@@ -392,7 +407,32 @@ public class ASTVisitor {
       codes.add("\tSTR r5, [r4]");
       codes.add("\tSTR " + paramReg + ", [sp]");
 
-    } else if (ast.getAssignRhsAST().getRhsContext().pair_elem() != null) {
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 1) {
+      codes.add("\tSUB sp, sp, #4");
+      spPosition += 4;
+      codes.add("\tLDR " + resultReg + ", =8");
+      codes.add("\tBL malloc");
+      codes.add("\tMOV " + paramReg + ", " + resultReg);
+      visitExprAST(ast.getAssignRhsAST().getExpr1(),codes,reg_counter);
+      Type lType = null;
+      Type rType = null;
+      if (type instanceof PairType) {
+        lType = ((PairType) type).getLeftType();
+        rType = ((PairType) type).getRightType();
+      }
+      int size = lType.equals(Type.charType()) ? 1 : 4;
+      String b = lType.equals(Type.charType()) ? "B" : "";
+      codes.add("\tLDR " + resultReg + ", =" + size);
+      codes.add("\tBL malloc");
+      codes.add("\tSTR" + b + " r5, [r0]");
+      codes.add("\tSTR " + resultReg + ", [r4]");
+      visitExprAST(ast.getAssignRhsAST().getExpr2(),codes,reg_counter);
+      size = rType.equals(Type.charType()) ? 1 : 4;
+      b = rType.equals(Type.charType()) ? "B" : "";
+      codes.add("\tLDR " + resultReg + ", =" + size);
+      codes.add("\tBL malloc");
+      codes.add("\tSTR" + b + " r5, [" + resultReg + "]");
+      codes.add("\tSTR " + resultReg + ", [" + paramReg + ", #4]");
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add("\tSUB sp, sp, #4");
       spPosition += 4;
@@ -403,8 +443,8 @@ public class ASTVisitor {
 
     if (ast.getAssignRhsAST().call()) {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
-    } else {
-      visitExprAST(ast.getAssignRhsAST().getExpr(), codes, reg_counter);
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1){
+      visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
     }
 
     if (expr instanceof CharNode || expr instanceof BoolNode)  {
@@ -495,6 +535,9 @@ public class ASTVisitor {
     } else if (expr instanceof UnaryOpNode) {
       codes.add("\tBL p_print_int");
       printint = true;
+    } else if (expr instanceof PairAST) {
+      codes.add("\tBL p_print_reference");
+      printReference = true;
     }
   }
 
@@ -550,5 +593,12 @@ public class ASTVisitor {
     }
     codes.add("\tBEQ L" + bodyLabel);
     symbolTable = symbolTabletemp;
+  }
+
+  public void visitFreeAST(FreeAst ast, List<String> codes, int reg_counter) {
+    codes.add("\tLDR " + paramReg + ", [sp]");
+    codes.add("\tMOV " + resultReg + ", " + paramReg);
+    codes.add("\tBL p_free_pair");
+    printFree = true;
   }
 }
