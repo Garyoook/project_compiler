@@ -82,7 +82,7 @@ public class Binary_BoolOpNode extends AST{
     return false;
   }
 
-  public boolean isBinaryAdd() {
+  public boolean isBinaryAnd() {
     if(lowest_binaryOpNode != null) {
       return lowest_binaryOpNode.B_AND() != null;
     }
