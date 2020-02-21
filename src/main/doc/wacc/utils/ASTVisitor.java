@@ -4,6 +4,7 @@ import doc.wacc.astNodes.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 import static doc.wacc.astNodes.AST.symbolTable;
 import static doc.wacc.utils.Type.*;
@@ -25,6 +26,7 @@ public class ASTVisitor {
   private boolean printBool = false;
   private boolean printRunTimeErr = false;
   private boolean printCheckArrayBound = false;
+  private boolean printOverflowError = false;
 
   public List<String> getcodes() {
     if (spPosition > 0) {
@@ -111,6 +113,17 @@ public class ASTVisitor {
       printcodes.add("\tPOP {pc}");
     }
 
+    if (printOverflowError) {
+      printcodes.add("p_throw_overflow_error");
+      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printcodes.add("\tBL p_throw_runtime_error");
+      printRunTimeErr = true;
+      variables.add("msg_" + stringCounter + ":");
+      variables.add( "\t.word 82");
+      variables.add("\t.ascii \"AOverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+      stringCounter++;
+    }
+
 
     if (printRunTimeErr) {
       printcodes.add("p_throw_runtime_error:");
@@ -191,10 +204,9 @@ public class ASTVisitor {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
       visitReturnAST((ReturnAst) ast, codes, reg_counter);
-    } else if (ast instanceof CallAST) {
-
     }
   }
+
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
 
 //    saveReg();
@@ -215,7 +227,7 @@ public class ASTVisitor {
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
     if (!visitExprAST(ast.getRhs().getExpr(), codes, reg_counter)) {
-      codes.add("\tMOV " + resultReg + ", " + paramReg);
+     // codes.add("\tMOV " + resultReg + ", " + paramReg);    //difference in while loop;
     }
     String strcommand = "STR ";
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
@@ -305,7 +317,20 @@ public class ASTVisitor {
       } else if (((Binary_BoolOpNode) ast).isNotEqual()) {
         codes.add("\tMOVNE " + paramReg + ", #1");
         codes.add("\tMOVEQ " + paramReg + ", #0");
+      } else if (((Binary_BoolOpNode) ast).isGreater()) {
+        codes.add("\tMOVGT " + paramReg + ", #1");
+        codes.add("\tMOVLE " + paramReg + ", #0");
+      }                                                                        // still has other operators
+    } else if (ast instanceof BinaryOpNode) {
+      visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, reg_counter);
+      visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, reg_counter + 1);
+      if (((BinaryOpNode) ast).isPlus()) {
+        codes.add("\tADDS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+      } else if (((BinaryOpNode) ast).isMinus()) {
+        codes.add("\tSUBS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
       }
+      codes.add("\tBLVS p_throw_overflow_error");
+      printOverflowError = true;
     } else if (ast instanceof UnaryOpNode) {
       // load array length
       if (((UnaryOpNode) ast).getOperContext() != null) {
@@ -407,8 +432,6 @@ public class ASTVisitor {
     } else {
       codes.add("\tCMP " + paramReg + ", r" + reg_counter);
     }
-
-    //visitExpr not implemented
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter + 1);
@@ -521,10 +544,11 @@ public class ASTVisitor {
     codes.add("L" + bodyLabel + ":");
     visitStat(ast.getStat(), codes, reg_counter);
     codes.add("L" + loopLabel + ":");
-//    visitExprAST(ast.getExpr(), codes, reg_counter);
-    if (ast.getExpr() instanceof BoolNode) {
-      codes.add("\tMOV " + paramReg + ", #" + ((BoolNode) ast.getExpr()).getBoolValue());
+    visitExprAST(ast.getExpr(), codes, reg_counter);
+    if (ast.getExpr() instanceof BoolNode || ast.getExpr() instanceof Binary_BoolOpNode) {
       codes.add("\tCMP " + paramReg + ", #1");
+    } else {
+      codes.add("\tCMP " + paramReg + ", r" + reg_counter);
     }
     codes.add("\tBEQ L" + bodyLabel);
     symbolTable = symbolTabletemp;
