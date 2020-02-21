@@ -57,7 +57,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }
     if (ctx.int_sign().getText().equals("-")) {
-      return new IntNode(-Integer.parseInt(ctx.getText()));
+      return new IntNode(Integer.parseInt(ctx.getText()));
     } else {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }

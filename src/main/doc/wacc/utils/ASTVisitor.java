@@ -276,8 +276,6 @@ public class ASTVisitor {
       } else {
         codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
       }
-    } else {
-      codes.add("\tLDR " + paramReg + ", [sp]");
     }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL exit");
