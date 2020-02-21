@@ -80,7 +80,7 @@ public class ASTVisitor {
     if (printint) {
       printcodes.add("p_print_int:");
       printcodes.add("\tPUSH {lr}");
-      printcodes.add("\tMOV " + reg_add() + ", " + resultReg);
+      printcodes.add("\tMOV " + "r1" + ", " + resultReg);
       printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
       printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
       printcodes.add("\tBL printf");
@@ -271,16 +271,7 @@ public class ASTVisitor {
   }
 
   public void visitExitAst(ExitAst ast, List<String> codes, int reg_counter) {
-    AST newAST = ast.getExpr();
     visitExprAST(ast.getExpr(),codes, reg_counter);
-    if (newAST instanceof IdentNode) {
-      int x = symbolTable.getStackTable(((IdentNode) newAST).getIdent());
-      if (spPosition - x == 0) {
-        codes.add("\tLDR " + paramReg + ", [sp]");
-      } else {
-        codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
-      }
-    }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL exit");
   }
@@ -296,10 +287,19 @@ public class ASTVisitor {
       return true;
     } else if (ast instanceof IdentNode) {
       int x = symbolTable.getStackTable(((IdentNode)ast).getIdent());
-      if (spPosition - x == 0) {
-        codes.add("\tLDR " + paramReg + ", [sp]");
+      Type type = symbolTable.getVariable(((IdentNode) ast).getIdent());
+      if (type.equals(boolType()) || type.equals(charType())){
+        if (spPosition - x == 0) {
+          codes.add("\tLDRSB " + paramReg + ", [sp]");
+        } else {
+          codes.add("\tLDRSB " + paramReg + ", [sp, #" + (spPosition - x) + "]");
+        }
       } else {
-        codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
+        if (spPosition - x == 0) {
+          codes.add("\tLDR " + paramReg + ", [sp]");
+        } else {
+          codes.add("\tLDR " + paramReg + ", [sp, #" + (spPosition - x) + "]");
+        }
       }
       return true;
     } else if (ast instanceof StringNode) {
@@ -522,6 +522,7 @@ public class ASTVisitor {
     } else if (type.equals(charType())) {
       readType = "char";
     }
+    codes.add("\tADD r4, sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText())));
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL p_read_" + readType);
     variables.add("msg_" + stringCounter + ":");
