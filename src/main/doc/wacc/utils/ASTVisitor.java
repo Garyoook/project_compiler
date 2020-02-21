@@ -26,6 +26,7 @@ public class ASTVisitor {
   private boolean printRunTimeErr = false;
   private boolean printCheckArrayBound = false;
   private boolean printOverflowError = false;
+  private boolean printDivideByZeroError = false;
 
   public List<String> getcodes() {
     if (spPosition > 0) {
@@ -60,6 +61,41 @@ public class ASTVisitor {
       printRunTimeErr = true;
       printcodes.add("\tPOP {pc}");
       printcodes.add("\tPOP {pc}");
+    }
+
+    if (printDivideByZeroError) {
+      printcodes.add("p_check_divide_by_zero");
+      printcodes.add("\tPUSH {lr}");
+      printcodes.add("\tCMP r1, #0");
+      printcodes.add("\tLDREQ r0, =msg_" +stringCounter);
+      printcodes.add("\tBLEQ p_throw_runtime_error");
+      printRunTimeErr = true;
+      printcodes.add("\tPOP {pc}");
+      variables.add("msg_" + stringCounter + ":");
+      variables.add( "\t.word 45");
+      variables.add("\t.ascii \"DivideByZeroError: divide or modulo by zero\\n\\0\"");
+      stringCounter++;
+    }
+
+
+    if (printOverflowError) {
+      printcodes.add("p_throw_overflow_error");
+      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
+      printcodes.add("\tBL p_throw_runtime_error");
+      printRunTimeErr = true;
+      variables.add("msg_" + stringCounter + ":");
+      variables.add( "\t.word 82");
+      variables.add("\t.ascii \"AOverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+      stringCounter++;
+    }
+
+
+    if (printRunTimeErr) {
+      printcodes.add("p_throw_runtime_error:");
+      printcodes.add("\tBL p_print_string");
+      printstring = true;
+      printcodes.add("\tMOV " + resultReg + ", #-1");
+      printcodes.add("\tBL exit");
     }
 
     if(printstring) {
@@ -116,28 +152,6 @@ public class ASTVisitor {
       printcodes.add("\tPOP {pc}");
       visitStringNode(new StringNode("\"\\0\""));
     }
-
-    if (printOverflowError) {
-      printcodes.add("p_throw_overflow_error");
-      printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
-      printcodes.add("\tBL p_throw_runtime_error");
-      printRunTimeErr = true;
-      variables.add("msg_" + stringCounter + ":");
-      variables.add( "\t.word 82");
-      variables.add("\t.ascii \"AOverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-      stringCounter++;
-    }
-
-
-    if (printRunTimeErr) {
-      printcodes.add("p_throw_runtime_error:");
-      printcodes.add("\tBL p_print_string");
-      printstring = true;
-      printcodes.add("\tMOV " + resultReg + ", #-1");
-      printcodes.add("\tBL exit");
-    }
-
-
 
     if (variables.size() > 0) {
       variables.add(0, ".data\n");
@@ -237,7 +251,7 @@ public class ASTVisitor {
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
-    visitExprAST(ast.getLhs(), codes, reg_counter);
+    visitExprAST(ast.getRhs().getExpr(), codes, reg_counter);
     String strcommand = "STR ";
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
       Type type;
@@ -325,6 +339,15 @@ public class ASTVisitor {
       } else if (((Binary_BoolOpNode) ast).isGreater()) {
         codes.add("\tMOVGT " + paramReg + ", #1");
         codes.add("\tMOVLE " + paramReg + ", #0");
+      } else if (((Binary_BoolOpNode) ast).isGreaterOrEqual()) {
+        codes.add("\tMOVGE " + paramReg + ", #1");
+        codes.add("\tMOVLT " + paramReg + ", #0");
+      } else if (((Binary_BoolOpNode) ast).isSmaller()) {
+        codes.add("\tMOVLT " + paramReg + ", #1");
+        codes.add("\tMOVGE " + paramReg + ", #0");
+      } else if (((Binary_BoolOpNode) ast).isSmallerOrEqual()) {
+        codes.add("\tMOVLE " + paramReg + ", #1");
+        codes.add("\tMOVFT " + paramReg + ", #0");
       } else if (((Binary_BoolOpNode) ast).isBinaryAnd()) {
         codes.add("\tAND r" + r1 + ", r" + r1 + ", r" + r2);// still has other operators
       } else if (((Binary_BoolOpNode) ast).isBinaryOr()) {
@@ -333,13 +356,22 @@ public class ASTVisitor {
     } else if (ast instanceof BinaryOpNode) {
       visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, reg_counter);
       visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, reg_counter + 1);
-      if (((BinaryOpNode) ast).isPlus()) {
-        codes.add("\tADDS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
-      } else if (((BinaryOpNode) ast).isMinus()) {
-        codes.add("\tSUBS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+      if (((BinaryOpNode) ast).isDivid()) {
+        codes.add("\tMOV r0, r" + reg_counter);
+        codes.add("\tMOV r1, r" + (reg_counter + 1));
+        codes.add("\tBL p_check_divide_by_zero");
+        codes.add("\tBL __aeabi_div");
+        codes.add("\tMOV " + paramReg + ", " + resultReg);
+        printDivideByZeroError = true;
+      } else {
+        if (((BinaryOpNode) ast).isPlus()) {
+          codes.add("\tADDS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+        } else if (((BinaryOpNode) ast).isMinus()) {
+          codes.add("\tSUBS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+        }
+        codes.add("\tBLVS p_throw_overflow_error");
+        printOverflowError = true;
       }
-      codes.add("\tBLVS p_throw_overflow_error");
-      printOverflowError = true;
     } else if (ast instanceof UnaryOpNode) {
       visitExprAST(((UnaryOpNode) ast).getExpr(), codes, reg_counter);
        codes.add("\tEOR r" + reg_counter + ", r" + reg_counter + ", #1");
@@ -476,7 +508,7 @@ public class ASTVisitor {
       type = boolType();
     } else if (expr instanceof StringNode) {
       type = stringType();
-    } else if (expr instanceof IntNode) {
+    } else if (expr instanceof IntNode || expr instanceof BinaryOpNode) {
       type = intType();
     }  else if (expr instanceof CharNode) {
       type = charType();
