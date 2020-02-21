@@ -16,9 +16,11 @@ public class ASTVisitor {
   private List<String> printcodes = new LinkedList<>();
   private final String resultReg = "r0";
   private final String paramReg = "r4";
+  private final int regMax = 10;
   private int stringCounter = 0;
   private int spPosition = 0;
   private int branchCounter = 0;
+  private int pushCounter = 0;
   private boolean println = false;
   private boolean printint = false;
   private boolean printstring = false;
@@ -354,28 +356,50 @@ public class ASTVisitor {
         codes.add("\tORR r" + r1 + ", r" + r1 + ", r" + r2);
       }
     } else if (ast instanceof BinaryOpNode) {
-      visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, reg_counter);
-      visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, reg_counter + 1);
-      if (((BinaryOpNode) ast).isDivid()) {
-        codes.add("\tMOV r0, r" + reg_counter);
-        codes.add("\tMOV r1, r" + (reg_counter + 1));
+      int r1 = reg_counter;
+      int r2 = (reg_counter + 1);
+      visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, r1);
+      if (r2 > 10) {
+        codes.add("\tPUSH {r10}");
+        r2 = regMax;
+        pushCounter++;
+      }
+      visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, r2);
+
+      if (pushCounter > 0) {
+        codes.add("\tPOP {r11}");
+        pushCounter--;
+        r2 = 11;
+      }
+      if (((BinaryOpNode) ast).isDivid() || ((BinaryOpNode) ast).isMod()) {
+        codes.add("\tMOV r0, r" + r1);
+        codes.add("\tMOV r1, r" + r2);
         codes.add("\tBL p_check_divide_by_zero");
-        codes.add("\tBL __aeabi_div");
+        if (((BinaryOpNode) ast).isDivid()) {
+          codes.add("\tBL __aeabi_div");
+        } else {
+          codes.add("\tBL __aeabi_idivmod");
+          codes.add("\tMOV r" + r1 + ", r1");
+        }
         codes.add("\tMOV " + paramReg + ", " + resultReg);
         printDivideByZeroError = true;
       } else {
         if (((BinaryOpNode) ast).isPlus()) {
-          codes.add("\tADDS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+          codes.add("\tADDS r" + r1 + ", r" + r1 + ", r" + r2);
         } else if (((BinaryOpNode) ast).isMinus()) {
-          codes.add("\tSUBS r" + (reg_counter - 1) + ", r" + (reg_counter - 1) + ", r" + reg_counter);
+          codes.add("\tSUBS r" + r1 + ", r" + r1 + ", r" + r2);
+        } else if (((BinaryOpNode) ast).isTime()) {
+          codes.add("\tSMULL r" + r1 + ", r" + r2 + ", r" + r1 + ", r" + r2);
+          codes.add("\tCMP r" + r2 + ", r" + r1 + ", ASR #31");
         }
         codes.add("\tBLVS p_throw_overflow_error");
         printOverflowError = true;
       }
     } else if (ast instanceof UnaryOpNode) {
       visitExprAST(((UnaryOpNode) ast).getExpr(), codes, reg_counter);
-       codes.add("\tEOR r" + reg_counter + ", r" + reg_counter + ", #1");
-      // load array length
+      if (((UnaryOpNode) ast).isNOT()) {
+        codes.add("\tEOR r" + reg_counter + ", r" + reg_counter + ", #1");
+      }
 //      if (((UnaryOpNode) ast).getOperContext() != null) {
 //        codes.add("\tLDR " + paramReg + ", [sp]");
 //        codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
@@ -504,13 +528,15 @@ public class ASTVisitor {
     visitExprAST(ast.getExpr(), codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     Type type  = null;
-    if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode) {
+    if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode ||
+        (expr instanceof UnaryOpNode && ((UnaryOpNode) expr).isNOT())) {
       type = boolType();
     } else if (expr instanceof StringNode) {
       type = stringType();
-    } else if (expr instanceof IntNode || expr instanceof BinaryOpNode) {
+    } else if (expr instanceof IntNode || expr instanceof BinaryOpNode ||
+        (expr instanceof UnaryOpNode && ((UnaryOpNode) expr).returnInt())) {
       type = intType();
-    }  else if (expr instanceof CharNode) {
+    }  else if (expr instanceof CharNode || (expr instanceof UnaryOpNode && ((UnaryOpNode) expr).isChr())) {
       type = charType();
     } else if (expr instanceof IdentNode) {
       type = symbolTable.getVariable(((IdentNode) expr).getIdent());

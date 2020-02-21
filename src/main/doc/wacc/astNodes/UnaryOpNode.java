@@ -49,4 +49,35 @@ public class UnaryOpNode extends AST{
   public boolean isNOT() {
     return unary_notContext != null;
   }
+
+  public boolean isChr() {
+    return chrContext != null;
+  }
+
+
+  public boolean isOrd() {
+    if (operContext != null) {
+      return operContext.ORD() != null;
+    }
+    return false;
+  }
+
+  public boolean isLen() {
+    if (operContext != null) {
+      return operContext.LEN() != null;
+    }
+    return false;
+  }
+
+  public boolean isMinus() {
+    if (operContext != null) {
+      return operContext.MINUS() != null;
+    }
+    return false;
+  }
+
+  public boolean returnInt() {
+    return (isMinus() || isOrd() || isLen());
+  }
+
 }
