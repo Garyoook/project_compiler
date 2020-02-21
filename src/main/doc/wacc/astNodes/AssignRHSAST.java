@@ -33,8 +33,12 @@ public class AssignRHSAST extends AST{
 
     }
 
-    public AST getExpr() {
+    public AST getExpr1() {
         return expr1;
+    }
+
+    public AST getExpr2() {
+        return expr2;
     }
 
     public boolean call() {
