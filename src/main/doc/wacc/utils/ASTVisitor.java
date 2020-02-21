@@ -30,6 +30,10 @@ public class ASTVisitor {
 
   public List<String> getcodes() {
     if (spPosition > 0) {
+      while (spPosition > 1024){
+        main.add("\tADD sp, sp, #1024");
+        spPosition -= 1024;
+      }
       main.add("\tADD sp, sp, #" + spPosition);
     }
     main.add("\tLDR r0, =0");
