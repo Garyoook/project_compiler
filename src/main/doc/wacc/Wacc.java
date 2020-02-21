@@ -11,15 +11,12 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
 import static java.lang.System.exit;
-import static java.lang.System.setOut;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -90,7 +87,7 @@ public class Wacc {
         FileWriter myWriter = new FileWriter(outputFile);
         ASTVisitor translator = new ASTVisitor();
         translator.visitProgAST(ast);
-        List<String> result = translator.getcodes();
+        List<String> result = translator.getCodes();
         for (String s:result) {
           myWriter.write(s + "\n");
         }
