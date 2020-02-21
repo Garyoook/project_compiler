@@ -13,6 +13,13 @@ public class BlockAst extends AST {
     this.symbolTable = symbolTable;
   }
 
+  public List<AST> getStats() {
+    return stats;
+  }
+
+  public SymbolTable getSymbolTable() {
+    return symbolTable;
+  }
 
   @Override
   public String toString() {

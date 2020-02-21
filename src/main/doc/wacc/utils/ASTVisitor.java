@@ -109,8 +109,9 @@ public class ASTVisitor {
       printcodes.add("\tCMP " + resultReg + ", #0");
       printcodes.add("\tLDRNE " + resultReg + ", =msg_" + stringCounter);
       visitStringNode(new StringNode("\"true\\0\""));
-      printcodes.add("\tLDRNE " + resultReg + ", =msg_" + stringCounter);
+      printcodes.add("\tLDREQ " + resultReg + ", =msg_" + stringCounter);
       visitStringNode(new StringNode("\"false\\0\""));
+      printcodes.add("\tADD " + resultReg + ", " + resultReg + ", #4");
       printcodes.add("\tBL printf");
       printcodes.add("\tMOV " + resultReg + ", #0");
       printcodes.add("\tBL fflush");
@@ -208,6 +209,13 @@ public class ASTVisitor {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
       visitReturnAST((ReturnAst) ast, codes, reg_counter);
+    } else if (ast instanceof BlockAst) {
+      SymbolTable temp = symbolTable;
+      symbolTable = ((BlockAst) ast).getSymbolTable();
+      for (AST ast1:((BlockAst) ast).getStats()) {
+        visitStat(ast1, codes, reg_counter++);
+      }
+      symbolTable = temp;
     }
   }
 
