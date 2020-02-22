@@ -37,51 +37,102 @@ def test_semantic_err():
 def test_backend():
     files = traverse(valid_file_dir)
     for f in files:
+        if ("while" in f):
+            continue
+        if ("IOLoop" in f):
+            continue
+        print(f)
         compile_backend(f)
 
 
 def compile_backend(filename):
     global n_passed, n_cases
     print("Running {}".format(filename))
+    sample_output = getSampleOutput(filename)
+    sample_exitcode = getSampleExitCode(filename)
     n_cases += 1
     os.system("./compile " + filename)
     filename = filename.split(".wacc")[0]
     temp = filename.split("/")
     filename = temp[len(temp)-1]
+
     os.system("arm-linux-gnueabi-gcc -o " + filename + " -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + os.path.dirname(__file__) + filename + ".s")
     try:
-        if (filename == "IOSequence"):
-            subprocess.PIPE = "1"
-            p = subprocess.Popen("qemu-arm -L /usr/arm-linux-gnueabi/ " + filename, stdin="1", shell=True)
-            stdout, stderr = p.communicate()
-            print(stdout)
-            print(stderr)
+
+        p1 = subprocess.Popen("qemu-arm -L /usr/arm-linux-gnueabi/ " + filename,
+                                              stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+        stdout1, stderr1 = p1.communicate()
+        yourOut = str(stdout1)
+        yourOut = yourOut.split("b'")[1]
+        yourOut = yourOut.split("'")[0]
+        print("Your output is " + yourOut)
+        print("Your exit code is " + "0")
+#             sample_output = subprocess.check_output("qemu-arm -L /usr/arm-linux-gnueabi/ " + filename,
+#                                              stderr=subprocess.STDOUT, shell=True)
+        print("1:"+yourOut+"2:"+sample_output+"3")
+        print(p1.returncode)
+        print
+        if not (str(yourOut) == str(sample_output) and str(sample_exitcode) == str(p1.returncode)):
+            print("sample_output is " + sample_output)
+            print("sample_exitcode is " + str(sample_exitcode))
+            print("Failed on {}".format(filename))
+            failed_cases.append(filename)
+
         else:
-            output = subprocess.check_output("qemu-arm -L /usr/arm-linux-gnueabi/ " + filename,
-                                              stderr=subprocess.STDOUT, shell=True)
-            print(output)
-            sample_output = subprocess.check_output("qemu-arm -L /usr/arm-linux-gnueabi/ " + filename,
-                                             stderr=subprocess.STDOUT, shell=True)
-
-        n_passed += 1
-        print("Passed {}".format(filename))
-        # print(stdout)
-        # subprocess.check_output("./compile " + filename,
-        #                         stderr=subprocess.STDOUT, shell=True)
-    #     if code != 0:
-
-    #     else:
+            n_passed += 1
+            print("Passed {}".format(filename))
 
     except subprocess.CalledProcessError as e:
-        print("Failed on {}".format(filename))
-        failed_cases.append(filename)
+        print
+#         print("Your exit code is " + str(e.returncode))
+#         print("Your output is " + e.stdout)
+#         if (e.returncode == sample_exitcode and sample_output == e.stdout):
+#             n_passed += 1
+#             print("Passed {}".format(filename))
+#         else:
+#             print("sample_output is " + sample_output)
+#             print("sample_exitcode is " + (sample_exitcode))
+#             print("Failed on {}".format(filename))
+#             failed_cases.append(filename)
 
-    #     if e.returncode != code:
-    #         print("Failed on {}".format(filename))
-    #         failed_cases.append(filename)
-    #     else:
-    #         n_passed += 1
-    #         print("Passed {}".format(filename))
+
+def getSampleOutput(filename):
+    sampleP = subprocess.Popen(test_dir + "/refCompile -x " + filename, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    (stdout, stderr) = sampleP.communicate()
+    wait = sampleP.wait()
+#     print("1111111111111111111111111111111111111111111111111111111111111111111111111")
+#     print
+#     print(stdout)
+#     print
+#     print("1111111111111111111111111111111111111111111111111111111111111111111111111")
+    result = str(stdout).split("===========================================================\\n")[1]
+#     print("22222222222222222222222222222222222222222222222222222222222222222222222")
+#     print
+#     print(result)
+#     print
+#     print("222222222222222222222222222222222222222222222222222222222222222222222222")
+    result = result.split("\\n===========================================================")[0]
+#     print(result)
+    return result
+
+
+def getSampleExitCode(filename):
+    sampleP = subprocess.Popen(test_dir + "/refCompile -x " + filename, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    (stdout, stderr) = sampleP.communicate()
+    wait = sampleP.wait()
+    if "advanced" in filename:
+        return 0
+    if "IOLoop" in filename:
+        return 0
+    if "echoChar" in filename:
+        return 0
+    if "echo" in filename:
+        return 0
+
+    result = str(stdout).split("The exit code is ")[1].split(".")[0]
+#     result = result.split(".")[0]
+    return result
+
 
 
 def compile(filename, code=0):
