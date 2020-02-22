@@ -80,7 +80,7 @@ public class ASTVisitor {
     }
 
     if (printDivideByZeroError) {
-      printcodes.add("p_check_divide_by_zero");
+      printcodes.add("p_check_divide_by_zero:");
       printcodes.add("\tPUSH {lr}");
       printcodes.add("\tCMP r1, #0");
       printcodes.add("\tLDREQ r0, =msg_" +stringCounter);
@@ -95,13 +95,13 @@ public class ASTVisitor {
 
 
     if (printOverflowError) {
-      printcodes.add("p_throw_overflow_error");
+      printcodes.add("p_throw_overflow_error:");
       printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
       printcodes.add("\tBL p_throw_runtime_error");
       printRunTimeErr = true;
       variables.add("msg_" + stringCounter + ":");
       variables.add( "\t.word 82");
-      variables.add("\t.ascii \"AOverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+      variables.add("\t.ascii \"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
       stringCounter++;
     }
 
@@ -376,7 +376,7 @@ public class ASTVisitor {
         codes.add("\tMOVGE " + paramReg + ", #0");
       } else if (((Binary_BoolOpNode) ast).isSmallerOrEqual()) {
         codes.add("\tMOVLE " + paramReg + ", #1");
-        codes.add("\tMOVFT " + paramReg + ", #0");
+        codes.add("\tMOVGT " + paramReg + ", #0");
       } else if (((Binary_BoolOpNode) ast).isBinaryAnd()) {
         codes.add("\tAND r" + r1 + ", r" + r1 + ", r" + r2);// still has other operators
       } else if (((Binary_BoolOpNode) ast).isBinaryOr()) {
