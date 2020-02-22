@@ -403,7 +403,7 @@ public class ASTVisitor {
         codes.add("\tMOV r1, r" + r2);
         codes.add("\tBL p_check_divide_by_zero");
         if (((BinaryOpNode) ast).isDivid()) {
-          codes.add("\tBL __aeabi_div");
+          codes.add("\tBL __aeabi_idiv");
         } else {
           codes.add("\tBL __aeabi_idivmod");
           codes.add("\tMOV r" + r1 + ", r1");
