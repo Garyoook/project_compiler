@@ -297,7 +297,7 @@ public class ASTVisitor {
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
 
-    String strcommand = "STR ";
+    String strcommand = "\tSTR ";
     Type type;
     if (ast.getLhs().isPair()) {
       type = symbolTable.getVariable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
@@ -314,9 +314,9 @@ public class ASTVisitor {
 
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
       if (type.equals(boolType()) || type.equals(charType())) {
-        strcommand = "STRB ";
+        strcommand = "\tSTRB ";
       }
-      codes.add("\t" + strcommand + "r" + reg_counter + ", [sp]");
+      codes.add(strcommand + "r" + reg_counter + ", [sp]");
     }
 
     if (ast.getLhs().isArray()) {
@@ -326,7 +326,9 @@ public class ASTVisitor {
 //
 ////      CompilerVisitor compilerVisitor = new CompilerVisitor();
 ////      AST ast1 = compilerVisitor.visitArray_elem(ast.getLhs().getLhsContext().array_elem());
-//      ArrayType arrayType = (ArrayType)type;
+      while (type instanceof ArrayType) {
+        type = ((ArrayType) type).getType();
+      }
 //      if ()
 //      codes.add("\tADD r" + r1 + ", sp, #0");
 //      visitExprAST(ast.getLhs().getArrayIndex(), codes, r2);
@@ -347,7 +349,10 @@ public class ASTVisitor {
 //      } else {
 //        codes.add("\tADD r" + r1 + ", r" + r1 + ", r" + r2);
 //      }
-      codes.add("\tSTR " + paramReg + ", [r" + (reg_counter + 1) + "]");
+      if (type.equals(boolType()) || type.equals(charType())) {
+        strcommand = "\tSTRB ";
+      }
+      codes.add(strcommand + paramReg + ", [r" + (reg_counter + 1) + "]");
 //      codes.add("\tADD " + paramReg + ", " + paramReg + ", r5, LSL #2");
 //      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
       printCheckArrayBound = true;
