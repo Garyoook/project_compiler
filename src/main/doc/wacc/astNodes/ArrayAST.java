@@ -11,6 +11,7 @@ public class ArrayAST extends AST {
 
     public ArrayAST(List<AST> exprs) {
         this.exprs.addAll(exprs);
+        this.size = exprs.size();
     }
 //
 //    @Override
@@ -22,4 +23,13 @@ public class ArrayAST extends AST {
 //        }
 //        return sb.toString();
 //    }
+
+
+    public int getSize() {
+        return size;
+    }
+
+    public List<AST> getExprs() {
+        return exprs;
+    }
 }
