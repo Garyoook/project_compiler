@@ -358,7 +358,9 @@ public class ASTVisitor {
       int r2 = reg_counter + 1;
       visitExprAST(((Binary_BoolOpNode) ast).getExpr1(), codes, r1);
       visitExprAST(((Binary_BoolOpNode) ast).getExpr2(), codes, r2);
-//      codes.add("\tCMP r" + reg_counter + ", r" + (reg_counter + 1));
+      if (!((Binary_BoolOpNode) ast).isBinaryAnd() && !((Binary_BoolOpNode) ast).isBinaryOr()) {
+        codes.add("\tCMP r" + reg_counter + ", r" + (reg_counter + 1));
+      }
       if (((Binary_BoolOpNode) ast).isEqual()) {
         codes.add("\tMOVEQ " + paramReg + ", #1");
         codes.add("\tMOVNE " + paramReg + ", #0");
