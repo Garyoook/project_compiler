@@ -240,7 +240,7 @@ public class ASTVisitor {
     } else if (ast instanceof PrintlnAst) {
       PrintlnAst print_ast = (PrintlnAst)ast;
       visitPrintAst(new PrintAst(((PrintlnAst) ast).getExpr()), codes, reg_counter);
-      visitPrintlnAst(print_ast, codes, reg_counter + 1);
+      visitPrintlnAst(print_ast, codes, reg_counter);
     } else if (ast instanceof ReadAst) {
       visitReadAST((ReadAst) ast, codes, reg_counter);
     } else if (ast instanceof IfAst) {
@@ -255,7 +255,7 @@ public class ASTVisitor {
       SymbolTable temp = symbolTable;
       symbolTable = ((BlockAst) ast).getSymbolTable();
       for (AST ast1:((BlockAst) ast).getStats()) {
-        visitStat(ast1, codes, reg_counter++);
+        visitStat(ast1, codes, reg_counter);
       }
       symbolTable = temp;
     }
@@ -358,7 +358,7 @@ public class ASTVisitor {
       int r2 = reg_counter + 1;
       visitExprAST(((Binary_BoolOpNode) ast).getExpr1(), codes, r1);
       visitExprAST(((Binary_BoolOpNode) ast).getExpr2(), codes, r2);
-      codes.add("\tCMP r" + reg_counter + ", r" + (reg_counter + 1));
+//      codes.add("\tCMP r" + reg_counter + ", r" + (reg_counter + 1));
       if (((Binary_BoolOpNode) ast).isEqual()) {
         codes.add("\tMOVEQ " + paramReg + ", #1");
         codes.add("\tMOVNE " + paramReg + ", #0");
@@ -404,11 +404,11 @@ public class ASTVisitor {
         codes.add("\tBL p_check_divide_by_zero");
         if (((BinaryOpNode) ast).isDivid()) {
           codes.add("\tBL __aeabi_idiv");
+          codes.add("\tMOV r" + reg_counter + ", " + resultReg);
         } else {
           codes.add("\tBL __aeabi_idivmod");
           codes.add("\tMOV r" + r1 + ", r1");
         }
-        codes.add("\tMOV " + paramReg + ", " + resultReg);
         printDivideByZeroError = true;
       } else {
         if (((BinaryOpNode) ast).isPlus()) {
@@ -419,13 +419,22 @@ public class ASTVisitor {
           codes.add("\tSMULL r" + r1 + ", r" + r2 + ", r" + r1 + ", r" + r2);
           codes.add("\tCMP r" + r2 + ", r" + r1 + ", ASR #31");
         }
-        codes.add("\tBLVS p_throw_overflow_error");
+
+        if (((BinaryOpNode) ast).isTime()) {
+          codes.add("\tBLNE p_throw_overflow_error");
+
+        } else {
+          codes.add("\tBLVS p_throw_overflow_error");
+        }
         printOverflowError = true;
       }
     } else if (ast instanceof UnaryOpNode) {
       visitExprAST(((UnaryOpNode) ast).getExpr(), codes, reg_counter);
       if (((UnaryOpNode) ast).isNOT()) {
         codes.add("\tEOR r" + reg_counter + ", r" + reg_counter + ", #1");
+      } else if (((UnaryOpNode) ast).isMinus()) {
+        codes.add("\tRSBS r" + reg_counter + ", r" + reg_counter + ", #0");
+        codes.add("\tBLVS p_throw_overflow_error");
       }
 //      if (((UnaryOpNode) ast).getOperContext() != null) {
 //        codes.add("\tLDR " + paramReg + ", [sp]");
@@ -458,7 +467,7 @@ public class ASTVisitor {
   private void visitCallAst(CallAST ast, List<String> codes, int reg_counter) {
     if (ast.hasArgument()) {
       for (AST argument : ast.getArguments()) {
-        visitExprAST(argument, codes, reg_counter++);
+        visitExprAST(argument, codes, reg_counter);
         if (argument instanceof CharNode || argument instanceof BoolNode)  {
           codes.add("\tSTRB " + paramReg + ", [sp, #-1]!");
         } else {
@@ -545,7 +554,7 @@ public class ASTVisitor {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getThenSymbolTable();
     List<String> elseBranch = new LinkedList<>();
-    visitExprAST(ast.getExpr(), codes, reg_counter++);
+    visitExprAST(ast.getExpr(), codes, reg_counter);
     AST expr =ast.getExpr();
     if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
       codes.add("\tCMP " + paramReg + ", #0");
@@ -554,9 +563,9 @@ public class ASTVisitor {
     }
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
-    visitStat(ast.getThenbranch(), codes, reg_counter + 1);
+    visitStat(ast.getThenbranch(), codes, reg_counter);
     symbolTable = ast.getElseSymbolTable();
-    visitStat(ast.getElsebranch(), elseBranch, reg_counter + 2);
+    visitStat(ast.getElsebranch(), elseBranch, reg_counter);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
@@ -577,7 +586,7 @@ public class ASTVisitor {
 
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
-    visitExprAST(ast.getExpr(), codes, reg_counter);
+    visitExprAST(expr, codes, reg_counter);
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     Type type  = null;
     if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode ||
