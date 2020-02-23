@@ -31,6 +31,7 @@ public class ASTVisitor {
   private boolean printReference = false;
   private boolean printFree = false;
   private boolean printDivideByZeroError = false;
+  private boolean printCheckNullPointer = false;
 
   public List<String> getcodes() {
     if (spPosition > 0) {
@@ -44,10 +45,22 @@ public class ASTVisitor {
     main.add("\tPOP {pc}");
     main.add("\t.ltorg");
 
+    if (printCheckNullPointer) {
+      printcodes.add("p_check_null_pointer:");
+      printcodes.add("\tPUSH {lr}");
+      printcodes.add("\tCMP " + resultReg + ", #0");
+      printcodes.add("\tLDREQ " + resultReg + ", =msg_" + stringCounter);
+      visitStringNode(new StringNode("\"NullReferenceError: dereference a null reference\\n\\0\""));
+      printcodes.add("\tBLEQ p_throw_runtime_error");
+      printRunTimeErr = true;
+      printcodes.add("\tPOP {pc}");
+    }
+
     if (printCheckArrayBound) {
       printcodes.add("p_check_array_bounds:");
       printcodes.add("\tPUSH {lr}");
       printcodes.add("\tCMP " + resultReg + ", #0");
+      visitStringNode(new StringNode("ArrayIndexOutOfBoundsError: negative index\\n\\0"));
       printcodes.add("\tLDRLT " + resultReg + ", =msg_" + stringCounter);
       variables.add("msg_" + stringCounter++ + ":");
       variables.add( "\t.word 44");
@@ -701,22 +714,19 @@ public class ASTVisitor {
       type = ((ArrayType) type).getType();
     }
 
-    if (expr instanceof PairAST) {
-      codes.add("\tBL p_print_reference");
-      printReference = true;
-    }
-
-    if (type.equals(stringType())) {
-      codes.add("\tBL p_print_string");
-      printstring = true;
-    } else if (type.equals(intType())) {
-      codes.add("\tBL p_print_int");
-      printint = true;
-    } else if (type.equals(charType())) {
-      codes.add("\tBL putchar");
-    } else if (type.equals(boolType())) {
-      codes.add("\tBL p_print_bool");
-      printBool = true;
+    if (type != null) { ///////
+      if (type.equals(stringType())) {
+        codes.add("\tBL p_print_string");
+        printstring = true;
+      } else if (type.equals(intType())) {
+        codes.add("\tBL p_print_int");
+        printint = true;
+      } else if (type.equals(charType())) {
+        codes.add("\tBL putchar");
+      } else if (type.equals(boolType())) {
+        codes.add("\tBL p_print_bool");
+        printBool = true;
+      }
     }
 
     if (expr instanceof PairAST) {
@@ -745,7 +755,15 @@ public class ASTVisitor {
     } else if (type.equals(charType())) {
       readType = "char";
     }
-    codes.add("\tADD r4, sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText())));
+    if (ast.getLhs().getLhsContext().IDENT()==null) {
+      codes.add("\tLDR " + paramReg + ", [sp]");
+      codes.add("\tMOV " + resultReg + ", " + paramReg);
+      codes.add("\tBL p_check_null_pointer");
+      printCheckNullPointer = true;
+      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
+    } else {
+      codes.add("\tADD r4, sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText())));
+    }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     codes.add("\tBL p_read_" + readType);
     variables.add("msg_" + stringCounter + ":");
