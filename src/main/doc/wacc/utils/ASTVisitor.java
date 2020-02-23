@@ -699,6 +699,9 @@ public class ASTVisitor {
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
     visitExprAST(expr, codes, reg_counter);
+    if (expr instanceof ArrayElemNode) {
+      codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
+    }
     codes.add("\tMOV " + resultReg + ", " + paramReg);
     Type type  = null;
     if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode ||
