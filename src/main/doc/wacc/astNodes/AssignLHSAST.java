@@ -32,4 +32,9 @@ public class AssignLHSAST extends AST {
         return visitor.visitExpr(lhsContext.array_elem().expr(0));
     }
 
+    public AST getArrayElem() {
+        CompilerVisitor visitor = new CompilerVisitor();
+        return visitor.visitArray_elem(lhsContext.array_elem());
+    }
+
 }
