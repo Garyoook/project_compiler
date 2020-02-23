@@ -60,7 +60,6 @@ public class ASTVisitor {
       printcodes.add("p_check_array_bounds:");
       printcodes.add("\tPUSH {lr}");
       printcodes.add("\tCMP " + resultReg + ", #0");
-      visitStringNode(new StringNode("ArrayIndexOutOfBoundsError: negative index\\n\\0"));
       printcodes.add("\tLDRLT " + resultReg + ", =msg_" + stringCounter);
       variables.add("msg_" + stringCounter++ + ":");
       variables.add( "\t.word 44");
