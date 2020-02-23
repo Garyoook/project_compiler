@@ -437,6 +437,7 @@ public class ASTVisitor {
       } else if (((UnaryOpNode) ast).isMinus()) {
         codes.add("\tRSBS r" + reg_counter + ", r" + reg_counter + ", #0");
         codes.add("\tBLVS p_throw_overflow_error");
+        printOverflowError = true;
       }
 //      if (((UnaryOpNode) ast).getOperContext() != null) {
 //        codes.add("\tLDR " + paramReg + ", [sp]");
