@@ -172,7 +172,7 @@ public class ASTVisitor {
     }
 
     if (printReference) {
-      printcodes.add("p_print_reference");
+      printcodes.add("p_print_reference:");
       printcodes.add("\tPUSH {lr}");
       printcodes.add("\tMOV r1, " + resultReg);
       printcodes.add("\tLDR " + resultReg + ", =msg_" + stringCounter);
