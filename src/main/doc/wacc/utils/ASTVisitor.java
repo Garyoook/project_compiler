@@ -517,15 +517,15 @@ public class ASTVisitor {
       }
       for (int i = 0; i < ((ArrayElemNode) ast).getExprs().size(); i++) {
         visitExprAST(((ArrayElemNode) ast).getExprs().get(i), codes, arrayIndexReg);
-          codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
+        codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
         codes.add(MOV(resultReg, "r" + arrayIndexReg));
         codes.add(MOV("r1", "r" + reg_counter));
         codes.add(BL("p_check_array_bounds"));
-          codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
+        codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
         Type type = symbolTable.getVariable(((ArrayElemNode) ast).getName());
         ArrayType arrayType = (ArrayType)type;
         if (arrayType.getType().equals(charType()) || arrayType.getType().equals(boolType())) {
-          codes.add(ADD(new Register(reg_counter), new Register(reg_counter), arrayIndexReg));
+          codes.add(ADD(new Register(reg_counter), new Register(reg_counter), new Register("r" + arrayIndexReg)));
         } else {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
