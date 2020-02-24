@@ -324,6 +324,13 @@ public class ASTVisitor {
 
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
 
+    // assign a pair from a null content.
+    if (ast.getRhs().getExpr1() instanceof PairAST) {
+      if (((PairAST) ast.getRhs().getExpr1()).ident.equals("null")) {
+        codes.add(LDR_value(paramReg, 0));
+      }
+    }
+
     if (type.equals(pairType())) {
       codes.add(LDR_reg("r5", SP));
       codes.add(MOV(resultReg, "r5"));
@@ -664,11 +671,14 @@ public class ASTVisitor {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
-        codes.add(LDR_value(paramReg, 0));
+        if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
+          codes.add(LDR_value(paramReg, 0));
+        }
       } else {
         codes.add(LDR_value(resultReg, 8));
         codes.add(BL("malloc"));
-        codes.add(MOV(paramReg, resultReg));
+        codes.add(MOV("r" + reg_counter, resultReg));
+        reg_counter++;
         visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
         Type lType = null;
         Type rType = null;
@@ -676,18 +686,28 @@ public class ASTVisitor {
           lType = ((PairType) type).getLeftType();
           rType = ((PairType) type).getRightType();
         }
+        if (lType instanceof PairType) {
+          if (((PairType) lType).getLeftType() == null) {
+            codes.add(LDR_value("r" + reg_counter, 0));
+          }
+        }
         int size = lType.equals(Type.charType()) ? 1 : 4;
         String b = lType.equals(Type.charType()) ? "B" : "";
         codes.add(LDR_value(resultReg, size));
         codes.add(BL("malloc"));
-        codes.add(b != "" ? STR("r5", "[" + resultReg + "]") : STRB("r5", "[" + resultReg + "]"));
+        codes.add(b != "" ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[r4]"));
         visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
         size = rType.equals(Type.charType()) ? 1 : 4;
         b = rType.equals(Type.charType()) ? "B" : "";
+        if (rType instanceof PairType) {
+          if (((PairType) rType).getLeftType() == null) {
+            codes.add(LDR_value("r" + reg_counter, 0));
+          }
+        }
         codes.add(LDR_value(resultReg, size));
         codes.add(BL("malloc"));
-        codes.add(b != "" ? STR("r5", "[" + resultReg + "]") : STRB("r5", "[" + resultReg + "]"));
+        codes.add(b != "" ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
       }
     }
@@ -724,6 +744,11 @@ public class ASTVisitor {
     if (expr instanceof ArrayElemNode) {
       codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
     }
+    if (expr instanceof PairAST) {
+      if (((PairAST) expr).ident.equals("null")) {
+        codes.add(LDR_value(paramReg, 0));
+      }
+    }
     codes.add(MOV(resultReg, paramReg));
     Type type  = null;
     if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode ||
@@ -745,6 +770,9 @@ public class ASTVisitor {
           codes.add(BL("p_print_reference"));
           printReference = true;
         }
+      } else if (type instanceof PairType) {
+          codes.add(BL("p_print_reference"));
+          printReference = true;
       }
     } else if (expr instanceof ArrayElemNode) {
       type = symbolTable.getVariable(((ArrayElemNode) expr).getName());
