@@ -439,23 +439,23 @@ public class ASTVisitor {
         codes.add(CMP_reg("r" + reg_counter, "r" + (reg_counter + 1)));
       }
       if (((Binary_BoolOpNode) ast).isEqual()) {
-        codes.add(MOVEQ(paramReg, 1));
-        codes.add(MOVNE(paramReg, 0));
+        codes.add(MOVEQ("r" + reg_counter, 1));
+        codes.add(MOVNE("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isNotEqual()) {
-        codes.add(MOVNE(paramReg, 1));
-        codes.add(MOVEQ(paramReg, 0));
+        codes.add(MOVNE("r" + reg_counter, 1));
+        codes.add(MOVEQ("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isGreater()) {
-        codes.add(MOVGT(paramReg, 1));
-        codes.add(MOVLE(paramReg, 0));
+        codes.add(MOVGT("r" + reg_counter, 1));
+        codes.add(MOVLE("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isGreaterOrEqual()) {
-        codes.add(MOVGE(paramReg, 1));
-        codes.add(MOVLT(paramReg, 0));
+        codes.add(MOVGE("r" + reg_counter, 1));
+        codes.add(MOVLT("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isSmaller()) {
-        codes.add(MOVLT(paramReg, 1));
-        codes.add(MOVGE(paramReg, 0));
+        codes.add(MOVLT("r" + reg_counter, 1));
+        codes.add(MOVGE("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isSmallerOrEqual()) {
-        codes.add(MOVLE(paramReg, 1));
-        codes.add(MOVGT(paramReg, 0));
+        codes.add(MOVLE("r" + reg_counter, 1));
+        codes.add(MOVGT("r" + reg_counter, 0));
       } else if (((Binary_BoolOpNode) ast).isBinaryAnd()) {
         codes.add("\tAND r" + r1 + ", r" + r1 + ", r" + r2);// still has other operators
       } else if (((Binary_BoolOpNode) ast).isBinaryOr()) {
@@ -705,29 +705,6 @@ public class ASTVisitor {
     codes.add(MOV(resultReg, paramReg));
   }
 
-  private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
-    SymbolTable symbolTabletemp = symbolTable;
-    symbolTable = ast.getThenSymbolTable();
-    List<String> elseBranch = new LinkedList<>();
-    visitExprAST(ast.getExpr(), codes, reg_counter);
-    AST expr =ast.getExpr();
-    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
-      codes.add(CMP_value(paramReg, 0));
-    } else {
-      codes.add(CMP_reg("r" + (reg_counter - 1),"r" + reg_counter));
-    }
-    codes.add("\tBEQ L" + branchCounter);
-    elseBranch.add("L" + branchCounter++ + ":");
-    visitStat(ast.getThenbranch(), codes, reg_counter);
-    symbolTable = ast.getElseSymbolTable();
-    visitStat(ast.getElsebranch(), elseBranch, reg_counter);
-    codes.add("\tB L" + branchCounter);
-    for(String s: elseBranch) {
-      codes.add(s);
-    }
-    codes.add("L" + branchCounter++ + ":");
-    symbolTable = symbolTabletemp;
-  }
 
   public void visitSkipAst(AST ast) {
   }
@@ -839,6 +816,30 @@ public class ASTVisitor {
     printcodes.add(POP(PC));
   }
 
+  private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
+    SymbolTable symbolTabletemp = symbolTable;
+    symbolTable = ast.getThenSymbolTable();
+    List<String> elseBranch = new LinkedList<>();
+    visitExprAST(ast.getExpr(), codes, reg_counter);
+    AST expr =ast.getExpr();
+    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
+      codes.add(CMP_value(paramReg, 0));
+    } else {
+      codes.add(CMP_reg("r" + (reg_counter - 1),"r" + reg_counter));
+    }
+    codes.add("\tBEQ L" + branchCounter);
+    elseBranch.add("L" + branchCounter++ + ":");
+    visitStat(ast.getThenbranch(), codes, reg_counter);
+    symbolTable = ast.getElseSymbolTable();
+    visitStat(ast.getElsebranch(), elseBranch, reg_counter);
+    codes.add("\tB L" + branchCounter);
+    for(String s: elseBranch) {
+      codes.add(s);
+    }
+    codes.add("L" + branchCounter++ + ":");
+    symbolTable = symbolTabletemp;
+  }
+
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
@@ -848,12 +849,19 @@ public class ASTVisitor {
     codes.add("L" + bodyLabel + ":");
     visitStat(ast.getStat(), codes, reg_counter);
     codes.add("L" + loopLabel + ":");
-    visitExprAST(ast.getExpr(), codes, reg_counter);
-    if (ast.getExpr() instanceof BoolNode || ast.getExpr() instanceof Binary_BoolOpNode) {
+    AST expr;
+    if (ast.getExpr() instanceof ExprWithParen) {
+      expr = ((ExprWithParen) ast.getExpr()).getExpr();
+    } else {
+      expr = ast.getExpr();
+    }
+    visitExprAST(expr, codes, reg_counter);
+    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
       codes.add(CMP_value(paramReg,1));
     } else {
       codes.add(CMP_reg(paramReg, "r" + reg_counter));
     }
+
     codes.add("\tBEQ L" + bodyLabel);
     symbolTable = symbolTabletemp;
   }
