@@ -477,7 +477,7 @@ public class ASTVisitor {
         if (((BinaryOpNode) ast).isPlus()) {
           codes.add("\tADDS r" + r1 + ", r" + r1 + ", r" + r2);
         } else if (((BinaryOpNode) ast).isMinus()) {
-          codes.add(SUBS("r1","r1","r2"));
+          codes.add(SUBS("r" + r1, "r" + r1, "r" + r2));
         } else if (((BinaryOpNode) ast).isTime()) {
           codes.add("\tSMULL r" + r1 + ", r" + r2 + ", r" + r1 + ", r" + r2);
           codes.add("\tCMP r" + r2 + ", r" + r1 + ", ASR #31");
