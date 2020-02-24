@@ -328,10 +328,11 @@ public class ASTVisitor {
 
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
       codes.add(strcommand + "r" + reg_counter + ", [sp]");
-    } else {
-      codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
-                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
     }
+//    else {
+//      codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
+//                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
+//    }
 
     if (ast.getLhs().isArray()) {
       visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
@@ -629,32 +630,36 @@ public class ASTVisitor {
 //      codes.add("\tSTR r" + array_reg + ", [r" + reg_counter + "]");
 ////      codes.add("\tSTR " + paramReg + ", [sp]");
 
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 1) {
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
-      codes.add(LDR_value(resultReg, 8));
-      codes.add(BL("malloc"));
-      codes.add(MOV(paramReg, resultReg));
-      visitExprAST(ast.getAssignRhsAST().getExpr1(),codes,reg_counter);
-      Type lType = null;
-      Type rType = null;
-      if (type instanceof PairType) {
-        lType = ((PairType) type).getLeftType();
-        rType = ((PairType) type).getRightType();
+      if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
+        codes.add(LDR_value(paramReg, 0));
+      } else {
+        codes.add(LDR_value(resultReg, 8));
+        codes.add(BL("malloc"));
+        codes.add(MOV(paramReg, resultReg));
+        visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+        Type lType = null;
+        Type rType = null;
+        if (type instanceof PairType) {
+          lType = ((PairType) type).getLeftType();
+          rType = ((PairType) type).getRightType();
+        }
+        int size = lType.equals(Type.charType()) ? 1 : 4;
+        String b = lType.equals(Type.charType()) ? "B" : "";
+        codes.add(LDR_value(resultReg, size));
+        codes.add(BL("malloc"));
+        codes.add(b != "" ? STR("r5", "[r0]") : STRB("r5", "[r0]"));
+        codes.add(STR(resultReg, "[r4]"));
+        visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
+        size = rType.equals(Type.charType()) ? 1 : 4;
+        b = rType.equals(Type.charType()) ? "B" : "";
+        codes.add(LDR_value(resultReg, size));
+        codes.add(BL("malloc"));
+        codes.add(STR(b, "r5, [" + resultReg + "]"));
+        codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
       }
-      int size = lType.equals(Type.charType()) ? 1 : 4;
-      String b = lType.equals(Type.charType()) ? "B" : "";
-      codes.add(LDR_value(resultReg, size));
-      codes.add(BL("malloc"));
-      codes.add(b != "" ? STR("r5", "[r0]") : STRB("r5", "[r0]"));
-      codes.add(STR(resultReg, "[r4]"));
-      visitExprAST(ast.getAssignRhsAST().getExpr2(),codes,reg_counter);
-      size = rType.equals(Type.charType()) ? 1 : 4;
-      b = rType.equals(Type.charType()) ? "B" : "";
-      codes.add(LDR_value(resultReg, size));
-      codes.add(BL("malloc"));
-      codes.add(STR(b, "r5, [" + resultReg + "]"));
-      codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;

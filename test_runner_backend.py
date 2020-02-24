@@ -89,6 +89,7 @@ def run_tests(path=os.path.join(script_dir, "./testsuite/valid")):
                 run_test(p)
 
 if __name__ == '__main__':
+    os.system("make")
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dir", default=os.path.join(script_dir, "./testsuite/valid"))
     args = parser.parse_args()
