@@ -6,6 +6,7 @@ import java.util.List;
 
 public class Register {
     private int regNum;
+    private String name;
     private boolean isAvailable;
 
     public Register(int regNum, boolean isAvailable) {
@@ -15,6 +16,12 @@ public class Register {
 
     public Register(int regNum) {
         this.regNum = regNum;
+        this.isAvailable = true;
+    }
+
+    public Register(String name) {
+        this.regNum = -1;
+        this.name = name;
         this.isAvailable = true;
     }
 
@@ -34,5 +41,14 @@ public class Register {
                         new Register(9),
                         new Register(10)));
         return regs;
+    }
+
+    @Override
+    public String toString() {
+        if (this.regNum == -1) {
+            return this.name;
+        } else {
+            return "r" + this.regNum;
+        }
     }
 }
