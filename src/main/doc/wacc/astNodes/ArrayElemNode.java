@@ -1,19 +1,22 @@
 package doc.wacc.astNodes;
 
+import java.util.List;
+
 public class ArrayElemNode extends AST {
   private final String name;
-  private final AST expr;
+  private final List<AST> exprs;
 
-  public ArrayElemNode(String name, AST expr) {
+  public ArrayElemNode(String name, List<AST> expr) {
     this.name = name;
-    this.expr = expr;
+    this.exprs = expr;
   }
 
-  public AST getExpr() {
-    return expr;
+  public List<AST> getExprs() {
+    return exprs;
   }
 
   public String getName() {
     return name;
   }
+
 }

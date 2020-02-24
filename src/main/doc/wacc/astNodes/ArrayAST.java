@@ -11,14 +11,25 @@ public class ArrayAST extends AST {
 
     public ArrayAST(List<AST> exprs) {
         this.exprs.addAll(exprs);
+        this.size = exprs.size();
+    }
+//
+//    @Override
+//    public String toString() {
+//        StringBuilder sb = new StringBuilder();
+//
+//        for (AST exp:exprs) {
+//            sb.append(exp.array_elem().getText()).append("\n");
+//        }
+//        return sb.toString();
+//    }
+
+
+    public int getSize() {
+        return size;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (AST exp:exprs) {
-            sb.append(exp.toString());
-        }
-        return sb.toString();
+    public List<AST> getExprs() {
+        return exprs;
     }
 }

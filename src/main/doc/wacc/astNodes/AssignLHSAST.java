@@ -1,6 +1,7 @@
 package doc.wacc.astNodes;
 
 import antlr.BasicParser;
+import doc.wacc.utils.CompilerVisitor;
 
 public class AssignLHSAST extends AST {
 
@@ -14,6 +15,26 @@ public class AssignLHSAST extends AST {
 
     public BasicParser.Assign_lhsContext getLhsContext() {
         return lhsContext;
+    }
+
+
+    public boolean isArray() {
+        return lhsContext.array_elem() != null;
+    }
+
+    public boolean isPair() {
+        return lhsContext.pair_elem() != null;
+    }
+
+
+    public AST getArrayIndex() {
+        CompilerVisitor visitor = new CompilerVisitor();
+        return visitor.visitExpr(lhsContext.array_elem().expr(0));
+    }
+
+    public AST getArrayElem() {
+        CompilerVisitor visitor = new CompilerVisitor();
+        return visitor.visitArray_elem(lhsContext.array_elem());
     }
 
 }

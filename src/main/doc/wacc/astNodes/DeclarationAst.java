@@ -106,4 +106,5 @@ public class DeclarationAst extends AST {
     return type;
   }
 
+
 }

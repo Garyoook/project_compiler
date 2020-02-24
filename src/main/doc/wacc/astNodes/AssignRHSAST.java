@@ -52,4 +52,8 @@ public class AssignRHSAST extends AST{
     public BasicParser.Assign_rhsContext getRhsContext() {
         return rhsContext;
     }
+
+    public ArrayAST getArrayAST() {
+        return arrayAST;
+    }
 }

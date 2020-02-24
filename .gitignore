@@ -1,6 +1,7 @@
 #ignore generated binary files and auto-generated ANTLR code
 bin
 src/main/antlr
+wacc_examples
 
 #ignore Java class files
 *.class

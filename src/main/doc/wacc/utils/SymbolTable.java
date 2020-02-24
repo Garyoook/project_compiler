@@ -44,12 +44,12 @@ public class SymbolTable {
   private int stackTableHelper(String name, SymbolTable symbolTable) {
     if (symbolTable == null) {
 //      ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
-      System.out.println("no variable");
+//      System.out.println("no variable");
       return -1;
     }
     if (symbolTable.symbolTable == null) {
 //      ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
-      System.out.println("no variable");
+//      System.out.println("no variable");
       return -1;
     }
     if (symbolTable.stackTable.get(name) != null) {
