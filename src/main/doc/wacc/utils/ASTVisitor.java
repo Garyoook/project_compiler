@@ -631,6 +631,7 @@ public class ASTVisitor {
 ////      codes.add("\tSTR " + paramReg + ", [sp]");
 
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
+      //pair declaration
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
@@ -650,14 +651,14 @@ public class ASTVisitor {
         String b = lType.equals(Type.charType()) ? "B" : "";
         codes.add(LDR_value(resultReg, size));
         codes.add(BL("malloc"));
-        codes.add(b != "" ? STR("r5", "[r0]") : STRB("r5", "[r0]"));
+        codes.add(b != "" ? STR("r5", "[" + resultReg + "]") : STRB("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[r4]"));
         visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
         size = rType.equals(Type.charType()) ? 1 : 4;
         b = rType.equals(Type.charType()) ? "B" : "";
         codes.add(LDR_value(resultReg, size));
         codes.add(BL("malloc"));
-        codes.add(STR(b, "r5, [" + resultReg + "]"));
+        codes.add(b != "" ? STR("r5", "[" + resultReg + "]") : STRB("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
       }
     } else if (type.equals(stringType()) || type.equals(intType())) {
