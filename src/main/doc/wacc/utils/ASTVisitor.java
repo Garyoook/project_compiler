@@ -59,58 +59,59 @@ public class ASTVisitor {
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
       visitStringNode(new StringNode("\"NullReferenceError: dereference a null reference\\n\\0\""));
-      printcodes.add("\tBLEQ p_throw_runtime_error");
+      printcodes.add(BLEQ("p_throw_runtime_error"));
       printRunTimeErr = true;
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(POP(PC));
     }
 
 
     if (printCheckArrayBound) {
       printcodes.add("p_check_array_bounds:");
-      printcodes.add("\tPUSH {lr}");
+      printcodes.add(PUSH(LR));
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDRLT_msg(resultReg, String.valueOf(stringCounter)));
       variables.add("msg_" + stringCounter++ + ":");
       variables.add( "\t.word 44");
       variables.add("\t.ascii \"ArrayIndexOutOfBoundsError: negative index\\n\\0\"");
-      printcodes.add("\tBLLT p_throw_runtime_error");
+      printcodes.add(BLLT("p_throw_runtime_error"));
       printcodes.add(LDR_reg("r1","r1"));
       printcodes.add(CMP_reg(resultReg,"r1"));
       printcodes.add(LDRCS_msg(resultReg, String.valueOf(stringCounter)));
       variables.add("msg_" + stringCounter++ + ":");
       variables.add( "\t.word 45");
       variables.add("\t.ascii \"ArrayIndexOutOfBoundsError: index too large\\n\\0\"");
-      printcodes.add("\tBLCS p_throw_runtime_error");
+      printcodes.add(BLCS("p_throw_runtime_error"));
       printRunTimeErr = true;
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(POP(PC));
     }
 
     if (printFree) {
       printcodes.add("p_free_pair:");
-      printcodes.add("\tPUSH {lr}");
+      printcodes.add(PUSH(LR));
+      printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
       visitStringNode(new StringNode("NullReferenceError: dereference a null reference\\n\\0"));
       printcodes.add("\tBEQ p_throw_runtime_error");
       printRunTimeErr = true;
-      printcodes.add("\tPUSH {r0}");
+      printcodes.add(PUSH(resultReg));
       printcodes.add(LDR_reg(resultReg, resultReg));
-      printcodes.add("\tBL free");
+      printcodes.add(BL("free"));
       printcodes.add(LDR_reg(resultReg, SP));
       printcodes.add(LDR_reg(resultReg, (resultReg + ", #4")));
-      printcodes.add("\tBL free");
-      printcodes.add("\tPOP {r0}");
-      printcodes.add("\tBL free");
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(BL("free"));
+      printcodes.add(POP(resultReg));
+      printcodes.add(BL("free"));
+      printcodes.add(POP(PC));
     }
 
     if (printDivideByZeroError) {
       printcodes.add("p_check_divide_by_zero:");
-      printcodes.add("\tPUSH {lr}");
+      printcodes.add(PUSH(LR));
       printcodes.add(CMP_value("r1", 0));
       printcodes.add(LDREQ_msg("r0", String.valueOf(stringCounter)));
       printcodes.add("\tBLEQ p_throw_runtime_error");
       printRunTimeErr = true;
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(POP(PC));
       variables.add("msg_" + stringCounter + ":");
       variables.add( "\t.word 45");
       variables.add("\t.ascii \"DivideByZeroError: divide or modulo by zero\\n\\0\"");
@@ -121,7 +122,7 @@ public class ASTVisitor {
     if (printOverflowError) {
       printcodes.add("p_throw_overflow_error:");
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
-      printcodes.add("\tBL p_throw_runtime_error");
+      printcodes.add(BL("p_throw_runtime_error"));
       printRunTimeErr = true;
       variables.add("msg_" + stringCounter + ":");
       variables.add( "\t.word 82");
@@ -131,20 +132,20 @@ public class ASTVisitor {
 
     if (printRunTimeErr) {
       printcodes.add("p_throw_runtime_error:");
-      printcodes.add("\tBL p_print_string");
+      printcodes.add(BL("p_print_string"));
       printstring = true;
-      printcodes.add("\tMOV " + resultReg + ", #-1");
-      printcodes.add("\tBL exit");
+      printcodes.add(MOV(resultReg, -1));
+      printcodes.add(BL("exit"));
     }
 
     if (printint) {
       printcodes.add("p_print_int:");
-      printcodes.add(PUSH("lr"));
+      printcodes.add(PUSH(LR));
       printcodes.add(MOV("r1", resultReg));
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
       printcodes.add(ADD(resultReg, resultReg, "#4"));
       printcodes.add(BL("printf"));
-      printcodes.add(MOV(resultReg, "#0"));
+      printcodes.add(MOV(resultReg, 0));
       printcodes.add(BL("fflush"));
       printcodes.add(POP("pc"));
       visitStringNode(new StringNode("\"%d\\0\""));
@@ -152,29 +153,29 @@ public class ASTVisitor {
 
     if (printBool) {
       printcodes.add("p_print_bool:");
-      printcodes.add(PUSH("lr"));
+      printcodes.add(PUSH(LR));
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDRNE_msg(resultReg , String.valueOf(stringCounter)));
       visitStringNode(new StringNode("\"true\\0\""));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
       visitStringNode(new StringNode("\"false\\0\""));
       printcodes.add(ADD(resultReg, resultReg, 4));
-      printcodes.add("\tBL printf");
-      printcodes.add("\tMOV " + resultReg + ", #0");
-      printcodes.add("\tBL fflush");
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(BL("printf"));
+      printcodes.add(MOV(resultReg, 0));
+      printcodes.add(BL("fflush"));
+      printcodes.add(POP(PC));
     }
 
     if (printReference) {
       printcodes.add("p_print_reference:");
-      printcodes.add("\tPUSH {lr}");
-      printcodes.add("\tMOV r1, " + resultReg);
+      printcodes.add(PUSH(LR));
+      printcodes.add(MOV("r1", resultReg));
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
       printcodes.add(ADD(resultReg, resultReg, 4));
-      printcodes.add("\tBL printf");
-      printcodes.add("\tMOV " + resultReg + ", #0");
-      printcodes.add("\tBL fflush");
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(BL("printf"));
+      printcodes.add(MOV(resultReg, 0));
+      printcodes.add(BL("fflush"));
+      printcodes.add(POP(PC));
       visitStringNode(new StringNode("\"%p\\0\""));
     }
 
@@ -184,7 +185,7 @@ public class ASTVisitor {
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
       printcodes.add(ADD(resultReg, resultReg, "#4"));
       printcodes.add(BL("puts"));
-      printcodes.add(MOV(resultReg,"#0"));
+      printcodes.add(MOV(resultReg, 0));
       printcodes.add(BL("fflush"));
       printcodes.add(POP(PC));
       visitStringNode(new StringNode("\"\\0\""));
@@ -192,15 +193,15 @@ public class ASTVisitor {
 
     if(printstring) {
       printcodes.add("p_print_string:");
-      printcodes.add("\tPUSH {lr}");
+      printcodes.add(PUSH(LR));
       printcodes.add(LDR_reg(reg_add(), resultReg));
       printcodes.add(ADD(reg_add(), resultReg, 4));
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
       printcodes.add(ADD(resultReg, resultReg, 4));
-      printcodes.add("\tBL printf");
-      printcodes.add("\tMOV " + resultReg + ", #0");
-      printcodes.add("\tBL fflush");
-      printcodes.add("\tPOP {pc}");
+      printcodes.add(BL("printf"));
+      printcodes.add(MOV(resultReg, 0));
+      printcodes.add(BL("fflush"));
+      printcodes.add(POP(PC));
       visitStringNode(new StringNode("\"%.*s\\0\""));
     }
 
@@ -242,7 +243,7 @@ public class ASTVisitor {
     }
 
     main.add("main:");
-    main.add("\tPUSH {lr}");
+    main.add(PUSH(LR));
     visitStat(past.getMainProgram(), main, k);
   }
 
@@ -292,7 +293,7 @@ public class ASTVisitor {
     symbolTable = ast.getSymbolTable();
 
     codes.add("f_" + ast.getFuncName() + ":");
-    codes.add(PUSH("lr"));
+    codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
     codes.add(POP(PC));
     codes.add(POP(PC));
@@ -350,7 +351,7 @@ public class ASTVisitor {
 ////      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
 //      codes.add("\tMOV " + resultReg + ", r" + r2);
 //      codes.add("\tMOV r1, r" + r1);
-//      codes.add("\tBL p_check_array_bounds");
+//      codes.add(BL(p_check_array_bounds");
 //      codes.add("\tADD r" + r1 + ", r" + r1 + ", #4");
 //      if (arrayType.getType().equals(intType())) {
 //        codes.add("\tADD r" + r1 + ", r" + r1 + ", r" + r2 + ", LSL #2");
@@ -371,8 +372,8 @@ public class ASTVisitor {
 
   public void visitExitAst(ExitAst ast, List<String> codes, int reg_counter) {
     visitExprAST(ast.getExpr(),codes, reg_counter);
-    codes.add("\tMOV " + resultReg + ", " + paramReg);
-    codes.add("\tBL exit");
+    codes.add(MOV(resultReg, paramReg));
+    codes.add(BL("exit"));
   }
 
   public boolean visitExprAST(AST ast, List<String> codes, int reg_counter) {
@@ -382,7 +383,7 @@ public class ASTVisitor {
       return true;
     } else if (ast instanceof BoolNode) {
       BoolNode bool_ast = (BoolNode) ast;
-      codes.add("\tMOV r" + reg_counter + ", #" + bool_ast.getBoolValue());
+      codes.add(MOV("r" + reg_counter, bool_ast.getBoolValue()));
       return true;
     } else if (ast instanceof IdentNode) {
       int x = symbolTable.getStackTable(((IdentNode)ast).getIdent());
@@ -402,7 +403,7 @@ public class ASTVisitor {
       visitStringNode((StringNode)ast);
       return true;
     } else if (ast instanceof CharNode) {
-      codes.add("\tMOV r" + reg_counter + ", #'" + ((CharNode) ast).getCharValue() + "'");
+      codes.add(MOV("r" + reg_counter,"#'" + ((CharNode) ast).getCharValue() + "'"));
       return true;
     } else if (ast instanceof Binary_BoolOpNode) {
       int r1 = reg_counter;
@@ -416,20 +417,20 @@ public class ASTVisitor {
         codes.add(MOVEQ(paramReg, 1));
         codes.add(MOVNE(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isNotEqual()) {
-        codes.add("\tMOVNE " + paramReg + ", #1");
-        codes.add("\tMOVEQ " + paramReg + ", #0");
+        codes.add(MOVNE(paramReg, 1));
+        codes.add(MOVEQ(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isGreater()) {
-        codes.add("\tMOVGT " + paramReg + ", #1");
-        codes.add("\tMOVLE " + paramReg + ", #0");
+        codes.add(MOVGT(paramReg, 1));
+        codes.add(MOVLE(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isGreaterOrEqual()) {
-        codes.add("\tMOVGE " + paramReg + ", #1");
-        codes.add("\tMOVLT " + paramReg + ", #0");
+        codes.add(MOVGE(paramReg, 1));
+        codes.add(MOVLT(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isSmaller()) {
-        codes.add("\tMOVLT " + paramReg + ", #1");
-        codes.add("\tMOVGE " + paramReg + ", #0");
+        codes.add(MOVLT(paramReg, 1));
+        codes.add(MOVGE(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isSmallerOrEqual()) {
-        codes.add("\tMOVLE " + paramReg + ", #1");
-        codes.add("\tMOVGT " + paramReg + ", #0");
+        codes.add(MOVLE(paramReg, 1));
+        codes.add(MOVGT(paramReg, 0));
       } else if (((Binary_BoolOpNode) ast).isBinaryAnd()) {
         codes.add("\tAND r" + r1 + ", r" + r1 + ", r" + r2);// still has other operators
       } else if (((Binary_BoolOpNode) ast).isBinaryOr()) {
@@ -443,34 +444,34 @@ public class ASTVisitor {
       }
       visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, r1);
       if (r2 > 10) {
-        codes.add("\tPUSH {r10}");
+        codes.add(PUSH("r10"));
         r2 = regMax;
         pushCounter++;
       }
       visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, r2);
 
       if (pushCounter > 0) {
-        codes.add("\tPOP {r11}");
+        codes.add(POP("r11"));
         pushCounter--;
         r2 = 11;
       }
       if (((BinaryOpNode) ast).isDivid() || ((BinaryOpNode) ast).isMod()) {
-        codes.add("\tMOV r0, r" + r1);
-        codes.add("\tMOV r1, r" + r2);
-        codes.add("\tBL p_check_divide_by_zero");
+        codes.add(MOV("r0", "r" + r1));
+        codes.add(MOV("r1", "r" + r2));
+        codes.add(BL("p_check_divide_by_zero"));
         if (((BinaryOpNode) ast).isDivid()) {
-          codes.add("\tBL __aeabi_idiv");
-          codes.add("\tMOV r" + reg_counter + ", " + resultReg);
+          codes.add(BL("__aeabi_idiv"));
+          codes.add(MOV("r" + reg_counter, resultReg));
         } else {
-          codes.add("\tBL __aeabi_idivmod");
-          codes.add("\tMOV r" + r1 + ", r1");
+          codes.add(BL("__aeabi_idivmod"));
+          codes.add(MOV("r" + r1, "r1"));
         }
         printDivideByZeroError = true;
       } else {
         if (((BinaryOpNode) ast).isPlus()) {
           codes.add("\tADDS r" + r1 + ", r" + r1 + ", r" + r2);
         } else if (((BinaryOpNode) ast).isMinus()) {
-          codes.add("\tSUBS r" + r1 + ", r" + r1 + ", r" + r2);
+          codes.add(SUBS("r1","r1","r2"));
         } else if (((BinaryOpNode) ast).isTime()) {
           codes.add("\tSMULL r" + r1 + ", r" + r2 + ", r" + r1 + ", r" + r2);
           codes.add("\tCMP r" + r2 + ", r" + r1 + ", ASR #31");
@@ -510,11 +511,11 @@ public class ASTVisitor {
       }
       for (int i = 0; i < ((ArrayElemNode) ast).getExprs().size(); i++) {
         visitExprAST(((ArrayElemNode) ast).getExprs().get(i), codes, arrayIndexReg);
-        codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
-        codes.add("\tMOV " + resultReg + ", r" + arrayIndexReg);
-        codes.add("\tMOV r1, r" + reg_counter);
-        codes.add("\tBL p_check_array_bounds");
-        codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
+          codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
+        codes.add(MOV(resultReg, "r" + arrayIndexReg));
+        codes.add(MOV("r1", "r" + reg_counter));
+        codes.add(BL("p_check_array_bounds"));
+          codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
         Type type = symbolTable.getVariable(((ArrayElemNode) ast).getName());
         ArrayType arrayType = (ArrayType)type;
         if (arrayType.getType().equals(charType()) || arrayType.getType().equals(boolType())) {
@@ -550,8 +551,8 @@ public class ASTVisitor {
         }
       }
     }
-    codes.add("\tBL f_" + ast.getFuncName());
-    codes.add("\tMOV " + paramReg + ", " + resultReg);
+    codes.add(BL("f_" + ast.getFuncName()));
+    codes.add(MOV(paramReg, resultReg));
   }
 
   public void visitArrayLiter(ArrayType arrayType, AssignRHSAST ast, List<String> codes, int reg_counter) {
@@ -565,9 +566,9 @@ public class ASTVisitor {
     } else {
       codes.add(LDR_value(resultReg, (4 + 4 * array_size)));
     }
-    codes.add("\tBL malloc");
+    codes.add(BL("malloc"));
     mallocCounter++;
-    codes.add("\tMOV " + paramReg + ", " + resultReg);
+    codes.add(MOV(paramReg, resultReg));
     int array_counter = 0;
     int array_reg = reg_counter + mallocCounter;
     for (AST a : ast.getArrayAST().getExprs()) {
@@ -589,7 +590,7 @@ public class ASTVisitor {
     String strWord = "\tSTR ";
 
     if (rhs.getArrayAST() != null) {
-      codes.add("\tSUB sp, sp, #4");
+      codes.add(SUB(SP, SP, 4));
       spPosition += 4;
 //      int array_size = rhs.getArrayAST().getSize();
       ArrayType arrayType = (ArrayType)type;
@@ -599,7 +600,7 @@ public class ASTVisitor {
 //      } else {
 //        codes.add("\tLDR " + resultReg + ", =" + (4 + 4 * array_size));
 //      }
-//      codes.add("\tBL malloc");
+//      codes.add(BL(malloc");
 //      codes.add("\tMOV " + paramReg + ", " + resultReg);
 //      int array_counter = 0;
 //      int array_reg = reg_counter + 1;
@@ -624,11 +625,11 @@ public class ASTVisitor {
 ////      codes.add("\tSTR " + paramReg + ", [sp]");
 
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 1) {
-      codes.add("\tSUB sp, sp, #4");
+      codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       codes.add(LDR_value(resultReg, 8));
-      codes.add("\tBL malloc");
-      codes.add("\tMOV " + paramReg + ", " + resultReg);
+      codes.add(BL("malloc"));
+      codes.add(MOV(paramReg, resultReg));
       visitExprAST(ast.getAssignRhsAST().getExpr1(),codes,reg_counter);
       Type lType = null;
       Type rType = null;
@@ -639,21 +640,21 @@ public class ASTVisitor {
       int size = lType.equals(Type.charType()) ? 1 : 4;
       String b = lType.equals(Type.charType()) ? "B" : "";
       codes.add(LDR_value(resultReg, size));
-      codes.add("\tBL malloc");
-      codes.add(STR(b, " r5, [r0]"));
+      codes.add(BL("malloc"));
+      codes.add(b != "" ? STR("r5", "[r0]") : STRB("r5", "[r0]"));
       codes.add(STR(resultReg, "[r4]"));
       visitExprAST(ast.getAssignRhsAST().getExpr2(),codes,reg_counter);
       size = rType.equals(Type.charType()) ? 1 : 4;
       b = rType.equals(Type.charType()) ? "B" : "";
       codes.add(LDR_value(resultReg, size));
-      codes.add("\tBL malloc");
+      codes.add(BL("malloc"));
       codes.add(STR(b, "r5, [" + resultReg + "]"));
       codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
     } else if (type.equals(stringType()) || type.equals(intType())) {
-      codes.add("\tSUB sp, sp, #4");
+      codes.add(SUB(SP, SP, 4));
       spPosition += 4;
     } else if (type.equals(boolType()) || type.equals(charType())) {
-      codes.add("\tSUB sp, sp, #1");
+      codes.add(SUB(SP, SP, 1));
       spPosition += 1;
       strWord = "\tSTRB ";
     }
@@ -670,7 +671,7 @@ public class ASTVisitor {
 
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
     visitExprAST(ast.getExpr(), codes, reg_counter);
-    codes.add("\tMOV " + resultReg + ", " + paramReg);
+    codes.add(MOV(resultReg, paramReg));
   }
 
   private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
@@ -713,7 +714,7 @@ public class ASTVisitor {
     if (expr instanceof ArrayElemNode) {
       codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
     }
-    codes.add("\tMOV " + resultReg + ", " + paramReg);
+    codes.add(MOV(resultReg, paramReg));
     Type type  = null;
     if (expr instanceof Binary_BoolOpNode || expr instanceof BoolNode ||
         (expr instanceof UnaryOpNode && ((UnaryOpNode) expr).isNOT())) {
@@ -731,7 +732,7 @@ public class ASTVisitor {
         if (((ArrayType) type).getType().equals(charType())) {
           type = stringType();
         } else {
-          codes.add("\tBL p_print_reference");
+          codes.add(BL("p_print_reference"));
           printReference = true;
         }
       }
@@ -744,21 +745,21 @@ public class ASTVisitor {
 
     if (type != null) {
       if (type.equals(stringType())) {
-        codes.add("\tBL p_print_string");
+        codes.add(BL("p_print_string"));
         printstring = true;
       } else if (type.equals(intType())) {
-        codes.add("\tBL p_print_int");
+        codes.add(BL("p_print_int"));
         printint = true;
       } else if (type.equals(charType())) {
-        codes.add("\tBL putchar");
+        codes.add(BL("putchar"));
       } else if (type.equals(boolType())) {
-        codes.add("\tBL p_print_bool");
+        codes.add(BL("p_print_bool"));
         printBool = true;
       }
     }
 
     if (expr instanceof PairAST) {
-      codes.add("\tBL p_print_reference");
+      codes.add(BL("p_print_reference"));
       printReference = true;
     }
   }
@@ -785,26 +786,26 @@ public class ASTVisitor {
     }
     if (ast.getLhs().getLhsContext().IDENT()==null) {
       codes.add(LDR_reg(paramReg, SP));
-      codes.add("\tMOV " + resultReg + ", " + paramReg);
-      codes.add("\tBL p_check_null_pointer");
+      codes.add(MOV(resultReg, paramReg));
+      codes.add(BL("p_check_null_pointer"));
       printCheckNullPointer = true;
       codes.add(LDR_reg(paramReg, paramReg));
     } else {
       codes.add(ADD("r4", SP , (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText()))));
     }
-    codes.add("\tMOV " + resultReg + ", " + paramReg);
-    codes.add("\tBL p_read_" + readType);
+    codes.add(MOV(resultReg, paramReg));
+    codes.add(BL("p_read_" + readType));
     variables.add("msg_" + stringCounter + ":");
     variables.add( "\t.word " + (readType.equals("char")?4:3));
     variables.add("\t.ascii  \"" + (readType.equals("char")?" %c":"%d") + "\\0\"");
     stringCounter++;
     printcodes.add("p_read_" + readType + ":");
-    printcodes.add(PUSH("lr"));
+    printcodes.add(PUSH(LR));
     printcodes.add(MOV("r1", resultReg));
     printcodes.add(LDR_msg(resultReg, String.valueOf((stringCounter-1))));
     printcodes.add(ADD(resultReg, resultReg, "#4"));
     printcodes.add(BL("scanf"));
-    printcodes.add(POP("pc"));
+    printcodes.add(POP(PC));
   }
 
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
@@ -828,8 +829,8 @@ public class ASTVisitor {
 
   public void visitFreeAST(FreeAst ast, List<String> codes, int reg_counter) {
     codes.add(LDR_reg(paramReg, SP));
-    codes.add("\tMOV " + resultReg + ", " + paramReg);
-    codes.add("\tBL p_free_pair");
+    codes.add(MOV(resultReg, paramReg));
+    codes.add(BL("p_free_pair"));
     printFree = true;
   }
 
@@ -845,6 +846,10 @@ public class ASTVisitor {
 
   public String SUB(String dst, String src, int size) {
     return "\tSUB " + dst + ", " + src + ", " + "#" + size;
+  }
+
+  public String SUBS(String dst, String src, String src2) {
+    return "\tSUBS " + dst + ", " + src + ", " + src2;
   }
 
   public String LDR_msg(String dst, String content) {
@@ -891,6 +896,10 @@ public class ASTVisitor {
     return "\tMOV " + dst + ", " + src;
   }
 
+  public String MOV(String dst, int src) {
+    return "\tMOV " + dst + ", #" + src;
+  }
+
   public String CMP_value(String dst, int value) {
     return "\tCMP " + dst + ", #" + value;
   }
@@ -905,6 +914,22 @@ public class ASTVisitor {
 
   public String MOVNE(String dst, int value) {
     return "\tMOVNE " + dst + ", #" + value;
+  }
+
+  public String MOVGT(String dst, int value) {
+    return "\tMOVGT " + dst + ", #" + value;
+  }
+
+  public String MOVLT(String dst, int value) {
+    return "\tMOVLT " + dst + ", #" + value;
+  }
+
+  public String MOVGE(String dst, int value) {
+    return "\tMOVGE " + dst + ", #" + value;
+  }
+
+  public String MOVLE(String dst, int value) {
+    return "\tMOVLE " + dst + ", #" + value;
   }
 
   public String ADD(String result, String a, String b) {
@@ -931,6 +956,18 @@ public class ASTVisitor {
 
   public String BL(String target) {
     return "\tBL " + target;
+  }
+
+  public String BLEQ(String target) {
+    return "\tBLEQ " + target;
+  }
+
+  public String BLLT(String target) {
+    return "\tBLLT " + target;
+  }
+
+  public String BLCS(String target) {
+    return "\tBLCS " + target;
   }
 
 
