@@ -791,7 +791,6 @@ public class ASTVisitor {
     String readType = null;
     if (type.equals(intType())) {
       readType = "int";
-      read_int = true;
     } else if (type.equals(charType())) {
       readType = "char";
     }
@@ -805,15 +804,22 @@ public class ASTVisitor {
       codes.add(ADD("r4", SP , (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText()))));
     }
     codes.add(MOV(resultReg, paramReg));
-    if (!read_int && readType.equals("int") || !read_char && readType.equals("char")){
+    if ((!read_int && readType.equals("int")) || (!read_char && readType.equals("char"))){
       codes.add(BL("p_read_" + readType));
+      variables.add("msg_" + stringCounter + ":");
+      variables.add( "\t.word " + (readType.equals("char")?4:3));
+      variables.add("\t.ascii  \"" + (readType.equals("char")?" %c":"%d") + "\\0\"");
+      stringCounter++;
+      printcodes.add("p_read_" + readType + ":");
     }
 
-    variables.add("msg_" + stringCounter + ":");
-    variables.add( "\t.word " + (readType.equals("char")?4:3));
-    variables.add("\t.ascii  \"" + (readType.equals("char")?" %c":"%d") + "\\0\"");
-    stringCounter++;
-    printcodes.add("p_read_" + readType + ":");
+    if (type.equals(intType())) {
+      read_int = true;
+    } else if (type.equals(charType())) {
+      read_char = true;
+    }
+
+
     printcodes.add(PUSH(LR));
     printcodes.add(MOV("r1", resultReg));
     printcodes.add(LDR_msg(resultReg, String.valueOf((stringCounter-1))));
