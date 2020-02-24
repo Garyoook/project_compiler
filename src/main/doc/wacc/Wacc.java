@@ -92,7 +92,7 @@ public class Wacc {
           myWriter.write(s + "\n");
         }
         myWriter.close();
-        //outputFile.deleteOnExit();
+//        outputFile.deleteOnExit();
       }
     } catch (NumberFormatException e) {
       ErrorMessage.addSyntaxError("Integer overflow");

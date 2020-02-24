@@ -888,11 +888,11 @@ public class ASTVisitor {
   }
 
   public String MOVEQ(String dst, int value) {
-    return "\tMOVEQ" + dst + ", #" + value;
+    return "\tMOVEQ " + dst + ", #" + value;
   }
 
   public String MOVNE(String dst, int value) {
-    return "\tMOVNE" + dst + ", #" + value;
+    return "\tMOVNE " + dst + ", #" + value;
   }
 
   public String ADD(String result, String a, String b) {

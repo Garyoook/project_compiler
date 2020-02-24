@@ -10,7 +10,7 @@ n_passed = 0
 n_cases = 0
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-compile_cmd = os.path.join(script_dir, '../compile')
+compile_cmd = os.path.join(script_dir, 'compile')
 arm_gcc = os.path.join(script_dir, './tools/arm-gcc')
 arm_run = os.path.join(script_dir, './tools/arm-run')
 
