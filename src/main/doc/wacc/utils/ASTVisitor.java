@@ -856,7 +856,7 @@ public class ASTVisitor {
       expr = ast.getExpr();
     }
     visitExprAST(expr, codes, reg_counter);
-    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
+    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode || expr instanceof IdentNode) {
       codes.add(CMP_value(paramReg,1));
     } else {
       codes.add(CMP_reg(paramReg, "r" + reg_counter));
