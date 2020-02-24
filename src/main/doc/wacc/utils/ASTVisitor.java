@@ -338,10 +338,11 @@ public class ASTVisitor {
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
       codes.add(strcommand + "r" + reg_counter + ", [sp]");
     }
-//    else {
-//      codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
-//                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
-//    }
+    else {
+      if (!ast.getLhs().isArray())
+        codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
+                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
+    }
 
     if (ast.getLhs().isArray()) {
       visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
