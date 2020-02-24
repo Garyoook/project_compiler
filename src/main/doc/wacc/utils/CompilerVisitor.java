@@ -57,14 +57,15 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }
     if (ctx.int_sign().getText().equals("-")) {
-      return new IntNode(-Integer.parseInt(ctx.getText()));
+      return new IntNode(Integer.parseInt(ctx.getText()));
     } else {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }
   }
 
   @Override public AST visitArray_elem(Array_elemContext ctx) {
-    return visitChildren(ctx);
+
+    return new ArrayElemNode(ctx.IDENT().getText(), visitExpr(ctx.expr(0)));
   }
 
   @Override public AST visitBinary_oper(Binary_operContext ctx) {

@@ -53,6 +53,10 @@ public class ReadAst extends AST {
     }
   }
 
+  public AssignLHSAST getLhs() {
+    return lhs;
+  }
+
   @Override
   public String toString() {
     return "reading from: " + lhs.getLhsContext().IDENT().getText() + "\n";

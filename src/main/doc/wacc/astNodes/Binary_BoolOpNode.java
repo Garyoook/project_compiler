@@ -81,4 +81,47 @@ public class Binary_BoolOpNode extends AST{
     }
     return false;
   }
+
+  public boolean isBinaryAnd() {
+    if(lowest_binaryOpNode != null) {
+      return lowest_binaryOpNode.B_AND() != null;
+    }
+    return false;
+  }
+
+  public boolean isBinaryOr() {
+    if(lowest_binaryOpNode != null) {
+      return lowest_binaryOpNode.B_OR() != null;
+    }
+    return false;
+  }
+
+  public boolean isGreater() {
+    if(operContext != null) {
+      return operContext.GREATER() != null;
+    }
+    return false;
+  }
+
+  public boolean isGreaterOrEqual() {
+    if(operContext != null) {
+      return operContext.GREATER_E() != null;
+    }
+    return false;
+  }
+
+  public boolean isSmaller() {
+    if(operContext != null) {
+      return operContext.SMALLER() != null;
+    }
+    return false;
+  }
+
+  public boolean isSmallerOrEqual() {
+    if(operContext != null) {
+      return operContext.SMALLER_E() != null;
+    }
+    return false;
+  }
+
 }

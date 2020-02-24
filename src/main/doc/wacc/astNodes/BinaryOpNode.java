@@ -7,6 +7,7 @@ import static antlr.BasicParser.*;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static java.lang.System.exit;
+import static java.lang.System.mapLibraryName;
 
 public class BinaryOpNode extends AST{
   private Binary_operContext operContext;
@@ -41,5 +42,48 @@ public class BinaryOpNode extends AST{
   @Override
   public String toString() {
     return expr1 + operContext.getText() + expr2;
+  }
+
+  public AST getExpr1() {
+    return expr1;
+  }
+
+  public AST getExpr2() {
+    return expr2;
+  }
+
+  public boolean isPlus() {
+    if (operContext != null) {
+      return operContext.PLUS() != null;
+    }
+    return false;
+  }
+
+  public boolean isMinus() {
+    if (operContext != null) {
+      return operContext.MINUS() != null;
+    }
+    return false;
+  }
+
+  public boolean isDivid() {
+    if (hignp_bin_opContext != null) {
+      return hignp_bin_opContext.DIVIDE() != null;
+    }
+    return false;
+  }
+
+  public boolean isTime() {
+    if (hignp_bin_opContext != null) {
+      return hignp_bin_opContext.TIME() != null;
+    }
+    return false;
+  }
+
+  public boolean isMod() {
+    if (hignp_bin_opContext != null) {
+      return hignp_bin_opContext.MOD() != null;
+    }
+    return false;
   }
 }
