@@ -650,6 +650,13 @@ public class ASTVisitor {
 //      codes.add("\tSTR r" + array_reg + ", [r" + reg_counter + "]");
 ////      codes.add("\tSTR " + paramReg + ", [sp]");
 
+    } else if (type.equals(stringType()) || type.equals(intType())) {
+      codes.add(SUB(SP, SP, 4));
+      spPosition += 4;
+    } else if (type.equals(boolType()) || type.equals(charType())) {
+      codes.add(SUB(SP, SP, 1));
+      spPosition += 1;
+      strWord = "\tSTRB ";
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
       //pair declaration
       codes.add(SUB(SP, SP, 4));
@@ -681,13 +688,6 @@ public class ASTVisitor {
         codes.add(b != "" ? STR("r5", "[" + resultReg + "]") : STRB("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
       }
-    } else if (type.equals(stringType()) || type.equals(intType())) {
-      codes.add(SUB(SP, SP, 4));
-      spPosition += 4;
-    } else if (type.equals(boolType()) || type.equals(charType())) {
-      codes.add(SUB(SP, SP, 1));
-      spPosition += 1;
-      strWord = "\tSTRB ";
     }
 
     if (ast.getAssignRhsAST().call()) {
