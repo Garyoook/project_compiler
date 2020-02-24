@@ -333,6 +333,8 @@ public class ASTVisitor {
 
     if(ast.getRhs().getArrayAST() != null) {
       visitArrayLiter((ArrayType)type, ast.getRhs(), codes, reg_counter);
+    } else if (ast.getRhs().call()) {
+      visitCallAst(ast.getRhs().getCallAST(), codes, reg_counter);
     }
 
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
