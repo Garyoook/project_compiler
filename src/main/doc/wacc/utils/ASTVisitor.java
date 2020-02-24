@@ -359,13 +359,17 @@ public class ASTVisitor {
       strcommand = "\tSTRB ";
     }
 
-    if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
-      codes.add(strcommand + "r" + reg_counter + ", [sp]");
-    }
-    else {
-      if (!ast.getLhs().isArray())
-        codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
-                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
+    if (symbolTable.getParamCounter() > 0) {
+      codes.add(strcommand + "r" + reg_counter + ", [sp, #" + symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()) + "]");
+    } else {
+
+      if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0) {
+        codes.add(strcommand + "r" + reg_counter + ", [sp]");
+      } else {
+        if (!ast.getLhs().isArray())
+          codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
+              (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
+      }
     }
 
     if (ast.getLhs().isArray()) {
@@ -556,7 +560,8 @@ public class ASTVisitor {
 
   private void visitCallAst(CallAST ast, List<String> codes, int reg_counter) {
     if (ast.hasArgument()) {
-      for (AST argument : ast.getArguments()) {
+      for(int i = ast.getArguments().size() - 1; i >= 0; i--) {
+        AST argument = ast.getArguments().get(i);
         visitExprAST(argument, codes, reg_counter);
         if (argument instanceof CharNode || argument instanceof BoolNode)  {
           codes.add(STRB(paramReg, "[sp, #-1]!"));
@@ -564,6 +569,7 @@ public class ASTVisitor {
           codes.add(STR(paramReg, "[sp, #-4]!"));
         }
       }
+
     }
     codes.add(BL("f_" + ast.getFuncName()));
     codes.add(ADD(SP, SP, functionParams.get(ast.getFuncName())));
