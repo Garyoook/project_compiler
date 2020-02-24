@@ -318,13 +318,18 @@ public class ASTVisitor {
     if(ast.getRhs().getArrayAST() != null) {
       visitArrayLiter((ArrayType)type, ast.getRhs(), codes, reg_counter);
     }
+
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
 
+    if (type.equals(boolType()) || type.equals(charType())) {
+      strcommand = "\tSTRB ";
+    }
+
     if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
-      if (type.equals(boolType()) || type.equals(charType())) {
-        strcommand = "\tSTRB ";
-      }
       codes.add(strcommand + "r" + reg_counter + ", [sp]");
+    } else {
+      codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
+                (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()))+"]");
     }
 
     if (ast.getLhs().isArray()) {
