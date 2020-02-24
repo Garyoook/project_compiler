@@ -4,6 +4,7 @@ import antlr.BasicParser;
 import doc.wacc.astNodes.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ASTVisitor {
   private List<String> main = new LinkedList<>();
   public static int offset = 0;
   public final ArrayList<Register> allRegs = createAllRegs();
+  public HashMap<String, Integer> functionParams = new HashMap<>();
 
   private List<String> variables = new LinkedList<>();
   private List<String> printcodes = new LinkedList<>();
@@ -289,25 +291,36 @@ public class ASTVisitor {
   }
 
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
-
-//    saveReg();
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-
+    for (ParamNode p: ast.getParameters()) {
+      visitParamNode(p);
+    }
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
-
+    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
+
+  }
+
+  public void visitParamNode(ParamNode param) {
+    Type type = param.getType();
+    if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
+      symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
+    } else {
+      symbolTable.setParamCounter(symbolTable.getParamCounter() + 1);
+
+    }
+    symbolTable.putStackTable(param.getName(), symbolTable.getParamCounter());
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
-
     String strcommand = "\tSTR ";
     Type type;
     if (ast.getLhs().isPair()) {
@@ -348,40 +361,13 @@ public class ASTVisitor {
 
     if (ast.getLhs().isArray()) {
       visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
-//      int r1 = reg_counter + 1;
-//      int r2 = reg_counter + 2;
-//
-////      CompilerVisitor compilerVisitor = new CompilerVisitor();
-////      AST ast1 = compilerVisitor.visitArray_elem(ast.getLhs().getLhsContext().array_elem());
       while (type instanceof ArrayType) {
         type = ((ArrayType) type).getType();
       }
-//      if ()
-//      codes.add("\tADD r" + r1 + ", sp, #0");
-//      visitExprAST(ast.getLhs().getArrayIndex(), codes, r2);
-//      codes.add("\tLDR r" + r1 + ", [r" + r1 + "]");
-////      if (((ArrayElemNode) ast1).getExpr() instanceof IntNode) {
-////        codes.add("\tLDR r5, =" + ((IntNode) ((ArrayElemNode) ast1).getExpr()).getValue());
-////      } else {
-////        visitExprAST(((ArrayElemNode) ast1).getExpr(), codes, reg_counter);
-////        codes.add("\tLDR r5, " + paramReg);
-////      }
-////      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
-//      codes.add("\tMOV " + resultReg + ", r" + r2);
-//      codes.add("\tMOV r1, r" + r1);
-//      codes.add(BL(p_check_array_bounds");
-//      codes.add("\tADD r" + r1 + ", r" + r1 + ", #4");
-//      if (arrayType.getType().equals(intType())) {
-//        codes.add("\tADD r" + r1 + ", r" + r1 + ", r" + r2 + ", LSL #2");
-//      } else {
-//        codes.add("\tADD r" + r1 + ", r" + r1 + ", r" + r2);
-//      }
       if (type.equals(boolType()) || type.equals(charType())) {
         strcommand = "\tSTRB ";
       }
       codes.add(strcommand + paramReg + ", [r" + (reg_counter + 1) + "]");
-//      codes.add("\tADD " + paramReg + ", " + paramReg + ", r5, LSL #2");
-//      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
       printCheckArrayBound = true;
     } else {
 //      codes.add("\t" + strcommand + paramReg + ", [sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
@@ -419,10 +405,15 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if (spPosition - x == 0) {
-        codes.add(loadWord + " r" + reg_counter + ", [sp]");
+      if (symbolTable.getParamCounter() > 0) {
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + x + "]");
       } else {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+        if (spPosition - x == 0) {
+          codes.add(loadWord + " r" + reg_counter + ", [sp]");
+        } else {
+          System.out.println(x);
+          codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+        }
       }
       return true;
     } else if (ast instanceof StringNode) {
@@ -523,10 +514,6 @@ public class ASTVisitor {
       } else if (((UnaryOpNode) ast).isLen()) {
         codes.add(LDR_reg(paramReg, "r" + reg_counter));
       }
-//      if (((UnaryOpNode) ast).getOperContext() != null) {
-//        codes.add("\tLDR " + paramReg + ", [sp]");
-//        codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
-//      }
     } else if (ast instanceof CallAST) {
       visitCallAst((CallAST)ast, codes, reg_counter);
     } else if (ast instanceof ArrayElemNode) {
@@ -551,15 +538,6 @@ public class ASTVisitor {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
       }
-//      if (((ArrayElemNode) ast).getExpr() instanceof IntNode) {
-//        codes.add("\tLDR r5, =" + ((IntNode) ((ArrayElemNode) ast).getExpr()).getValue());
-//      } else {
-//        visitExprAST(((ArrayElemNode) ast).getExpr(), codes, reg_counter);
-//        codes.add("\tLDR r5, " + paramReg);
-//      }
-
-//      codes.add("\tADD " + paramReg + ", " + paramReg + ", r5, LSL #2");
-//      codes.add("\tLDR " + paramReg + ", [" + paramReg + "]");
       printCheckArrayBound = true;
     } else if (ast instanceof ExprWithParen) {
       visitExprAST(((ExprWithParen) ast).getExpr(), codes, reg_counter);
@@ -579,6 +557,7 @@ public class ASTVisitor {
       }
     }
     codes.add(BL("f_" + ast.getFuncName()));
+    codes.add(ADD(SP, SP, functionParams.get(ast.getFuncName())));
     codes.add(MOV(paramReg, resultReg));
   }
 
@@ -620,38 +599,8 @@ public class ASTVisitor {
       //array declaration
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
-//      int array_size = rhs.getArrayAST().getSize();
       ArrayType arrayType = (ArrayType)type;
       visitArrayLiter(arrayType, ast.getAssignRhsAST(), codes, reg_counter);
-//      if (arrayType.getType().equals(charType()) || type.equals(boolType())) {
-//        codes.add("\tLDR " + resultReg + ", =" + (4 + array_size));
-//      } else {
-//        codes.add("\tLDR " + resultReg + ", =" + (4 + 4 * array_size));
-//      }
-//      codes.add(BL(malloc");
-//      codes.add("\tMOV " + paramReg + ", " + resultReg);
-//      int array_counter = 0;
-//      int array_reg = reg_counter + 1;
-//      if (type.equals(charType()) || type.equals(boolType())) {
-//        strWord ="\tSTRB ";
-//      }
-//      for (AST a: rhs.getArrayAST().getExprs()) {
-//        visitExprAST(a, codes, array_reg);
-//        if (arrayType.getType().equals(charType()) || type.equals(boolType())) {
-//          codes.add(strWord + " r" + array_reg + ", [r" + reg_counter + ", #" + (4 + array_counter++) + "]");
-//        } else {
-//          codes.add(strWord + " r" + array_reg + ", [r" + reg_counter + ", #" + (4 + (array_counter++ * 4)) + "]");
-//        }
-//      }
-////      for (int i = 0; i < ast.getAssignRhsAST().getRhsContext().array_liter().expr().size(); i++) {
-////        CompilerVisitor compilerVisitor = new CompilerVisitor();
-////        visitExprAST(compilerVisitor.visitExpr(ast.getAssignRhsAST().getRhsContext().array_liter().expr(i)), codes, reg_counter);
-////        codes.add("\tSTR r5, [r4, #" + ((i + 1) * 4) + "]");
-////      }
-//      codes.add("\tLDR r" + array_reg + ", =" + array_size);
-//      codes.add("\tSTR r" + array_reg + ", [r" + reg_counter + "]");
-////      codes.add("\tSTR " + paramReg + ", [sp]");
-
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
@@ -884,7 +833,6 @@ public class ASTVisitor {
     codes.add(BL("p_free_pair"));
     printFree = true;
   }
-
 
 
   public ArrayList<Register> regsExcept(ArrayList<Register> except) {

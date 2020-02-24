@@ -9,6 +9,7 @@ public class SymbolTable {
     private SymbolTable encSymbolTable;
     private HashMap<String, Type> symbolTable;
     private HashMap<String, Integer> stackTable;
+    private int paramCounter = 0;
     public boolean inFunction = false;
     public boolean inIfThenElse = false;
     public boolean hasReturned = false;
@@ -79,7 +80,15 @@ public class SymbolTable {
       }
     }
 
-    public void inheritFlags(SymbolTable s) {
+  public void setParamCounter(int paramCounter) {
+    this.paramCounter = paramCounter;
+  }
+
+  public int getParamCounter() {
+    return paramCounter;
+  }
+
+  public void inheritFlags(SymbolTable s) {
       this.thenHasReturn = s.thenHasReturn;
       this.inFunction = s.inFunction;
       this.hasReturned = s.hasReturned;
