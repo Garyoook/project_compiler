@@ -804,8 +804,8 @@ public class ASTVisitor {
       codes.add(ADD("r4", SP , (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().IDENT().getText()))));
     }
     codes.add(MOV(resultReg, paramReg));
+    codes.add(BL("p_read_" + readType));
     if ((!read_int && readType.equals("int")) || (!read_char && readType.equals("char"))){
-      codes.add(BL("p_read_" + readType));
       variables.add("msg_" + stringCounter + ":");
       variables.add( "\t.word " + (readType.equals("char")?4:3));
       variables.add("\t.ascii  \"" + (readType.equals("char")?" %c":"%d") + "\\0\"");
