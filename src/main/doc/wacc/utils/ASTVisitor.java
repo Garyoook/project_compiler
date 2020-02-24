@@ -326,7 +326,7 @@ public class ASTVisitor {
       strcommand = "\tSTRB ";
     }
 
-    if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0){
+    if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0 && !ast.getLhs().isArray()){
       codes.add(strcommand + "r" + reg_counter + ", [sp]");
     }
 //    else {
