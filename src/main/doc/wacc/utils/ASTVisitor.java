@@ -322,6 +322,15 @@ public class ASTVisitor {
 
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
 
+    if (type.equals(pairType())) {
+      codes.add(LDR_reg("r5", SP));
+      codes.add(MOV(resultReg, "r5"));
+      codes.add(BL("p_check_null_pointer"));
+      printCheckNullPointer = true;
+      codes.add(LDR_reg("r5", "r5"));
+      codes.add(STR("r4", "[r5]"));
+    }
+
     if (type.equals(boolType()) || type.equals(charType())) {
       strcommand = "\tSTRB ";
     }
@@ -384,6 +393,15 @@ public class ASTVisitor {
   }
 
   public boolean visitExprAST(AST ast, List<String> codes, int reg_counter) {
+    if (ast == null) {
+      // use null pair situation
+      codes.add(LDR_reg(paramReg, SP));
+      codes.add(MOV(resultReg, paramReg));
+      codes.add(BL("p_check_null_pointer"));
+      printCheckNullPointer = true;
+      codes.add(LDR_reg(paramReg, paramReg));
+      codes.add(LDR_reg(paramReg, paramReg));
+    }
     if (ast instanceof IntNode) {
       IntNode int_ast = (IntNode)ast;
       codes.add(LDR_value(("r" + reg_counter), int_ast.getValue()));
@@ -597,6 +615,7 @@ public class ASTVisitor {
     String strWord = "\tSTR ";
 
     if (rhs.getArrayAST() != null) {
+      //array declaration
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
 //      int array_size = rhs.getArrayAST().getSize();
