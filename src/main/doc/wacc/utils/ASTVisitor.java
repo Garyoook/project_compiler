@@ -245,7 +245,12 @@ public class ASTVisitor {
     ProgramAST past= (ProgramAST) ast;
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
+      int temp = spPosition;
+      in_func = true;
       visitParamFst(f, main, k);
+      in_func = false;
+      local_variable = 0;
+      spPosition = temp;
     }
 
     for (FuncAST f: past.getFunctions()) {
@@ -319,6 +324,17 @@ public class ASTVisitor {
     symbolTable = ast.getSymbolTable();
 
     spPosition+=4;
+    for (ParamNode p: ast.getParameters()) {
+      Type type = p.getType();
+      if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
+        spPosition += 4;
+      } else {
+        spPosition += 1;
+      }
+
+    }
+    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
+
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
@@ -414,7 +430,6 @@ public class ASTVisitor {
       if (ast.getRhs().call()) {
         if (local_variable != 0) {
           codes.add("\tADD sp, sp, #" + local_variable);
-          spPosition -= local_variable;
         }
       }
       printCheckArrayBound = true;
@@ -749,7 +764,6 @@ public class ASTVisitor {
     if (ast.getAssignRhsAST().call()) {
       if (local_variable != 0) {
         codes.add("\tADD sp, sp, #" + local_variable);
-        spPosition -= local_variable;
       }
     }
 
