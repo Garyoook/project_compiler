@@ -96,7 +96,7 @@ public class ASTVisitor {
       printcodes.add(PUSH(LR));
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
-      visitStringNode(new StringNode("NullReferenceError: dereference a null reference\\n\\0"));
+      visitStringNode(new StringNode("\"NullReferenceError: dereference a null reference\\n\\0\""));
       printcodes.add("\tBEQ p_throw_runtime_error");
       printRunTimeErr = true;
       printcodes.add(PUSH(resultReg));
@@ -380,12 +380,19 @@ public class ASTVisitor {
 
     if (type.equals(boolType()) || type.equals(charType())) {
       strcommand = "\tSTRB ";
+      if (ast.getRhs().getPairElemNode() != null) {
+        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDRSB(paramReg, paramReg));
+      }
     }
 
     if (symbolTable.getParamCounter() > 0) {
       codes.add(strcommand + "r" + reg_counter + ", [sp, #" + symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()) + "]");
     } else {
-
       if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0) {
         codes.add(strcommand + "r" + reg_counter + ", [sp]");
       } else {
@@ -589,8 +596,6 @@ public class ASTVisitor {
 //        codes.add(MOV(resultReg, "r" + reg_counter));
 //        codes.add(BL("p_check_null_pointer"));
 //        printCheckNullPointer = true;
-//        printRunTimeErr = true;
-//        printstring = true;
 //        codes.add(LDR_reg(paramReg, "r" + reg_counter));
 //      }
 //    }
@@ -735,7 +740,7 @@ public class ASTVisitor {
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
         codes.add(LDR_reg(paramReg, paramReg + ", #4"));
-        codes.add(LDRSB(paramReg, "[" + paramReg + "]"));
+        codes.add(LDRSB(paramReg, paramReg));
       }
     }
 
@@ -972,7 +977,7 @@ public class ASTVisitor {
   }
 
   public String LDRSB (String dst, String src) {
-    return "\tLDRSB " + dst + ", " +  src;
+    return "\tLDRSB " + dst + ", [" +  src + "]";
   }
 
   public String LDRNE_msg(String dst, String content) {
