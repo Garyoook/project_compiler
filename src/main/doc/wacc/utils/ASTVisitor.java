@@ -44,6 +44,8 @@ public class ASTVisitor {
   private boolean printCheckNullPointer = false;
   private boolean read_int = false;
   private boolean read_char = false;
+  private int local_variable = 0;
+  private boolean in_func = false;
 
   public List<String> getCodes() {
     if (spPosition > 0) {
@@ -244,8 +246,10 @@ public class ASTVisitor {
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
       int temp = spPosition;
+      in_func = true;
       visitFuncAST(f, main, k);
-
+      in_func = false;
+      local_variable = 0;
       spPosition = temp;
     }
 
@@ -303,7 +307,9 @@ public class ASTVisitor {
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
-    codes.add("\tADD sp, sp, #" + symbolTable.getParamCounter());
+    if (local_variable != 0) {
+      codes.add("\tADD sp, sp, #" + local_variable);
+    }
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
@@ -618,20 +624,32 @@ public class ASTVisitor {
     if (rhs.getArrayAST() != null) {
       //array declaration
       codes.add(SUB(SP, SP, 4));
+      if (in_func) {
+        local_variable += 4;
+      }
       spPosition += 4;
       ArrayType arrayType = (ArrayType)type;
       visitArrayLiter(arrayType, ast.getAssignRhsAST(), codes, reg_counter);
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
+      if (in_func) {
+        local_variable += 4;
+      }
       spPosition += 4;
     } else if (type.equals(boolType()) || type.equals(charType())) {
       codes.add(SUB(SP, SP, 1));
+      if (in_func) {
+        local_variable += 1;
+      }
       spPosition += 1;
       strWord = "\tSTRB ";
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
       //pair declaration
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
+      if (in_func) {
+        local_variable += 4;
+      }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
           codes.add(LDR_value(paramReg, 0));
