@@ -14,6 +14,7 @@ public class SymbolTable {
     public boolean inIfThenElse = false;
     public boolean hasReturned = false;
     public boolean thenHasReturn = false;
+    public int local_variable = 0;
 
     public SymbolTable(SymbolTable encSymbolTable, HashMap<String, Type> symbolTable) {
         this.encSymbolTable = encSymbolTable;
@@ -21,7 +22,15 @@ public class SymbolTable {
         this.stackTable = new HashMap<>();
     }
 
-    public SymbolTable previousScope() {
+    public void set_local_variable(int n){
+      local_variable = n;
+    }
+
+  public int getLocal_variable() {
+    return local_variable;
+  }
+
+  public SymbolTable previousScope() {
         return encSymbolTable;
     }
 
