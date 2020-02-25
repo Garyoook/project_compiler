@@ -254,7 +254,7 @@ public class ASTVisitor {
       visitFuncAST(f, main, k);
       in_func = false;
       local_variable = 0;
-      spPosition = temp-4;
+      spPosition = temp;
     }
 
     main.add("main:");
