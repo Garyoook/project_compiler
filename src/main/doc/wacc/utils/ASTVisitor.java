@@ -96,7 +96,7 @@ public class ASTVisitor {
       printcodes.add(PUSH(LR));
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
-      visitStringNode(new StringNode("NullReferenceError: dereference a null reference\\n\\0"));
+      visitStringNode(new StringNode("\"NullReferenceError: dereference a null reference\\n\\0\""));
       printcodes.add("\tBEQ p_throw_runtime_error");
       printRunTimeErr = true;
       printcodes.add(PUSH(resultReg));
@@ -571,8 +571,6 @@ public class ASTVisitor {
 //        codes.add(MOV(resultReg, "r" + reg_counter));
 //        codes.add(BL("p_check_null_pointer"));
 //        printCheckNullPointer = true;
-//        printRunTimeErr = true;
-//        printstring = true;
 //        codes.add(LDR_reg(paramReg, "r" + reg_counter));
 //      }
 //    }
