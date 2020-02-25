@@ -44,6 +44,8 @@ public class ASTVisitor {
   private boolean printCheckNullPointer = false;
   private boolean read_int = false;
   private boolean read_char = false;
+  private int local_variable = 0;
+  private boolean in_func = false;
 
   public List<String> getCodes() {
     if (spPosition > 0) {
@@ -243,7 +245,12 @@ public class ASTVisitor {
     ProgramAST past= (ProgramAST) ast;
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
+      int temp = spPosition;
+      in_func = true;
       visitFuncAST(f, main, k);
+      in_func = false;
+      local_variable = 0;
+      spPosition = temp;
     }
 
     main.add("main:");
@@ -293,12 +300,16 @@ public class ASTVisitor {
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
+    spPosition+=4;
     for (ParamNode p: ast.getParameters()) {
       visitParamNode(p);
     }
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
+    if (local_variable != 0) {
+      codes.add("\tADD sp, sp, #" + local_variable);
+    }
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
@@ -306,16 +317,16 @@ public class ASTVisitor {
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
-
   }
 
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
     if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
+      spPosition += 4;
     } else {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 1);
-
+      spPosition += 1;
     }
     symbolTable.putStackTable(param.getName(), symbolTable.getParamCounter());
   }
@@ -346,7 +357,7 @@ public class ASTVisitor {
       }
     }
 
-    if (type.equals(pairType())) {
+    if (type instanceof PairType) {
       codes.add(LDR_reg("r5", SP));
       codes.add(MOV(resultReg, "r5"));
       codes.add(BL("p_check_null_pointer"));
@@ -418,8 +429,8 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if (symbolTable.getParamCounter() > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + x + "]");
+      if ((spPosition - x) > 0) {
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
@@ -623,20 +634,32 @@ public class ASTVisitor {
     if (rhs.getArrayAST() != null) {
       //array declaration
       codes.add(SUB(SP, SP, 4));
+      if (in_func) {
+        local_variable += 4;
+      }
       spPosition += 4;
       ArrayType arrayType = (ArrayType)type;
       visitArrayLiter(arrayType, ast.getAssignRhsAST(), codes, reg_counter);
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
+      if (in_func) {
+        local_variable += 4;
+      }
       spPosition += 4;
     } else if (type.equals(boolType()) || type.equals(charType())) {
       codes.add(SUB(SP, SP, 1));
+      if (in_func) {
+        local_variable += 1;
+      }
       spPosition += 1;
       strWord = "\tSTRB ";
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
       //pair declaration
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
+      if (in_func) {
+        local_variable += 4;
+      }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
         // TODO: comment here.
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
@@ -682,9 +705,19 @@ public class ASTVisitor {
 
     if (ast.getAssignRhsAST().call()) {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1){
-      // rhs is a declared pair
-      visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1) {
+      if (ast.getAssignRhsAST().getExpr1()!=null) {
+        // rhs is a null
+        visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+      } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
+        // rhs is a declared pair
+        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDRSB(paramReg, "[" + paramReg + "]"));
+      }
     }
 
     codes.add(strWord + paramReg + ", [sp]");

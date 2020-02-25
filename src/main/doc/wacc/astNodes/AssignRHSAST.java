@@ -3,15 +3,13 @@ package doc.wacc.astNodes;
 import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AssignRHSAST extends AST{
     private BasicParser.Assign_rhsContext rhsContext;
     private AST expr1;
     private AST expr2;
     private ArrayAST arrayAST;
     private CallAST callAST;
+    private PairElemNode pairElemNode;
 
     public AssignRHSAST(BasicParser.Assign_rhsContext rhsContext) {
         CompilerVisitor visitor = new CompilerVisitor();
@@ -29,6 +27,8 @@ public class AssignRHSAST extends AST{
             } else {
                 this.callAST = new CallAST(rhsContext.IDENT().getText(), null);
             }
+        } else if (rhsContext.pair_elem() != null) {
+            this.pairElemNode = visitor.visitPair_elem(rhsContext.pair_elem());
         }
 
     }
@@ -55,5 +55,9 @@ public class AssignRHSAST extends AST{
 
     public ArrayAST getArrayAST() {
         return arrayAST;
+    }
+
+    public PairElemNode getPairElemNode() {
+        return pairElemNode;
     }
 }
