@@ -430,8 +430,8 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if ((spPosition - x) > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+      if (symbolTable.getParamCounter() > 0) {
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + x + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
