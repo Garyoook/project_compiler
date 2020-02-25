@@ -358,7 +358,7 @@ public class ASTVisitor {
       }
     }
 
-    if (type.equals(pairType())) {
+    if (type instanceof PairType) {
       codes.add(LDR_reg("r5", SP));
       codes.add(MOV(resultReg, "r5"));
       codes.add(BL("p_check_null_pointer"));
@@ -567,6 +567,16 @@ public class ASTVisitor {
     } else if (ast instanceof ExprWithParen) {
       visitExprAST(((ExprWithParen) ast).getExpr(), codes, reg_counter);
     }
+//    else if (ast instanceof PairAST) {
+//      if (((PairAST) ast).ident.equals("null")) {
+//        codes.add(MOV(resultReg, "r" + reg_counter));
+//        codes.add(BL("p_check_null_pointer"));
+//        printCheckNullPointer = true;
+//        printRunTimeErr = true;
+//        printstring = true;
+//        codes.add(LDR_reg(paramReg, "r" + reg_counter));
+//      }
+//    }
     return false;
   }
 
@@ -652,6 +662,7 @@ public class ASTVisitor {
         local_variable += 4;
       }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
+        // TODO: comment here.
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
           codes.add(LDR_value(paramReg, 0));
         }
@@ -695,8 +706,19 @@ public class ASTVisitor {
 
     if (ast.getAssignRhsAST().call()) {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1){
-      visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1) {
+      if (ast.getAssignRhsAST().getExpr1()!=null) {
+        // rhs is a null
+        visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+      } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
+        // rhs is a declared pair
+        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDRSB(paramReg, "[" + paramReg + "]"));
+      }
     }
 
     codes.add(strWord + paramReg + ", [sp]");

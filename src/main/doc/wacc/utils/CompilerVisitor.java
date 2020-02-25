@@ -203,8 +203,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     }
   }
 
-  @Override public AST visitPair_elem(Pair_elemContext ctx) {
-    return visitChildren(ctx);
+  @Override public PairElemNode visitPair_elem(Pair_elemContext ctx) {
+    return new PairElemNode(ctx.start.getText());
   }
 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
