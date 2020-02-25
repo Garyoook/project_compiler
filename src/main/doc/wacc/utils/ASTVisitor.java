@@ -474,16 +474,16 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if (symbolTable.getParamCounter() > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.local_variable) + "]");
-      } else {
+//      if (in_func) {
+//        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.local_variable) + "]");
+//      } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
         } else {
           System.out.println(x);
           codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
         }
-      }
+//      }
       return true;
     } else if (ast instanceof StringNode) {
       codes.add(LDR_msg("r" + reg_counter, String.valueOf(stringCounter)));
