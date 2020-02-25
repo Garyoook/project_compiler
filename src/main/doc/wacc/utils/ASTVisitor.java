@@ -390,7 +390,6 @@ public class ASTVisitor {
       }
     }
 
-
     if (ast.getLhs().isArray()) {
       visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
       while (type instanceof ArrayType) {
