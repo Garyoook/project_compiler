@@ -44,7 +44,7 @@ public class ASTVisitor {
   private boolean printCheckNullPointer = false;
   private boolean read_int = false;
   private boolean read_char = false;
-  private int local_variable = 0;
+//  private int local_variable = 0;
   private boolean in_func = false;
 
   public List<String> getCodes() {
@@ -249,7 +249,7 @@ public class ASTVisitor {
       in_func = true;
       visitParamFst(f, main, k);
       in_func = false;
-      local_variable = 0;
+      symbolTable.locat_variable = 0;
       spPosition = temp;
     }
 
@@ -258,7 +258,7 @@ public class ASTVisitor {
       in_func = true;
       visitFuncAST(f, main, k);
       in_func = false;
-      local_variable = 0;
+      symbolTable.locat_variable = 0;
       spPosition = temp;
     }
 
@@ -338,14 +338,15 @@ public class ASTVisitor {
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
-
-    if (local_variable != 0) {
-      codes.add("\tADD sp, sp, #" + local_variable);
+    if (!(ast.getFunctionBody() instanceof SkipAst)) {
+      if (symbolTable.locat_variable != 0) {
+        codes.add("\tADD sp, sp, #" + symbolTable.locat_variable);
+      }
+      codes.add(POP(PC));
+      codes.add(POP(PC));
+      codes.add("\t.ltorg");
     }
 
-    codes.add(POP(PC));
-    codes.add(POP(PC));
-    codes.add("\t.ltorg");
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
@@ -474,7 +475,7 @@ public class ASTVisitor {
         loadWord = "\tLDRSB";
       }
       if (symbolTable.getParamCounter() > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - local_variable) + "]");
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.locat_variable) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
@@ -678,7 +679,7 @@ public class ASTVisitor {
       //array declaration
       codes.add(SUB(SP, SP, 4));
       if (in_func) {
-        local_variable += 4;
+        symbolTable.locat_variable += 4;
       }
       spPosition += 4;
       ArrayType arrayType = (ArrayType)type;
@@ -686,13 +687,13 @@ public class ASTVisitor {
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
       if (in_func) {
-        local_variable += 4;
+        symbolTable.locat_variable += 4;
       }
       spPosition += 4;
     } else if (type.equals(boolType()) || type.equals(charType())) {
       codes.add(SUB(SP, SP, 1));
       if (in_func) {
-        local_variable += 1;
+        symbolTable.locat_variable += 1;
       }
       spPosition += 1;
       strWord = "\tSTRB ";
@@ -701,7 +702,7 @@ public class ASTVisitor {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (in_func) {
-        local_variable += 4;
+        symbolTable.locat_variable += 4;
       }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
         // TODO: comment here.
@@ -922,12 +923,14 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter);
+    codes.add("\tADD sp, sp, #" + symbolTable.locat_variable);
     symbolTable = ast.getElseSymbolTable();
     visitStat(ast.getElsebranch(), elseBranch, reg_counter);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
     }
+    codes.add("\tADD sp, sp, #" + symbolTable.locat_variable);
     codes.add("L" + branchCounter++ + ":");
     symbolTable = symbolTabletemp;
   }
