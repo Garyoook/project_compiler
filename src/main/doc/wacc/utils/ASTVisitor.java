@@ -243,7 +243,10 @@ public class ASTVisitor {
     ProgramAST past= (ProgramAST) ast;
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
+      int temp = spPosition;
       visitFuncAST(f, main, k);
+
+      spPosition = temp;
     }
 
     main.add("main:");
@@ -293,12 +296,14 @@ public class ASTVisitor {
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
+    spPosition+=4;
     for (ParamNode p: ast.getParameters()) {
       visitParamNode(p);
     }
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
+    codes.add("\tADD sp, sp, #" + symbolTable.getParamCounter());
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
@@ -306,16 +311,16 @@ public class ASTVisitor {
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
-
   }
 
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
     if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
+      spPosition += 4;
     } else {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 1);
-
+      spPosition += 1;
     }
     symbolTable.putStackTable(param.getName(), symbolTable.getParamCounter());
   }
@@ -418,8 +423,8 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if (symbolTable.getParamCounter() > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + x + "]");
+      if ((spPosition - x) > 0) {
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
