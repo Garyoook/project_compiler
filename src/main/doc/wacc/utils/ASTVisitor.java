@@ -431,7 +431,7 @@ public class ASTVisitor {
         loadWord = "\tLDRSB";
       }
       if (symbolTable.getParamCounter() > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + x + "]");
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - local_variable) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
