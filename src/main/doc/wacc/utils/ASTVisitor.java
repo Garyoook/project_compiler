@@ -555,6 +555,16 @@ public class ASTVisitor {
     } else if (ast instanceof ExprWithParen) {
       visitExprAST(((ExprWithParen) ast).getExpr(), codes, reg_counter);
     }
+//    else if (ast instanceof PairAST) {
+//      if (((PairAST) ast).ident.equals("null")) {
+//        codes.add(MOV(resultReg, "r" + reg_counter));
+//        codes.add(BL("p_check_null_pointer"));
+//        printCheckNullPointer = true;
+//        printRunTimeErr = true;
+//        printstring = true;
+//        codes.add(LDR_reg(paramReg, "r" + reg_counter));
+//      }
+//    }
     return false;
   }
 
@@ -628,6 +638,7 @@ public class ASTVisitor {
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
+        // TODO: comment here.
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
           codes.add(LDR_value(paramReg, 0));
         }
@@ -672,6 +683,7 @@ public class ASTVisitor {
     if (ast.getAssignRhsAST().call()) {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1){
+      // rhs is a declared pair
       visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
     }
 
