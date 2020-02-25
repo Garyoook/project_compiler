@@ -96,7 +96,7 @@ public class ASTVisitor {
       printcodes.add(PUSH(LR));
       printcodes.add(CMP_value(resultReg, 0));
       printcodes.add(LDREQ_msg(resultReg, String.valueOf(stringCounter)));
-      visitStringNode(new StringNode("NullReferenceError: dereference a null reference\\n\\0"));
+      visitStringNode(new StringNode("\"NullReferenceError: dereference a null reference\\n\\0\""));
       printcodes.add("\tBEQ p_throw_runtime_error");
       printRunTimeErr = true;
       printcodes.add(PUSH(resultReg));
@@ -304,6 +304,8 @@ public class ASTVisitor {
     for (ParamNode p: ast.getParameters()) {
       visitParamNode(p);
     }
+    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
+
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
@@ -313,7 +315,6 @@ public class ASTVisitor {
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
-    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
     symbolTable = symbolTabletemp;
     // TODO: 18/02/2020 saveReg restoreReg
 //    restoreReg();
@@ -436,8 +437,8 @@ public class ASTVisitor {
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
-      if ((spPosition - x) > 0) {
-        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+      if (symbolTable.getParamCounter() > 0) {
+        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - local_variable) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
@@ -578,8 +579,6 @@ public class ASTVisitor {
 //        codes.add(MOV(resultReg, "r" + reg_counter));
 //        codes.add(BL("p_check_null_pointer"));
 //        printCheckNullPointer = true;
-//        printRunTimeErr = true;
-//        printstring = true;
 //        codes.add(LDR_reg(paramReg, "r" + reg_counter));
 //      }
 //    }
