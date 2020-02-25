@@ -368,12 +368,19 @@ public class ASTVisitor {
 
     if (type.equals(boolType()) || type.equals(charType())) {
       strcommand = "\tSTRB ";
+      if (ast.getRhs().getPairElemNode() != null) {
+        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDRSB(paramReg, paramReg));
+      }
     }
 
     if (symbolTable.getParamCounter() > 0) {
       codes.add(strcommand + "r" + reg_counter + ", [sp, #" + symbolTable.getStackTable(ast.getLhs().getLhsContext().getText()) + "]");
     } else {
-
       if ((spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) == 0) {
         codes.add(strcommand + "r" + reg_counter + ", [sp]");
       } else {
@@ -382,6 +389,7 @@ public class ASTVisitor {
               (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
       }
     }
+
 
     if (ast.getLhs().isArray()) {
       visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
@@ -716,7 +724,7 @@ public class ASTVisitor {
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
         codes.add(LDR_reg(paramReg, paramReg + ", #4"));
-        codes.add(LDRSB(paramReg, "[" + paramReg + "]"));
+        codes.add(LDRSB(paramReg, paramReg));
       }
     }
 
@@ -945,7 +953,7 @@ public class ASTVisitor {
   }
 
   public String LDRSB (String dst, String src) {
-    return "\tLDRSB " + dst + ", " +  src;
+    return "\tLDRSB " + dst + ", [" +  src + "]";
   }
 
   public String LDRNE_msg(String dst, String content) {
