@@ -247,6 +247,9 @@ public class ASTVisitor {
     for (FuncAST f: past.getFunctions()) {
 //      int temp = spPosition;
 //      in_func = true;
+      SymbolTable symbolTabletemp = symbolTable;
+      symbolTable = f.getSymbolTable();
+
       for (ParamNode p: f.getParameters()) {
         visitParamNode(p);
       }
@@ -254,11 +257,11 @@ public class ASTVisitor {
 //      visitParamFst(f, main, k);
 //      in_func = false;
 //      symbolTable.local_variable = 0;
+      symbolTable = symbolTabletemp;
     }
 
     for (FuncAST f: past.getFunctions()) {
       in_func = true;
-      spPosition += symbolTable.getParamCounter();
       visitFuncAST(f, main, k);
       in_func = false;
       symbolTable.local_variable = 0;
@@ -325,8 +328,8 @@ public class ASTVisitor {
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
-    symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
+    spPosition += symbolTable.getParamCounter();
+
 //    spPosition+=4;
 //    for (ParamNode p: ast.getParameters()) {
 //      Type type = p.getType();
@@ -483,9 +486,11 @@ public class ASTVisitor {
 //      if (in_func) {
 //        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.local_variable) + "]");
 //      } else {
-      System.out.println("s" + spPosition);
-      System.out.println("A" + symbolTable.getLocal_variable());
-      System.out.println(((IdentNode) ast).getIdent()+x);
+//      System.out.println("spPsist" + spPosition);
+//      System.out.println("pc" + symbolTable.getParamCounter());
+//      System.out.println("local" + symbolTable.getLocal_variable());
+//      System.out.println(((IdentNode) ast).getIdent() + x);
+
 
       if (in_func && x <= symbolTable.getParamCounter()) {
         codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (x + symbolTable.getLocal_variable()) + "]");
