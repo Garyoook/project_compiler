@@ -245,17 +245,34 @@ public class ASTVisitor {
     ProgramAST past= (ProgramAST) ast;
     int k = 4;
     for (FuncAST f: past.getFunctions()) {
+      visitParamFst(f, main, k);
+    }
+
+    for (FuncAST f: past.getFunctions()) {
       int temp = spPosition;
       in_func = true;
       visitFuncAST(f, main, k);
       in_func = false;
       local_variable = 0;
-      spPosition = temp;
+      spPosition = temp-4;
     }
 
     main.add("main:");
     main.add(PUSH(LR));
     visitStat(past.getMainProgram(), main, k);
+  }
+
+  private void visitParamFst(FuncAST ast, List<String> codes, int reg_counter){
+    SymbolTable temp = symbolTable;
+    symbolTable = ast.getSymbolTable();
+
+    spPosition+=4;
+    for (ParamNode p: ast.getParameters()) {
+      visitParamNode(p);
+    }
+    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
+    symbolTable = temp;
+    spPosition -= 4;
   }
 
   public void visitStat(AST ast, List<String> codes, int reg_counter) {
@@ -300,18 +317,12 @@ public class ASTVisitor {
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    spPosition+=4;
-    for (ParamNode p: ast.getParameters()) {
-      visitParamNode(p);
-    }
-    functionParams.put(ast.getFuncName(), symbolTable.getParamCounter());
 
+    spPosition+=4;
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
-    if (local_variable != 0) {
-      codes.add("\tADD sp, sp, #" + local_variable);
-    }
+
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
@@ -393,6 +404,12 @@ public class ASTVisitor {
         strcommand = "\tSTRB ";
       }
       codes.add(strcommand + paramReg + ", [r" + (reg_counter + 1) + "]");
+      if (ast.getRhs().call()) {
+        if (local_variable != 0) {
+          codes.add("\tADD sp, sp, #" + local_variable);
+          spPosition -= local_variable;
+        }
+      }
       printCheckArrayBound = true;
     } else {
 //      codes.add("\t" + strcommand + paramReg + ", [sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
@@ -596,6 +613,7 @@ public class ASTVisitor {
     codes.add(BL("f_" + ast.getFuncName()));
     codes.add(ADD(SP, SP, functionParams.get(ast.getFuncName())));
     codes.add(MOV(paramReg, resultReg));
+
   }
 
   public void visitArrayLiter(ArrayType arrayType, AssignRHSAST ast, List<String> codes, int reg_counter) {
@@ -722,6 +740,14 @@ public class ASTVisitor {
     }
 
     codes.add(strWord + paramReg + ", [sp]");
+
+    if (ast.getAssignRhsAST().call()) {
+      if (local_variable != 0) {
+        codes.add("\tADD sp, sp, #" + local_variable);
+        spPosition -= local_variable;
+      }
+    }
+
     symbolTable.putStackTable(ast.getName(), spPosition);
   }
 
