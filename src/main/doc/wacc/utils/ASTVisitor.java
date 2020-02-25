@@ -760,7 +760,7 @@ public class ASTVisitor {
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
         codes.add(LDR_reg(paramReg, paramReg + ", #4"));
-        codes.add(LDRSB(paramReg, paramReg));
+        codes.add(LDR_reg(paramReg, paramReg));
       }
     }
 
