@@ -346,7 +346,7 @@ public class ASTVisitor {
       }
     }
 
-    if (type.equals(pairType())) {
+    if (type instanceof PairType) {
       codes.add(LDR_reg("r5", SP));
       codes.add(MOV(resultReg, "r5"));
       codes.add(BL("p_check_null_pointer"));
@@ -671,8 +671,19 @@ public class ASTVisitor {
 
     if (ast.getAssignRhsAST().call()) {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1){
-      visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1) {
+      if (ast.getAssignRhsAST().getExpr1()!=null) {
+        // rhs is a null
+        visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+      } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
+        // rhs is a declared pair
+        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDRSB(paramReg, "[" + paramReg + "]"));
+      }
     }
 
     codes.add(strWord + paramReg + ", [sp]");
