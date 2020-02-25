@@ -339,6 +339,10 @@ public class ASTVisitor {
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
 
+    if (local_variable != 0) {
+      codes.add("\tADD sp, sp, #" + local_variable);
+    }
+
     codes.add(POP(PC));
     codes.add(POP(PC));
     codes.add("\t.ltorg");
@@ -427,11 +431,11 @@ public class ASTVisitor {
         strcommand = "\tSTRB ";
       }
       codes.add(strcommand + paramReg + ", [r" + (reg_counter + 1) + "]");
-      if (ast.getRhs().call()) {
-        if (local_variable != 0) {
-          codes.add("\tADD sp, sp, #" + local_variable);
-        }
-      }
+//      if (ast.getRhs().call()) {
+//        if (local_variable != 0) {
+//          codes.add("\tADD sp, sp, #" + local_variable);
+//        }
+//      }
       printCheckArrayBound = true;
     } else {
 //      codes.add("\t" + strcommand + paramReg + ", [sp, #" + (spPosition - symbolTable.getStackTable(ast.getLhs().getLhsContext().getText())) + "]");
@@ -761,11 +765,11 @@ public class ASTVisitor {
 
     codes.add(strWord + paramReg + ", [sp]");
 
-    if (ast.getAssignRhsAST().call()) {
-      if (local_variable != 0) {
-        codes.add("\tADD sp, sp, #" + local_variable);
-      }
-    }
+//    if (ast.getAssignRhsAST().call()) {
+//      if (local_variable != 0) {
+//        codes.add("\tADD sp, sp, #" + local_variable);
+//      }
+//    }
 
     symbolTable.putStackTable(ast.getName(), spPosition);
   }
