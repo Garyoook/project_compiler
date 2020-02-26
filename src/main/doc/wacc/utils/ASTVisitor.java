@@ -3,6 +3,7 @@ package doc.wacc.utils;
 import antlr.BasicParser;
 import doc.wacc.astNodes.*;
 
+import java.net.IDN;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -651,10 +652,21 @@ public class ASTVisitor {
       for(int i = ast.getArguments().size() - 1; i >= 0; i--) {
         AST argument = ast.getArguments().get(i);
         visitExprAST(argument, codes, reg_counter);
-        if (argument instanceof CharNode || argument instanceof BoolNode)  {
+        Type type = null;
+
+        if (argument instanceof IdentNode) {
+          type = symbolTable.getVariable(((IdentNode) argument).getIdent());
+          if (type.equals(charType()) || type.equals(boolType())) {
+            codes.add(STRB(paramReg, "[sp, #-1]!"));
+            arg_count += 1;
+          } else {
+            codes.add(STR(paramReg, "[sp, #-4]!"));
+            arg_count += 4;
+          }
+        } else if (argument instanceof CharNode || argument instanceof BoolNode)  {
           codes.add(STRB(paramReg, "[sp, #-1]!"));
           arg_count += 1;
-        } else {
+        }  else {
           codes.add(STR(paramReg, "[sp, #-4]!"));
           arg_count += 4;
         }
@@ -945,7 +957,8 @@ public class ASTVisitor {
     List<String> elseBranch = new LinkedList<>();
     visitExprAST(ast.getExpr(), codes, reg_counter);
     AST expr =ast.getExpr();
-    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode) {
+    if (expr instanceof BoolNode || expr instanceof Binary_BoolOpNode ||
+        (expr instanceof IdentNode && symbolTabletemp.getVariable(((IdentNode) expr).getIdent()).equals(boolType()))) {
       codes.add(CMP_value(paramReg, 0));
     } else {
       codes.add(CMP_reg("r" + (reg_counter - 1),"r" + reg_counter));
@@ -953,7 +966,9 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter);
-    codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (symbolTable.local_variable > 0) {
+      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    }
     if (return_Pop) {
       codes.add(POP(PC));
       return_Pop = false;
@@ -966,7 +981,9 @@ public class ASTVisitor {
     for(String s: elseBranch) {
       codes.add(s);
     }
-    codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (symbolTable.local_variable > 0) {
+      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    }
     if (return_Pop) {
       codes.add(POP(PC));
       return_Pop = false;
