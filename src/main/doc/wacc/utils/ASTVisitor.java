@@ -415,6 +415,7 @@ public class ASTVisitor {
         printCheckNullPointer = true;
         Type strType = type;
         if (ast.getLhs().getLhsContext().pair_elem() != null) {
+          // lhs is pair elem
           if (ast.getLhs().getLhsContext().pair_elem().fst() != null) {
             strType = ((PairType) type).getLeftType();
             codes.add(LDR_reg("r5", "r5"));
@@ -432,6 +433,20 @@ public class ASTVisitor {
         } else {
           codes.add(STR("r4", "[r5]"));
         }
+      } else if (ast.getRhs().getRhsContext().pair_elem()!=null) {
+        // rhs is pair elem
+        int x = symbolTable.getStackTable(ast.getRhs().getRhsContext().stop.getText());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg("r" + reg_counter, SP + ", #" + x));
+        } else {
+          codes.add(LDR_reg("r" + reg_counter, SP));
+        }
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDR_reg(paramReg, paramReg));
       }
     }
 
@@ -455,11 +470,17 @@ public class ASTVisitor {
 
     if (type.equals(intType())) {
       if (ast.getRhs().getPairElemNode() != null) {
-        codes.add(LDR_reg(paramReg, SP + ", #4"));
+        int x = symbolTable.getStackTable(ast.getRhs().getPairElemNode().getName());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg("r" + reg_counter, SP + ", #" + x));
+        } else {
+          codes.add(LDR_reg("r" + reg_counter, SP));
+        }
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
-        int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
+        x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
         x = x != -1 ? spPosition - x : 0;
         if (x != 0) {
           codes.add(LDR_reg(paramReg, paramReg + ", #" + x));
@@ -552,7 +573,6 @@ public class ASTVisitor {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
         } else {
-          System.out.println(x);
           codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
         }
 //      }
@@ -683,15 +703,11 @@ public class ASTVisitor {
       printCheckArrayBound = true;
     } else if (ast instanceof ExprWithParen) {
       visitExprAST(((ExprWithParen) ast).getExpr(), codes, reg_counter);
+    } else if (ast instanceof PairAST) {
+      if (((PairAST) ast).ident.equals("null")) {
+        codes.add(LDR_value("r" + reg_counter, 0));
+      }
     }
-//    else if (ast instanceof PairAST) {
-//      if (((PairAST) ast).ident.equals("null")) {
-//        codes.add(MOV(resultReg, "r" + reg_counter));
-//        codes.add(BL("p_check_null_pointer"));
-//        printCheckNullPointer = true;
-//        codes.add(LDR_reg(paramReg, "r" + reg_counter));
-//      }
-//    }
     return false;
   }
 
