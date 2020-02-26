@@ -348,10 +348,10 @@ public class ASTVisitor {
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
     if (!(ast.getFunctionBody() instanceof SkipAst)) {
+      if (symbolTable.local_variable != 0) {
+        codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+      }
       if (return_Pop) {
-        if (symbolTable.local_variable != 0) {
-          codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
-        }
         codes.add(POP(PC));
         return_Pop = false;
       }
@@ -920,6 +920,7 @@ public class ASTVisitor {
 
 
   public void visitSkipAst(AST ast) {
+
   }
 
   public void visitStringNode(StringNode ast) {
@@ -1050,7 +1051,7 @@ public class ASTVisitor {
   private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getThenSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     List<String> elseBranch = new LinkedList<>();
     visitExprAST(ast.getExpr(), codes, reg_counter);
@@ -1064,25 +1065,29 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter);
+
+    if (symbolTable.local_variable > 0) {
+      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    }
+
     if (return_Pop) {
-      if (symbolTable.local_variable > 0) {
-        codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
-      }
       codes.add(POP(PC));
       return_Pop = false;
     }
     symbolTable = ast.getElseSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     visitStat(ast.getElsebranch(), elseBranch, reg_counter);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
     }
+
+    if (symbolTable.local_variable > 0) {
+      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    }
+
     if (return_Pop) {
-      if (symbolTable.local_variable > 0) {
-        codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
-      }
       codes.add(POP(PC));
       return_Pop = false;
     }
@@ -1093,7 +1098,7 @@ public class ASTVisitor {
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     int loopLabel = branchCounter++;
     int bodyLabel = branchCounter++;
