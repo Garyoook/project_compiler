@@ -402,34 +402,36 @@ public class ASTVisitor {
       }
     } else if (type instanceof PairType) {
       // calculating shifting in stack
-      int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
-      x = x != -1 ? spPosition - x : 0;
-      if (x != 0) {
-        codes.add(LDR_reg("r5", SP + ", #" + x));
-      } else {
-        codes.add(LDR_reg("r5", SP));
-      }
-      codes.add(MOV(resultReg, "r5"));
-      codes.add(BL("p_check_null_pointer"));
-      printCheckNullPointer = true;
-      Type strType = type;
-      if (ast.getLhs().getLhsContext().pair_elem() != null) {
-        if (ast.getLhs().getLhsContext().pair_elem().fst() != null) {
-          strType = ((PairType) type).getLeftType();
-          codes.add(LDR_reg("r5", "r5"));
-        } else if (ast.getLhs().getLhsContext().pair_elem().snd() != null) {
-          strType = ((PairType) type).getRightType();
-          if (((PairType) type).getLeftType().equals(boolType()) || ((PairType) type).getLeftType().equals(charType())) {
-            codes.add(LDR_reg("r5", "r5, #1"));
-          } else {
-            codes.add(LDR_reg("r5", "r5, #4"));
+      if (ast.getLhs().getLhsContext().pair_elem()!=null) {
+        int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg("r5", SP + ", #" + x));
+        } else {
+          codes.add(LDR_reg("r5", SP));
+        }
+        codes.add(MOV(resultReg, "r5"));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        Type strType = type;
+        if (ast.getLhs().getLhsContext().pair_elem() != null) {
+          if (ast.getLhs().getLhsContext().pair_elem().fst() != null) {
+            strType = ((PairType) type).getLeftType();
+            codes.add(LDR_reg("r5", "r5"));
+          } else if (ast.getLhs().getLhsContext().pair_elem().snd() != null) {
+            strType = ((PairType) type).getRightType();
+            if (((PairType) type).getLeftType().equals(boolType()) || ((PairType) type).getLeftType().equals(charType())) {
+              codes.add(LDR_reg("r5", "r5, #1"));
+            } else {
+              codes.add(LDR_reg("r5", "r5, #4"));
+            }
           }
         }
-      }
-      if (strType.equals(boolType()) || strType.equals(charType())) {
-        codes.add(STRB("r4", "[r5]"));
-      } else {
-        codes.add(STR("r4", "[r5]"));
+        if (strType.equals(boolType()) || strType.equals(charType())) {
+          codes.add(STRB("r4", "[r5]"));
+        } else {
+          codes.add(STR("r4", "[r5]"));
+        }
       }
     }
 
@@ -440,7 +442,13 @@ public class ASTVisitor {
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
-        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg(paramReg, paramReg + ", #" + x));
+        } else {
+          codes.add(LDR_reg(paramReg, paramReg));
+        }
         codes.add(LDRSB(paramReg, paramReg));
       }
     }
@@ -814,12 +822,15 @@ public class ASTVisitor {
         codes.add(BL("malloc"));
         codes.add(b != "" ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[r4]"));
+        int codesLength = codes.size();
         visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
         size = rType.equals(Type.charType()) ? 1 : 4;
         b = rType.equals(Type.charType()) ? "B" : "";
-        if (rType instanceof PairType) {
-          if (((PairType) rType).getLeftType() == null) {
-            codes.add(LDR_value("r" + reg_counter, 0));
+        if (codes.size()-codesLength==0) {
+          if (rType instanceof PairType) {
+            if (((PairType) rType).getLeftType() == null) {
+              codes.add(LDR_value("r" + reg_counter, 0));
+            }
           }
         }
         codes.add(LDR_value(resultReg, size));
