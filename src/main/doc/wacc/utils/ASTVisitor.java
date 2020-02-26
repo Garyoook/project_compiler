@@ -451,7 +451,13 @@ public class ASTVisitor {
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
-        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg(paramReg, paramReg + ", #" + x));
+        } else {
+          codes.add(LDR_reg(paramReg, paramReg));
+        }
         codes.add(LDR_reg(paramReg, paramReg));
       }
     }
