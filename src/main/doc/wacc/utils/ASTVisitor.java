@@ -452,9 +452,13 @@ public class ASTVisitor {
       if (spPosition - x == 0) {
         codes.add(strcommand + "r" + reg_counter + ", [sp]");
       } else {
-        if (!ast.getLhs().isArray())
-          codes.add(strcommand + "r" + reg_counter + ", [sp, #" +
-              (spPosition - x) + "]");
+        if (!ast.getLhs().isArray()) {
+          if (x == -1) {
+            codes.add(strcommand + "r" + reg_counter + ", [sp, #" + spPosition + "]");
+          } else {
+            codes.add(strcommand + "r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+          }
+        }
       }
     }
 
@@ -817,7 +821,11 @@ public class ASTVisitor {
         visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
       } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
         // rhs is a declared pair or pair elem
-        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        if (type.equals(charType()) || type.equals(boolType())) {
+          codes.add(LDR_reg(paramReg, SP + ", #1"));
+        } else {
+          codes.add(LDR_reg(paramReg, SP + ", #4"));
+        }
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
