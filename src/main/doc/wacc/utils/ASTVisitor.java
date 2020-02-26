@@ -365,7 +365,7 @@ public class ASTVisitor {
 
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
-    if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
+    if (type.equals(intType()) || type instanceof ArrayType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
 //      spPosition += 4;
     } else {
