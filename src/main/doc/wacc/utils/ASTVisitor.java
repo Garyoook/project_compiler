@@ -46,6 +46,7 @@ public class ASTVisitor {
   private boolean read_char = false;
 //  private int local_variable = 0;
   private boolean in_func = false;
+  private boolean return_Pop = false;
 
   public List<String> getCodes() {
     if (spPosition > 0) {
@@ -349,7 +350,10 @@ public class ASTVisitor {
       if (symbolTable.local_variable != 0) {
         codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
       }
-      codes.add(POP(PC));
+      if (return_Pop) {
+        codes.add(POP(PC));
+        return_Pop = false;
+      }
       codes.add(POP(PC));
       codes.add("\t.ltorg");
     }
@@ -798,6 +802,7 @@ public class ASTVisitor {
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
     visitExprAST(ast.getExpr(), codes, reg_counter);
     codes.add(MOV(resultReg, paramReg));
+    return_Pop = true;
   }
 
 
@@ -946,6 +951,10 @@ public class ASTVisitor {
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter);
     codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (return_Pop) {
+      codes.add(POP(PC));
+      return_Pop = false;
+    }
     symbolTable = ast.getElseSymbolTable();
     symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
@@ -955,6 +964,10 @@ public class ASTVisitor {
       codes.add(s);
     }
     codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (return_Pop) {
+      codes.add(POP(PC));
+      return_Pop = false;
+    }
     codes.add("L" + branchCounter++ + ":");
     symbolTable = symbolTabletemp;
   }
