@@ -400,15 +400,25 @@ public class ASTVisitor {
       if (((PairAST) ast.getRhs().getExpr1()).ident.equals("null")) {
         codes.add(LDR_value(paramReg, 0));
       }
-    }
-
-    if (type instanceof PairType) {
+    } else if (type instanceof PairType) {
       codes.add(LDR_reg("r5", SP));
       codes.add(MOV(resultReg, "r5"));
       codes.add(BL("p_check_null_pointer"));
       printCheckNullPointer = true;
       codes.add(LDR_reg("r5", "r5"));
-      codes.add(STR("r4", "[r5]"));
+      Type strType = type;
+      if (ast.getLhs().getLhsContext().pair_elem() != null) {
+        if (ast.getLhs().getLhsContext().pair_elem().fst() != null) {
+          strType = ((PairType) type).getLeftType();
+        } else if (ast.getLhs().getLhsContext().pair_elem().snd() != null) {
+          strType = ((PairType) type).getRightType();
+        }
+      }
+      if (strType.equals(boolType()) || strType.equals(charType())) {
+        codes.add(STRB("r4", "[r5]"));
+      } else {
+        codes.add(STR("r4", "[r5]"));
+      }
     }
 
     if (type.equals(boolType()) || type.equals(charType())) {
@@ -420,6 +430,17 @@ public class ASTVisitor {
         printCheckNullPointer = true;
         codes.add(LDR_reg(paramReg, paramReg + ", #4"));
         codes.add(LDRSB(paramReg, paramReg));
+      }
+    }
+
+    if (type.equals(intType())) {
+      if (ast.getRhs().getPairElemNode() != null) {
+        codes.add(LDR_reg(paramReg, SP + ", #4"));
+        codes.add(MOV(resultReg, paramReg));
+        codes.add(BL("p_check_null_pointer"));
+        printCheckNullPointer = true;
+        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        codes.add(LDR_reg(paramReg, paramReg));
       }
     }
 
@@ -744,11 +765,13 @@ public class ASTVisitor {
         System.out.println("$$$$$" + symbolTable.getLocal_variable());
       }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
-        // TODO: comment here.
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
+          // rhs is null
           codes.add(LDR_value(paramReg, 0));
         }
+        // do nothing here if rhs is a declared pair
       } else {
+        // rhs is a new pair
         codes.add(LDR_value(resultReg, 8));
         codes.add(BL("malloc"));
         codes.add(MOV("r" + reg_counter, resultReg));
@@ -790,16 +813,20 @@ public class ASTVisitor {
       visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size()<=1) {
       if (ast.getAssignRhsAST().getExpr1()!=null) {
-        // rhs is a null
+        // rhs is a null or all other cases
         visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
       } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
-        // rhs is a declared pair
+        // rhs is a declared pair or pair elem
         codes.add(LDR_reg(paramReg, SP + ", #1"));
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
         codes.add(LDR_reg(paramReg, paramReg + ", #4"));
-        codes.add(LDR_reg(paramReg, paramReg));
+        if (type.equals(charType())) {
+          codes.add(LDRSB(paramReg, paramReg));
+        } else {
+          codes.add(LDR_reg(paramReg, paramReg));
+        }
       }
     }
 
