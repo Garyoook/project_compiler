@@ -365,7 +365,7 @@ public class ASTVisitor {
 
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
-    if (type.equals(intType()) || type instanceof ArrayType) {
+    if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
 //      spPosition += 4;
     } else {
@@ -646,20 +646,23 @@ public class ASTVisitor {
   }
 
   private void visitCallAst(CallAST ast, List<String> codes, int reg_counter) {
+    int arg_count = 0;
     if (ast.hasArgument()) {
       for(int i = ast.getArguments().size() - 1; i >= 0; i--) {
         AST argument = ast.getArguments().get(i);
         visitExprAST(argument, codes, reg_counter);
         if (argument instanceof CharNode || argument instanceof BoolNode)  {
           codes.add(STRB(paramReg, "[sp, #-1]!"));
+          arg_count += 1;
         } else {
           codes.add(STR(paramReg, "[sp, #-4]!"));
+          arg_count += 4;
         }
       }
 
     }
     codes.add(BL("f_" + ast.getFuncName()));
-    codes.add(ADD(SP, SP, functionParams.get(ast.getFuncName())));
+    codes.add(ADD(SP, SP, arg_count));
     codes.add(MOV(paramReg, resultReg));
 
   }
