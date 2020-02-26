@@ -453,12 +453,19 @@ public class ASTVisitor {
     if (type.equals(boolType()) || type.equals(charType())) {
       strcommand = "\tSTRB ";
       if (ast.getRhs().getPairElemNode() != null) {
-        codes.add(LDR_reg(paramReg, SP + ", #1"));
+        int x = symbolTable.getStackTable(ast.getRhs().getPairElemNode().getName());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg(paramReg, SP + ", #" + x));
+        } else {
+          codes.add(LDR_reg(paramReg, SP));
+        }
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
-        int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
-        x = x != -1 ? spPosition - x : 0;
+        int oldX = x;
+        x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
+        x = x != -1 ? x - oldX : 0;
         if (x != 0) {
           codes.add(LDR_reg(paramReg, paramReg + ", #" + x));
         } else {
