@@ -403,11 +403,7 @@ public class ASTVisitor {
     } else if (type instanceof PairType) {
       // calculating shifting in stack
       int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
-      if (x != -1) {
-        x = spPosition - x;
-      } else {
-        x = 0;
-      }
+      x = x != -1 ? spPosition - x : 0;
       if (x != 0) {
         codes.add(LDR_reg("r5", SP + ", #" + x));
       } else {
@@ -835,10 +831,12 @@ public class ASTVisitor {
         visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
       } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
         // rhs is a declared pair or pair elem
-        if (type.equals(charType()) || type.equals(boolType())) {
-          codes.add(LDR_reg(paramReg, SP + ", #1"));
+        int x = symbolTable.getStackTable(ast.getAssignRhsAST().getPairElemNode().getName());
+        x = x != -1 ? spPosition - x : 0;
+        if (x != 0) {
+          codes.add(LDR_reg(paramReg, SP + ", #" + x));
         } else {
-          codes.add(LDR_reg(paramReg, SP + ", #4"));
+          codes.add(LDR_reg(paramReg, SP));
         }
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
