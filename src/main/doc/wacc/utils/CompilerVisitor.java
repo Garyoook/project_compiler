@@ -1,6 +1,5 @@
 package doc.wacc.utils;
 
-import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
 import doc.wacc.utils.Type.ArrayType;
 import doc.wacc.utils.Type.BaseType;
@@ -11,7 +10,6 @@ import static antlr.BasicParser.*;
 import static doc.wacc.astNodes.AST.symbolTable;
 import static doc.wacc.astNodes.AssignAST.*;
 import static doc.wacc.utils.Type.*;
-import static java.lang.System.exit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -204,7 +202,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public PairElemNode visitPair_elem(Pair_elemContext ctx) {
-    return new PairElemNode(ctx.start.getText());
+    return new PairElemNode(ctx.stop.getText());
   }
 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
