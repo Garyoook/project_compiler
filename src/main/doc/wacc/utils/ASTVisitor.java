@@ -771,7 +771,7 @@ public class ASTVisitor {
       spPosition += 1;
       strWord = "\tSTRB ";
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
-      //pair declaration
+      //pair declaration (not pairElemNode)
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (in_func) {
@@ -820,6 +820,15 @@ public class ASTVisitor {
         codes.add(BL("malloc"));
         codes.add(b != "" ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
+      }
+    } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
+      // pair declaration (pairElemNode)
+      if (type instanceof PairType) {
+        codes.add(SUB(SP, SP, 4));
+        spPosition += 4;
+        if (in_func) {
+          symbolTable.local_variable += 4;
+        }
       }
     }
 
