@@ -568,14 +568,14 @@ public class ASTVisitor {
 //      if (in_func) {
 //        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.local_variable) + "]");
 //      } else {
-//      System.out.println("spPsist" + spPosition);
-//      System.out.println("pc" + symbolTable.getParamCounter());
-//      System.out.println("local" + symbolTable.getLocal_variable());
-//      System.out.println(((IdentNode) ast).getIdent() + x);
+      System.out.println("spPsist" + spPosition);
+      System.out.println("pc" + symbolTable.getParamCounter());
+      System.out.println("local" + symbolTable.getLocal_variable());
+      System.out.println(((IdentNode) ast).getIdent() + x);
 
 
       if (in_func && x <= symbolTable.getParamCounter()) {
-        codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (x + symbolTable.getLocal_variable()) + "]");
+        codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - symbolTable.getParamCounter() + x ) + "]");
       } else {
         if (spPosition - x == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
@@ -731,22 +731,27 @@ public class ASTVisitor {
           if (type.equals(charType()) || type.equals(boolType())) {
             codes.add(STRB(paramReg, "[sp, #-1]!"));
             arg_count += 1;
+            spPosition += 1;
           } else {
             codes.add(STR(paramReg, "[sp, #-4]!"));
             arg_count += 4;
+            spPosition += 4;
           }
         } else if (argument instanceof CharNode || argument instanceof BoolNode)  {
           codes.add(STRB(paramReg, "[sp, #-1]!"));
           arg_count += 1;
+          spPosition += 1;
         }  else {
           codes.add(STR(paramReg, "[sp, #-4]!"));
           arg_count += 4;
+          spPosition += 4;
         }
       }
 
     }
     codes.add(BL("f_" + ast.getFuncName()));
     codes.add(ADD(SP, SP, arg_count));
+    spPosition -= arg_count;
     codes.add(MOV(paramReg, resultReg));
 
   }
@@ -922,6 +927,7 @@ public class ASTVisitor {
 
 
   public void visitSkipAst(AST ast) {
+
   }
 
   public void visitStringNode(StringNode ast) {
@@ -1052,7 +1058,7 @@ public class ASTVisitor {
   private void visitIfAst(IfAst ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getThenSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     List<String> elseBranch = new LinkedList<>();
     visitExprAST(ast.getExpr(), codes, reg_counter);
@@ -1066,24 +1072,28 @@ public class ASTVisitor {
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
     visitStat(ast.getThenbranch(), codes, reg_counter);
+
     if (symbolTable.local_variable > 0) {
       codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
     }
+
     if (return_Pop) {
       codes.add(POP(PC));
       return_Pop = false;
     }
     symbolTable = ast.getElseSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     visitStat(ast.getElsebranch(), elseBranch, reg_counter);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
     }
+
     if (symbolTable.local_variable > 0) {
       codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
     }
+
     if (return_Pop) {
       codes.add(POP(PC));
       return_Pop = false;
@@ -1095,7 +1105,7 @@ public class ASTVisitor {
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
+//    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
     int loopLabel = branchCounter++;
     int bodyLabel = branchCounter++;
