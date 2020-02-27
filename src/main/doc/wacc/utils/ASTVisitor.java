@@ -580,10 +580,10 @@ public class ASTVisitor {
 //      if (in_func) {
 //        codes.add(loadWord +" r" + reg_counter + ", [sp, #" + (x - symbolTable.local_variable) + "]");
 //      } else {
-      System.out.println("spPsist" + spPosition);
-      System.out.println("pc" + symbolTable.getParamCounter());
-      System.out.println("local" + symbolTable.getLocal_variable());
-      System.out.println(((IdentNode) ast).getIdent() + x);
+//      System.out.println("spPsist" + spPosition);
+//      System.out.println("pc" + symbolTable.getParamCounter());
+//      System.out.println("local" + symbolTable.getLocal_variable());
+//      System.out.println(((IdentNode) ast).getIdent() + x);
 
 
       if (in_func && x <= symbolTable.getParamCounter()) {
@@ -699,11 +699,11 @@ public class ASTVisitor {
       visitCallAst((CallAST)ast, codes, reg_counter);
     } else if (ast instanceof ArrayElemNode) {
       int arrayIndexReg = reg_counter + mallocCounter;   /////////////////////////////
-      if (((ArrayElemNode) ast).getExprs().get(0) instanceof IdentNode) {
+//      if (((ArrayElemNode) ast).getExprs().get(0) instanceof IdentNode) {
         codes.add(ADD(("r" + reg_counter), SP, 4));   //////////
-      } else {
-        codes.add(ADD(new Register(reg_counter), new Register(SP), 0));   //////////
-      }
+//      } else {
+//        codes.add(ADD(new Register(reg_counter), new Register(SP), 0));   //////////
+//      }
       for (int i = 0; i < ((ArrayElemNode) ast).getExprs().size(); i++) {
         visitExprAST(((ArrayElemNode) ast).getExprs().get(i), codes, arrayIndexReg);
         codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
@@ -718,6 +718,7 @@ public class ASTVisitor {
         } else {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
+        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
       }
       printCheckArrayBound = true;
     } else if (ast instanceof ExprWithParen) {
