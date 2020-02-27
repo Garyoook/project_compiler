@@ -1,9 +1,7 @@
 package doc.wacc.utils;
 
-import antlr.BasicParser;
 import doc.wacc.astNodes.*;
 
-import java.net.IDN;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,7 +16,6 @@ public class ASTVisitor {
   public static final String PC = "pc";
   public static final String LR = "lr";
   private List<String> main = new LinkedList<>();
-  public static int offset = 0;
   public final ArrayList<Register> allRegs = createAllRegs();
   public HashMap<String, Integer> functionParams = new HashMap<>();
 
@@ -406,6 +403,14 @@ public class ASTVisitor {
 
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
 
+    if (ast.getRhs().getExpr1() instanceof ArrayElemNode) {
+      String ldrWord = "\tLDR";
+      if (type.equals(boolType()) || type.equals(charType())) {
+        ldrWord = "\tLDRB ";
+      }
+      codes.add(ldrWord + paramReg + ", [r" + (reg_counter + 1) + "]");
+    }
+
     // assign a pair from a null content.
     if (ast.getRhs().getExpr1() instanceof PairAST) {
       if (((PairAST) ast.getRhs().getExpr1()).ident.equals("null")) {
@@ -712,13 +717,16 @@ public class ASTVisitor {
         codes.add(BL("p_check_array_bounds"));
         codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
         Type type = symbolTable.getVariable(((ArrayElemNode) ast).getName());
+        String ldrWord = "\tLDR";
         ArrayType arrayType = (ArrayType)type;
         if (arrayType.getType().equals(charType()) || arrayType.getType().equals(boolType())) {
           codes.add(ADD(new Register(reg_counter), new Register(reg_counter), new Register("r" + arrayIndexReg)));
         } else {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
-        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
+
+
+//        codes.add(ldrWord + " r" + reg_counter + ", [r" + reg_counter + "]");
 //        codes.add("!!!");
       }
       printCheckArrayBound = true;
@@ -925,6 +933,15 @@ public class ASTVisitor {
       }
     }
 
+    if (ast.getAssignRhsAST().getExpr1() instanceof ArrayElemNode) {
+      String ldrWord = "\tLDR";
+      if (type.equals(boolType()) || type.equals(charType())) {
+        ldrWord = "\tLDRB ";
+      }
+      codes.add(ldrWord + paramReg + ", [r" + reg_counter + "]");
+    }
+
+
     codes.add(strWord + paramReg + ", [sp]");
 
     symbolTable.putStackTable(ast.getName(), spPosition);
@@ -951,9 +968,9 @@ public class ASTVisitor {
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
     visitExprAST(expr, codes, reg_counter);
-//    if (expr instanceof ArrayElemNode) {
-//      codes.add(LDR_reg("!r" + reg_counter, "r" + reg_counter));
-//    }
+    if (expr instanceof ArrayElemNode) {
+      codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
+    }
     if (expr instanceof PairAST) {
       if (((PairAST) expr).ident.equals("null")) {
         codes.add(LDR_value(paramReg, 0));
