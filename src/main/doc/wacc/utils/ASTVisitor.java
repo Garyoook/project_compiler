@@ -323,7 +323,7 @@ public class ASTVisitor {
         visitStat(ast1, codes, reg_counter);
       }
       if (symbolTable.local_variable > 0) {
-        codes.add("ADD sp, sp, #"+symbolTable.local_variable);
+        codes.add(ADD(SP, SP, symbolTable.local_variable));
       }
       spPosition -= symbolTable.local_variable;
       inBlock = false;
