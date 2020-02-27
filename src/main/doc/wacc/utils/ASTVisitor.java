@@ -1148,7 +1148,10 @@ public class ASTVisitor {
     int bodyLabel = branchCounter++;
     codes.add("\tB L" + loopLabel);
     codes.add("L" + bodyLabel + ":");
+    int oldSp = spPosition;
     visitStat(ast.getStat(), codes, reg_counter);
+    codes.add(ADD(SP, SP, spPosition-oldSp));
+    spPosition = oldSp;
     codes.add("L" + loopLabel + ":");
     AST expr;
     if (ast.getExpr() instanceof ExprWithParen) {
