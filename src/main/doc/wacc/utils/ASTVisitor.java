@@ -1108,11 +1108,13 @@ public class ASTVisitor {
     }
     codes.add("\tBEQ L" + branchCounter);
     elseBranch.add("L" + branchCounter++ + ":");
+    int oldSp = spPosition;
     visitStat(ast.getThenbranch(), codes, reg_counter);
 
-    if (symbolTable.local_variable > 0) {
-      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (spPosition-oldSp!=0) {
+      codes.add(ADD(SP, SP, spPosition - oldSp));
     }
+    spPosition = oldSp;
 
     if (return_Pop) {
       codes.add(POP(PC));
@@ -1121,15 +1123,17 @@ public class ASTVisitor {
     symbolTable = ast.getElseSymbolTable();
 //    symbolTable.set_local_variable(symbolTabletemp.getLocal_variable());
     symbolTable.setParamCounter(symbolTabletemp.getParamCounter());
+    oldSp = spPosition;
     visitStat(ast.getElsebranch(), elseBranch, reg_counter);
     codes.add("\tB L" + branchCounter);
     for(String s: elseBranch) {
       codes.add(s);
     }
 
-    if (symbolTable.local_variable > 0) {
-      codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
+    if (spPosition-oldSp!=0) {
+      codes.add(ADD(SP, SP, spPosition - oldSp));
     }
+    spPosition = oldSp;
 
     if (return_Pop) {
       codes.add(POP(PC));
