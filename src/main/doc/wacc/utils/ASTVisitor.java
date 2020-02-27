@@ -718,7 +718,8 @@ public class ASTVisitor {
         } else {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
-//        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
+        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
+//        codes.add("!!!");
       }
       printCheckArrayBound = true;
     } else if (ast instanceof ExprWithParen) {
@@ -950,9 +951,9 @@ public class ASTVisitor {
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
     visitExprAST(expr, codes, reg_counter);
-    if (expr instanceof ArrayElemNode) {
-      codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
-    }
+//    if (expr instanceof ArrayElemNode) {
+//      codes.add(LDR_reg("!r" + reg_counter, "r" + reg_counter));
+//    }
     if (expr instanceof PairAST) {
       if (((PairAST) expr).ident.equals("null")) {
         codes.add(LDR_value(paramReg, 0));
