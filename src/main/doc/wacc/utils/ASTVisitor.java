@@ -812,7 +812,7 @@ public class ASTVisitor {
       }
       spPosition += 1;
       strWord = "\tSTRB ";
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0) {
+    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0 || (ast.getType() instanceof PairType)) {
       //pair declaration (not pairElemNode)
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
