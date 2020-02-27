@@ -15,6 +15,15 @@ public abstract class AST {
   public static SymbolTable symbolTable = new SymbolTable(null, new HashMap<String, Type>());
 
   public static boolean is_int(AST expr1) {
+    if (expr1 instanceof ArrayElemNode) {
+      Type type = symbolTable.getVariable(((ArrayElemNode) expr1).getName());
+      while (type instanceof Type.ArrayType) {
+        type = ((Type.ArrayType) type).getType();
+      }
+      if (!type.equals(Type.intType())) {
+        return false;
+      }
+    } else
     if (expr1 instanceof IdentNode) {
       if (!symbolTable.getVariable(((IdentNode) expr1).getIdent()).equals(Type.intType())) {
         return false;
@@ -33,6 +42,15 @@ public abstract class AST {
   }
 
   public static boolean is_bool(AST exp) {
+    if (exp instanceof ArrayElemNode) {
+      Type type = symbolTable.getVariable(((ArrayElemNode) exp).getName());
+      while (type instanceof Type.ArrayType) {
+        type = ((Type.ArrayType) type).getType();
+      }
+      if (!type.equals(Type.boolType())) {
+        return false;
+      }
+    } else
     if (exp instanceof IdentNode) {
       if (symbolTable.getVariable(((IdentNode) exp).getIdent()) == null) {
         ErrorMessage.addSemanticError("variable not defined: " + ((IdentNode) exp).getIdent() +
@@ -63,7 +81,15 @@ public abstract class AST {
   }
 
   public static boolean is_Char(AST exp) {
-    if (exp instanceof IdentNode) {
+    if (exp instanceof ArrayElemNode) {
+      Type type = symbolTable.getVariable(((ArrayElemNode) exp).getName());
+      while (type instanceof Type.ArrayType) {
+        type = ((Type.ArrayType) type).getType();
+      }
+      if (!type.equals(Type.charType())) {
+        return false;
+      }
+    } else if (exp instanceof IdentNode) {
       if (!symbolTable.getVariable(((IdentNode) exp).getIdent()).equals(Type.charType())) {
         return false;
       }

@@ -404,11 +404,11 @@ public class ASTVisitor {
     visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
 
     if (ast.getRhs().getExpr1() instanceof ArrayElemNode) {
-      String ldrWord = "\tLDR";
+      String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
         ldrWord = "\tLDRB ";
       }
-      codes.add(ldrWord + paramReg + ", [r" + (reg_counter + 1) + "]");
+      codes.add(ldrWord + paramReg + ", [r" + reg_counter + "]");
     }
 
     // assign a pair from a null content.
@@ -717,7 +717,7 @@ public class ASTVisitor {
         codes.add(BL("p_check_array_bounds"));
         codes.add(ADD(new Register(reg_counter), new Register(reg_counter), 4));
         Type type = symbolTable.getVariable(((ArrayElemNode) ast).getName());
-        String ldrWord = "\tLDR";
+
         ArrayType arrayType = (ArrayType)type;
         if (arrayType.getType().equals(charType()) || arrayType.getType().equals(boolType())) {
           codes.add(ADD(new Register(reg_counter), new Register(reg_counter), new Register("r" + arrayIndexReg)));
@@ -934,7 +934,7 @@ public class ASTVisitor {
     }
 
     if (ast.getAssignRhsAST().getExpr1() instanceof ArrayElemNode) {
-      String ldrWord = "\tLDR";
+      String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
         ldrWord = "\tLDRB ";
       }
