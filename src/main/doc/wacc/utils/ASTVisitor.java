@@ -387,6 +387,8 @@ public class ASTVisitor {
       type = symbolTable.getVariable(ast.getLhs().getLhsContext().getText());
     }
 
+
+
     if(ast.getRhs().getArrayAST() != null) {
       visitArrayLiter((ArrayType)type, ast.getRhs(), codes, reg_counter);
     } else if (ast.getRhs().call()) {
@@ -489,7 +491,11 @@ public class ASTVisitor {
         if (x != 0) {
           codes.add(LDR_reg(paramReg, paramReg + ", #" + x));
         } else {
-          codes.add(LDR_reg(paramReg, paramReg));
+          if (ast.getRhs().getRhsContext().pair_elem().snd() != null) {
+            codes.add(LDR_reg(paramReg, paramReg + ", #" + 4));
+          } else {
+            codes.add(LDR_reg(paramReg, paramReg));
+          }
         }
         codes.add(LDR_reg(paramReg, paramReg));
       }
@@ -815,7 +821,6 @@ public class ASTVisitor {
       spPosition += 4;
       if (in_func) {
         symbolTable.local_variable += 4;
-        System.out.println("$$$$$" + symbolTable.getLocal_variable());
       }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
         if (!(ast.getAssignRhsAST().getExpr1() instanceof IdentNode)) {
@@ -897,11 +902,8 @@ public class ASTVisitor {
         } else {
           Type t = symbolTable.getVariable(ast.getAssignRhsAST().getPairElemNode().getName());
           t = ((PairType) t).getLeftType();
-          if (t.equals(charType()) || t.equals(boolType())) {
-            codes.add(LDR_reg(paramReg, paramReg + ", #1"));
-          } else {
-            codes.add(LDR_reg(paramReg, paramReg + ", #4"));
-          }
+          codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+
         }
         if (type.equals(charType())) {
           codes.add(LDRSB(paramReg, paramReg));
