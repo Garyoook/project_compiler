@@ -421,11 +421,8 @@ public class ASTVisitor {
             codes.add(LDR_reg("r5", "r5"));
           } else if (ast.getLhs().getLhsContext().pair_elem().snd() != null) {
             strType = ((PairType) type).getRightType();
-            if (((PairType) type).getLeftType().equals(boolType()) || ((PairType) type).getLeftType().equals(charType())) {
-              codes.add(LDR_reg("r5", "r5, #1"));
-            } else {
-              codes.add(LDR_reg("r5", "r5, #4"));
-            }
+            codes.add(LDR_reg("r5", "r5, #4"));
+
           }
         }
         if (strType.equals(boolType()) || strType.equals(charType())) {
