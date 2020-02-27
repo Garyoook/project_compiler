@@ -700,7 +700,7 @@ public class ASTVisitor {
     } else if (ast instanceof ArrayElemNode) {
       int arrayIndexReg = reg_counter + mallocCounter;   /////////////////////////////
 //      if (((ArrayElemNode) ast).getExprs().get(0) instanceof IdentNode) {
-        codes.add(ADD(("r" + reg_counter), SP, 4));   //////////
+        codes.add(ADD(("r" + reg_counter), SP, (spPosition - symbolTable.getStackTable(((ArrayElemNode) ast).getName()))));   //////////
 //      } else {
 //        codes.add(ADD(new Register(reg_counter), new Register(SP), 0));   //////////
 //      }
