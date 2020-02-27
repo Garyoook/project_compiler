@@ -1150,7 +1150,9 @@ public class ASTVisitor {
     codes.add("L" + bodyLabel + ":");
     int oldSp = spPosition;
     visitStat(ast.getStat(), codes, reg_counter);
-    codes.add(ADD(SP, SP, spPosition-oldSp));
+    if (spPosition-oldSp!=0) {
+      codes.add(ADD(SP, SP, spPosition - oldSp));
+    }
     spPosition = oldSp;
     codes.add("L" + loopLabel + ":");
     AST expr;
