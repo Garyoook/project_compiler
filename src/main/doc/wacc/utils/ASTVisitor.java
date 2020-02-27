@@ -406,7 +406,7 @@ public class ASTVisitor {
     if (ast.getRhs().getExpr1() instanceof ArrayElemNode) {
       String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
-        ldrWord = "\tLDRB ";
+        ldrWord = "\tLDRSB ";
       }
       codes.add(ldrWord + paramReg + ", [r" + reg_counter + "]");
     }
@@ -936,7 +936,7 @@ public class ASTVisitor {
     if (ast.getAssignRhsAST().getExpr1() instanceof ArrayElemNode) {
       String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
-        ldrWord = "\tLDRB ";
+        ldrWord = "\tLDRSB ";
       }
       codes.add(ldrWord + paramReg + ", [r" + reg_counter + "]");
     }
@@ -968,8 +968,17 @@ public class ASTVisitor {
   public void visitPrintAst(PrintAst ast, List<String> codes, int reg_counter) {
     AST expr = ast.getExpr();
     visitExprAST(expr, codes, reg_counter);
+
     if (expr instanceof ArrayElemNode) {
-      codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
+      Type type = symbolTable.getVariable(((ArrayElemNode) expr).getName());
+      while (type instanceof ArrayType) {
+        type = ((ArrayType) type).getType();
+      }
+      if (type.equals(charType()) || type.equals(boolType())) {
+        codes.add(LDRSB("r" + reg_counter, "r" + reg_counter));
+      } else {
+        codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
+      }
     }
     if (expr instanceof PairAST) {
       if (((PairAST) expr).ident.equals("null")) {
