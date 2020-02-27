@@ -320,12 +320,21 @@ public class ASTVisitor {
     } else if (ast instanceof BlockAst) {
       SymbolTable temp = symbolTable;
       symbolTable = ((BlockAst) ast).getSymbolTable();
+      inBlock = true;
       for (AST ast1:((BlockAst) ast).getStats()) {
+        inBlock = true;
         visitStat(ast1, codes, reg_counter);
       }
+      if (symbolTable.local_variable > 0) {
+        codes.add("ADD sp, sp, #"+symbolTable.local_variable);
+      }
+      spPosition -= symbolTable.local_variable;
+      inBlock = false;
       symbolTable = temp;
     }
   }
+
+  private boolean inBlock=false;
 
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
@@ -793,24 +802,25 @@ public class ASTVisitor {
     Type type = ast.getType();
     String strWord = "\tSTR ";
 
-    if (rhs.getArrayAST() != null) {
+    if (rhs.getArrayAST() != null || type instanceof ArrayType) {
       //array declaration
       codes.add(SUB(SP, SP, 4));
-      if (in_func) {
+      if (in_func || inBlock) {
         symbolTable.local_variable += 4;
       }
       spPosition += 4;
       ArrayType arrayType = (ArrayType)type;
+      if (rhs.getArrayAST() != null)
       visitArrayLiter(arrayType, ast.getAssignRhsAST(), codes, reg_counter);
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
-      if (in_func) {
+      if (in_func || inBlock) {
         symbolTable.local_variable += 4;
       }
       spPosition += 4;
     } else if (type.equals(boolType()) || type.equals(charType())) {
       codes.add(SUB(SP, SP, 1));
-      if (in_func) {
+      if (in_func || inBlock) {
         symbolTable.local_variable += 1;
       }
       spPosition += 1;
@@ -819,7 +829,7 @@ public class ASTVisitor {
       //pair declaration (not pairElemNode)
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
-      if (in_func) {
+      if (in_func || inBlock) {
         symbolTable.local_variable += 4;
       }
       if (ast.getAssignRhsAST().getRhsContext().expr().size() == 1) {
@@ -846,15 +856,15 @@ public class ASTVisitor {
             codes.add(LDR_value("r" + reg_counter, 0));
           }
         }
-        int size = lType.equals(Type.charType()) ? 1 : 4;
-        String b = lType.equals(Type.charType()) ? "B" : "";
+        int size = (lType.equals(charType()) || lType.equals(boolType())) ? 1 : 4;
+        String b = (lType.equals(charType()) || lType.equals(boolType())) ? "B" : "";
         codes.add(LDR_value(resultReg, size));
         codes.add(BL("malloc"));
         codes.add(b != "" ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
         codes.add(STR(resultReg, "[r4]"));
         int codesLength = codes.size();
         visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
-        size = rType.equals(Type.charType()) ? 1 : 4;
+        size = (rType.equals(Type.charType()) || rType.equals(boolType())) ? 1 : 4;
         b = rType.equals(Type.charType()) ? "B" : "";
         if (codes.size()-codesLength==0) {
           if (rType instanceof PairType) {
