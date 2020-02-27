@@ -718,7 +718,7 @@ public class ASTVisitor {
         } else {
           codes.add("\tADD r" + reg_counter + ", r" + reg_counter + ", r" + arrayIndexReg + ", LSL #2");
         }
-        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
+//        codes.add("\tLDR r" + reg_counter + ", [r" + reg_counter + "]");
       }
       printCheckArrayBound = true;
     } else if (ast instanceof ExprWithParen) {
