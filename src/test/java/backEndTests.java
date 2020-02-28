@@ -16,8 +16,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Scanner;
 
-import static java.lang.System.exit;
-import static java.lang.System.out;
+import static java.lang.System.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.*;
@@ -337,6 +336,34 @@ public class backEndTests {
         String myOutput = bufferedReader.readLine();
         assertEquals(myExitCode, 0);
         assertEquals(myOutput, "1");
+    }
+
+    @Test
+    public void backend_fibonacciFullRec() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/function/nested_functions/fibonacciFullRec.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s fibonacciFullRec.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("20");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "This program calculates the nth fibonacci number recursively.");
+        assertEquals(bufferedReader.readLine(), "Please enter n (should not be too large): The input n is 20");
+        assertEquals(bufferedReader.readLine(), "The nth fibonacci number is 6765");
     }
 
     @Test
@@ -1194,10 +1221,57 @@ public class backEndTests {
     }
 
     @Test
+    public void backend_fibonacciRecursive() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("fibonacciRecursive");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "The first 20 fibonacci numbers are:");
+        assertTrue(myOutput.readLine().contains("0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181"));
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_fixedPointRealArithmetic() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("fixedPointRealArithmetic");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
     public void backend_Basic_2() throws IOException, InterruptedException {
         Result_of_execution result = exec_basic_exit("exitBasic2");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 42);
+    }
+
+    @Test
+    public void backend_mutualRecursion() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("mutualRecursion");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "r1: sending 8");
+        assertEquals(myOutput.readLine(), "r2: received 8");
+        assertEquals(myOutput.readLine(), "r1: sending 7");
+        assertEquals(myOutput.readLine(), "r2: received 7");
+        assertEquals(myOutput.readLine(), "r1: sending 6");
+        assertEquals(myOutput.readLine(), "r2: received 6");
+        assertEquals(myOutput.readLine(), "r1: sending 5");
+        assertEquals(myOutput.readLine(), "r2: received 5");
+        assertEquals(myOutput.readLine(), "r1: sending 4");
+        assertEquals(myOutput.readLine(), "r2: received 4");
+        assertEquals(myOutput.readLine(), "r1: sending 3");
+        assertEquals(myOutput.readLine(), "r2: received 3");
+        assertEquals(myOutput.readLine(), "r1: sending 2");
+        assertEquals(myOutput.readLine(), "r2: received 2");
+        assertEquals(myOutput.readLine(), "r1: sending 1");
+        assertEquals(myOutput.readLine(), "r2: received 1");
+    }
+
+    @Test
+    public void backend_functionConditionalReturn() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("functionConditionalReturn");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "true");
     }
 
     private Result_of_execution exec_basic_exit(String filename) throws IOException, InterruptedException {
@@ -1282,6 +1356,19 @@ public class backEndTests {
 
     private Result_of_execution exec_scope(String filename) throws IOException, InterruptedException {
         String fp = "wacc_examples/valid/scope/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
+    private Result_of_execution exec_nested_func(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/function/nested_functions/" + filename + ".wacc";
         emulator(fp);
         Runtime rt = Runtime.getRuntime();
         Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
