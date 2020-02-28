@@ -93,6 +93,14 @@ public class DeclarationAst extends AST {
     return rhs;
   }
 
+  public boolean rhsNotPairElemPair() {
+    return rhs.getRhsContext().expr().size() > 0;
+  }
+
+  public boolean rhsDeclaredPairOrNull() {
+    return rhs.getRhsContext().expr().size() == 1;
+  }
+
   public String getName() {
     return name;
   }
