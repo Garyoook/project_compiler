@@ -63,6 +63,14 @@ public class AssignAST extends AST {
     return lhs;
   }
 
+  public Pair_elemContext getRhsPairElem() {
+    return rhs.getRhsContext().pair_elem();
+  }
+
+  public Pair_elemContext getLhsPairElem() {
+    return lhs.getLhsContext().pair_elem();
+  }
+
   @Override
   public String toString() {
     return "assigning from: " + lhs.getLhsContext().getText() + " to " + rhs.getRhsContext().IDENT().getText() + "\n";
