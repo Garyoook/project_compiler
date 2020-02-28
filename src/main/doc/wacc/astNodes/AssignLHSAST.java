@@ -17,6 +17,10 @@ public class AssignLHSAST extends AST {
         return lhsContext;
     }
 
+    public String getName() {
+        return lhsContext.getText();
+    }
+
 
     public boolean isArray() {
         return lhsContext.array_elem() != null;
