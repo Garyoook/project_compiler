@@ -366,6 +366,105 @@ public class backEndTests {
         assertEquals(bufferedReader.readLine(), "The nth fibonacci number is 6765");
     }
 
+
+    @Test
+    public void backend_IOSequence() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/IOSequence.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s IOSequence.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("10");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "Please input an integer: You input: 10");
+    }
+
+    @Test
+    public void backend_IOLoop() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/IOLoop.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s IOLoop.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("10");
+        writer.flush();
+        writer.write("11");
+        writer.flush();
+        writer.write("N");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "Please input an integer: echo input: 1011");
+    }
+
+    @Test
+    public void backend_multipleStringAssignment() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/print/multipleStringsAssignment.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s multipleStringsAssignment.s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(bufferedReader.readLine(), "s1 is Hi");
+        assertEquals(bufferedReader.readLine(), "s2 is Hi");
+        assertEquals(bufferedReader.readLine(), "They are not the same string.");
+        assertEquals(bufferedReader.readLine(), "Now make s1 = s2");
+        assertEquals(bufferedReader.readLine(), "s1 is Hi");
+        assertEquals(bufferedReader.readLine(), "s2 is Hi");
+        assertEquals(bufferedReader.readLine(), "They are the same string.");
+        assertEquals(myExitCode, 0);
+    }
+
+
+    @Test
+    public void backend_printInt() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/print/printInt.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s printInt.s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(bufferedReader.readLine(), "An example integer is 189");
+        assertEquals(myExitCode, 0);
+    }
+
+
     @Test
     public void backend_expression_greaterEqExpr() throws IOException, InterruptedException {
         String fp = "wacc_examples/valid/expressions/greaterEqExpr.wacc";
@@ -1500,7 +1599,7 @@ public class backEndTests {
 
 
     private Result_of_execution exec_pair(String filename) throws IOException, InterruptedException {
-        String fp = "wacc_examples/valid/pair/" + filename + ".wacc";
+        String fp = "wacc_examples/valid/pairs/" + filename + ".wacc";
         emulator(fp);
         Runtime rt = Runtime.getRuntime();
         Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
