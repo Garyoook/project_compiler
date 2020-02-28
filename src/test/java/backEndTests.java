@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class backEndTests {
     // do not run in IDE, run all the tests using commandline:
@@ -413,14 +412,457 @@ public class backEndTests {
 
     @Test
     public void backend_expression_negBothModExpr() throws IOException, InterruptedException {
-        Result_of_execution result = exec("negBothMod");
+        Result_of_execution result = exec_expression("negBothMod");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(myOutput.readLine(), "-2");
         assertEquals(result.getExit_code(), 0);
     }
 
+    @Test
+    public void backend_expression_notExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("notExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "false");
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(result.getExit_code(), 0);
+    }
 
-    private Result_of_execution exec(String filename) throws IOException, InterruptedException {
+    @Test
+    public void backend_expression_negDivisorModExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("negDivisorMod");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "2");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_negExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("negExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "-42");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_plusExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("plusExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "35");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_plusMinusExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("plusMinusExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "-1");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_stringEqualsExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("stringEqualsExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "false");
+        assertEquals(myOutput.readLine(), "false");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_sequentialCount() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("sequentialCount");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "Can you count to 10?");
+        assertEquals(myOutput.readLine(), "1");
+        assertEquals(myOutput.readLine(), "2");
+        assertEquals(myOutput.readLine(), "3");
+        assertEquals(myOutput.readLine(), "4");
+        assertEquals(myOutput.readLine(), "5");
+        assertEquals(myOutput.readLine(), "6");
+        assertEquals(myOutput.readLine(), "7");
+        assertEquals(myOutput.readLine(), "8");
+        assertEquals(myOutput.readLine(), "9");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_plusPlusExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("plusPlusExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "3");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_expression_ordAndchrExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("ordAndchrExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "a is 97");
+        assertEquals(myOutput.readLine(), "99 is c");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_notequalsExpr() throws IOException, InterruptedException {
+        Result_of_execution result = exec_expression("notequalsExpr");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "false");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_incFunction() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("incFunction");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "1");
+        assertEquals(myOutput.readLine(), "4");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_negFunction() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("negFunction");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "false");
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_functionUpdateParameter() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("functionUpdateParameter");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "y is 1");
+        assertEquals(myOutput.readLine(), "x is 1");
+        assertEquals(myOutput.readLine(), "x is now 5");
+        assertEquals(myOutput.readLine(), "y is still 1");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_sameArgName2() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("sameArgName2");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "99");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_sameNameAsVar() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("sameNameAsVar");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "5");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_functionSimpleLoop() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("functionSimpleLoop");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "10");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_functionReturnPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("functionReturnPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "10");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_functionManyArguments() throws IOException, InterruptedException {
+        Result_of_execution result = exec_simple_functions("functionManyArguments");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "a is 42");
+        assertEquals(myOutput.readLine(), "b is true");
+        assertEquals(myOutput.readLine(), "c is u");
+        assertEquals(myOutput.readLine(), "d is hello");
+        myOutput.readLine();
+        myOutput.readLine();
+        assertEquals(myOutput.readLine(), "answer is g");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_arrayOutOfBounds() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/arrayOutOfBounds/arrayOutOfBounds.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "arrayOutOfBounds" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_arrayNegBounds() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/arrayOutOfBounds/arrayNegBounds.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "arrayNegBounds" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_arrayOutOfBoundsWrite() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/arrayOutOfBounds/arrayOutOfBoundsWrite.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "arrayOutOfBoundsWrite" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_freeNull() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/nullDereference/freeNull.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "freeNull" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_readNull() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/nullDereference/readNull1.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "readNull1" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_setNull() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/nullDereference/setNull1.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "setNull1" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_useNull() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/nullDereference/useNull1.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "useNull1" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_IntegerOverflow() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/integerOverflow/intJustOverflow.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "intJustOverflow" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+
+    @Test
+    public void backend_IntegermulOverflow() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/integerOverflow/intmultOverflow.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "intmultOverflow" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_IntegerNegateOverflow() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/integerOverflow/intnegateOverflow.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "intnegateOverflow" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_IntegerUnderflow() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/integerOverflow/intUnderflow.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "intUnderflow" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+
+    @Test
+    public void backend_IntegerwayOverflow() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/integerOverflow/intWayOverflow.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "intWayOverflow" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_divideByZero() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/divideByZero/divideByZero.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "divideByZero" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_divZero() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/divideByZero/divZero.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "divZero" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+    @Test
+    public void backend_modByZero() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/runtimeErr/divideByZero/modByZero.wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "modByZero" + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+//        assertTrue(bufferedReader.readLine().contains("runtime_error"));
+        assertEquals(pr2.exitValue(), 255);
+    }
+
+
+
+
+    @Test
+    public void backend_exit_1() throws IOException, InterruptedException {
+        Result_of_execution result = exec_basic_exit("exit-1");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 255);
+    }
+
+    @Test
+    public void backend_Basic_2() throws IOException, InterruptedException {
+        Result_of_execution result = exec_basic_exit("exitBasic2");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 42);
+    }
+
+    private Result_of_execution exec_basic_exit(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/basic/exit/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
+
+    private Result_of_execution exec_simple_functions(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/function/simple_functions/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
+
+
+    private Result_of_execution exec_expression(String filename) throws IOException, InterruptedException {
         String fp = "wacc_examples/valid/expressions/" + filename + ".wacc";
         emulator(fp);
         Runtime rt = Runtime.getRuntime();
