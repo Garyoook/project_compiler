@@ -16,8 +16,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Scanner;
 
-import static java.lang.System.exit;
-import static java.lang.System.out;
+import static java.lang.System.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.*;
@@ -338,6 +337,133 @@ public class backEndTests {
         assertEquals(myExitCode, 0);
         assertEquals(myOutput, "1");
     }
+
+    @Test
+    public void backend_fibonacciFullRec() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/function/nested_functions/fibonacciFullRec.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s fibonacciFullRec.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("20");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "This program calculates the nth fibonacci number recursively.");
+        assertEquals(bufferedReader.readLine(), "Please enter n (should not be too large): The input n is 20");
+        assertEquals(bufferedReader.readLine(), "The nth fibonacci number is 6765");
+    }
+
+
+    @Test
+    public void backend_IOSequence() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/IOSequence.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s IOSequence.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("10");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "Please input an integer: You input: 10");
+    }
+
+    @Test
+    public void backend_IOLoop() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/IOLoop.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s IOLoop.s");
+        pr.waitFor();
+
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        OutputStream stdin = pr2.getOutputStream(); // <- Eh?
+        InputStream stdout = pr2.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+        writer.write("10");
+        writer.flush();
+        writer.write("11");
+        writer.flush();
+        writer.write("N");
+        writer.flush();
+        writer.close();
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(myExitCode, 0);
+        assertEquals(bufferedReader.readLine(), "Please input an integer: echo input: 1011");
+    }
+
+    @Test
+    public void backend_multipleStringAssignment() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/print/multipleStringsAssignment.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s multipleStringsAssignment.s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(bufferedReader.readLine(), "s1 is Hi");
+        assertEquals(bufferedReader.readLine(), "s2 is Hi");
+        assertEquals(bufferedReader.readLine(), "They are not the same string.");
+        assertEquals(bufferedReader.readLine(), "Now make s1 = s2");
+        assertEquals(bufferedReader.readLine(), "s1 is Hi");
+        assertEquals(bufferedReader.readLine(), "s2 is Hi");
+        assertEquals(bufferedReader.readLine(), "They are the same string.");
+        assertEquals(myExitCode, 0);
+    }
+
+
+    @Test
+    public void backend_printInt() throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/IO/print/printInt.wacc";
+        emulator(fp);
+        ProcessBuilder pb = new ProcessBuilder();
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s printInt.s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        int myExitCode = pr2.exitValue();
+        assertEquals(bufferedReader.readLine(), "An example integer is 189");
+        assertEquals(myExitCode, 0);
+    }
+
 
     @Test
     public void backend_expression_greaterEqExpr() throws IOException, InterruptedException {
@@ -1194,11 +1320,182 @@ public class backEndTests {
     }
 
     @Test
+    public void backend_fibonacciRecursive() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("fibonacciRecursive");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "The first 20 fibonacci numbers are:");
+        assertTrue(myOutput.readLine().contains("0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181"));
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
     public void backend_Basic_2() throws IOException, InterruptedException {
         Result_of_execution result = exec_basic_exit("exitBasic2");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 42);
     }
+    @Test
+    public void backend_checkRefPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("checkRefPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        myOutput.readLine();
+        myOutput.readLine();
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "10");
+        assertEquals(myOutput.readLine(), "10");
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(myOutput.readLine(), "a");
+        assertEquals(myOutput.readLine(), "a");
+        assertEquals(myOutput.readLine(), "true");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_createPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("createPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_createPair02() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("createPair02");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_createPair03() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("createPair03");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_createRefPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("createRefPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_free() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("free");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_linkedList() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("linkedList");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "list = {1, 2, 4, 11}");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_nestedPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("nestedPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertNull(myOutput.readLine());
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_null() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("null");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "(nil)");
+        assertEquals(myOutput.readLine(), "(nil)");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_printNull() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("printNull");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "(nil)");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_printNullPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("printNullPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "(nil)");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_printPair() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("printPair");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertTrue(myOutput.readLine().contains("= (10, a)"));
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_printPairOfNulls() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("printPairOfNulls");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertTrue(myOutput.readLine().contains("= ((nil),(nil))"));
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_writeFst() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("writeFst");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "10");
+        assertEquals(myOutput.readLine(), "42");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_writeSnd() throws IOException, InterruptedException {
+        Result_of_execution result = exec_pair("writeSnd");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "a");
+        assertEquals(myOutput.readLine(), "Z");
+        assertEquals(result.getExit_code(), 0);
+    }
+
+    @Test
+    public void backend_mutualRecursion() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("mutualRecursion");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "r1: sending 8");
+        assertEquals(myOutput.readLine(), "r2: received 8");
+        assertEquals(myOutput.readLine(), "r1: sending 7");
+        assertEquals(myOutput.readLine(), "r2: received 7");
+        assertEquals(myOutput.readLine(), "r1: sending 6");
+        assertEquals(myOutput.readLine(), "r2: received 6");
+        assertEquals(myOutput.readLine(), "r1: sending 5");
+        assertEquals(myOutput.readLine(), "r2: received 5");
+        assertEquals(myOutput.readLine(), "r1: sending 4");
+        assertEquals(myOutput.readLine(), "r2: received 4");
+        assertEquals(myOutput.readLine(), "r1: sending 3");
+        assertEquals(myOutput.readLine(), "r2: received 3");
+        assertEquals(myOutput.readLine(), "r1: sending 2");
+        assertEquals(myOutput.readLine(), "r2: received 2");
+        assertEquals(myOutput.readLine(), "r1: sending 1");
+        assertEquals(myOutput.readLine(), "r2: received 1");
+    }
+
+    @Test
+    public void backend_functionConditionalReturn() throws IOException, InterruptedException {
+        Result_of_execution result = exec_nested_func("functionConditionalReturn");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "true");
+    }
+
 
     private Result_of_execution exec_basic_exit(String filename) throws IOException, InterruptedException {
         String fp = "wacc_examples/valid/basic/exit/" + filename + ".wacc";
@@ -1294,6 +1591,32 @@ public class backEndTests {
     }
 
 
+    private Result_of_execution exec_pair(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/pairs/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
+    private Result_of_execution exec_nested_func(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/function/nested_functions/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
     private static class Result_of_execution {
         private BufferedReader bufferedReader;
         private int exit_code;
@@ -1312,10 +1635,6 @@ public class backEndTests {
             return exit_code;
         }
     }
-
-
-
-
 
 
 
