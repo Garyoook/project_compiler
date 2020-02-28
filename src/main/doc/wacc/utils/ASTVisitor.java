@@ -21,9 +21,10 @@ public class ASTVisitor {
   public static final String LR = "lr";
   private final String resultReg = "r0";
   private final String paramReg = "r4";
+  private final int MAX_REG = 10;
 
   public final ArrayList<Register> allRegs = createAllRegs();
-  public HashMap<String, Integer> functionParams = new HashMap<>();
+  public HashMap<String, Integer> functionParams = new HashMap<>();  // function names and corresponding parameter counters.
 
   private int stringCounter = 0;   // a counter for the amount of strings appear in code.
   private int spPosition = 0;      // position of the stack pointer.
@@ -46,7 +47,8 @@ public class ASTVisitor {
   private boolean read_int = false;
   private boolean read_char = false;
   private boolean in_func = false;  // indicate the current code is in a function.
-  private boolean return_Pop = false;
+  private boolean inBlock = false;
+  private boolean return_Pop = false;  // indicate a return statement is met.
 
   public List<String> getCodes() {
     // TODO: comment here.
@@ -60,6 +62,8 @@ public class ASTVisitor {
     main.add(LDR_value(resultReg, 0));
     main.add(POP(PC));
     main.add("\t.ltorg");
+
+    // print functions for checking errors
 
     if (printCheckNullPointer) {
       printcodes.add("p_check_null_pointer:");
@@ -201,8 +205,8 @@ public class ASTVisitor {
     if (printstring) {
       printcodes.add("p_print_string:");
       printcodes.add(PUSH(LR));
-      printcodes.add(LDR_reg(reg_add(), resultReg));
-      printcodes.add(ADD(reg_add(), resultReg, 4));
+      printcodes.add(LDR_reg("r1", resultReg));
+      printcodes.add(ADD("r2", resultReg, 4));
       printcodes.add(LDR_msg(resultReg, String.valueOf(stringCounter)));
       printcodes.add(ADD(resultReg, resultReg, 4));
       printcodes.add(BL("printf"));
@@ -212,6 +216,7 @@ public class ASTVisitor {
       visitStringNode(new StringNode("\"%.*s\\0\""));
     }
 
+    // print data list
     if (variables.size() > 0) {
       variables.add(0, ".data\n");
     }
@@ -221,10 +226,12 @@ public class ASTVisitor {
       System.out.println(s);
     }
 
+    // print main
     for (String s : main) {
       System.out.println(s);
     }
 
+    // print error functions
     if (printcodes.size() > 0) {
       for (String s : printcodes) {
         System.out.println(s);
@@ -245,6 +252,8 @@ public class ASTVisitor {
 
     ProgramAST past = (ProgramAST) ast;
     int k = 4;
+
+    // put parameters onto stack firstly
     for (FuncAST f : past.getFunctions()) {
       SymbolTable symbolTabletemp = symbolTable;
       symbolTable = f.getSymbolTable();
@@ -316,16 +325,16 @@ public class ASTVisitor {
     }
   }
 
-  private boolean inBlock = false;
-
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
     symbolTable = ast.getSymbolTable();
-    spPosition += symbolTable.getParamCounter();
+    spPosition += symbolTable.getParamCounter();   // adjust spPosition as already pushed parameters onto stack
 
+    // generate codes for function
     codes.add("f_" + ast.getFuncName() + ":");
     codes.add(PUSH(LR));
     visitStat(ast.getFunctionBody(), codes, reg_counter);
+
     if (!(ast.getFunctionBody() instanceof SkipAst)) {
       if (symbolTable.local_variable != 0) {
         codes.add("\tADD sp, sp, #" + symbolTable.local_variable);
@@ -343,7 +352,7 @@ public class ASTVisitor {
 
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
-    //
+    // put arguments to the stack table and record total spPosition change.
     if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType || type instanceof PairType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
     } else {
@@ -353,9 +362,11 @@ public class ASTVisitor {
   }
 
   public void visitAssignAst(AssignAST ast, List<String> codes, int reg_counter) {
-    String strcommand = "\tSTR ";
     Type type;
-    if (ast.getLhs().isPair()) {
+    AssignLHSAST lhsast = ast.getLhs();
+    AssignRHSAST rhsast = ast.getRhs();
+
+    if (lhsast.isPair()) {
       type = symbolTable.getVariable(ast.getLhs().getLhsContext().pair_elem().expr().getText());
     } else if (ast.getLhs().isArray()) {
       type = symbolTable.getVariable(ast.getLhs().getLhsContext().array_elem().IDENT().getText());
@@ -363,15 +374,16 @@ public class ASTVisitor {
       type = symbolTable.getVariable(ast.getLhs().getLhsContext().getText());
     }
 
-    if (ast.getRhs().getArrayAST() != null) {
-      visitArrayLiter((ArrayType) type, ast.getRhs(), codes, reg_counter);
-    } else if (ast.getRhs().call()) {
-      visitCallAst(ast.getRhs().getCallAST(), codes, reg_counter);
+    // generate codes for rhs
+    if (rhsast.getArrayAST() != null) {
+      visitArrayLiter((ArrayType) type, rhsast, codes, reg_counter);
+    } else if (rhsast.call()) {
+      visitCallAst(rhsast.getCallAST(), codes, reg_counter);
+    } else {
+      visitExprAST(rhsast.getExpr1(), codes, reg_counter);
     }
 
-    visitExprAST(ast.getRhs().getExpr1(), codes, reg_counter);
-
-    if (ast.getRhs().getExpr1() instanceof ArrayElemNode) {
+    if (rhsast.getExpr1() instanceof ArrayElemNode) {
       String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
         ldrWord = "\tLDRSB ";
@@ -380,8 +392,8 @@ public class ASTVisitor {
     }
 
     // assign a pair from a null content.
-    if (ast.getRhs().getExpr1() instanceof PairAST) {
-      if (((PairAST) ast.getRhs().getExpr1()).ident.equals("null")) {
+    if (rhsast.getExpr1() instanceof PairAST) {
+      if (((PairAST) rhsast.getExpr1()).ident.equals("null")) {
         codes.add(LDR_value(paramReg, 0));
       }
     } else if (type instanceof PairType) {
@@ -435,8 +447,12 @@ public class ASTVisitor {
       }
     }
 
+    String strcommand = "\tSTR ";
+
+    // generate codes for STR base on type
     if (type.equals(boolType()) || type.equals(charType())) {
       strcommand = "\tSTRB ";
+
       if (ast.getRhs().getPairElemNode() != null) {
         int x = symbolTable.getStackTable(ast.getRhs().getPairElemNode().getName());
         x = x != -1 ? spPosition - x : 0;
@@ -487,34 +503,34 @@ public class ASTVisitor {
       }
     }
 
-    int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
+    int variableStackPosition = symbolTable.getStackTable(lhsast.getName());
 
-    if (x!=-1) {
-      if (in_func && x <= symbolTable.getParamCounter()) {
+    if (variableStackPosition!=-1) {
+      if (in_func && variableStackPosition <= symbolTable.getParamCounter()) {
         codes.add(
             strcommand
                 + "r"
                 + reg_counter
                 + ", [sp, #"
-                + (x + symbolTable.getLocal_variable())
+                + (variableStackPosition + symbolTable.getLocal_variable())
                 + "]");
       } else {
-        if (spPosition - x == 0) {
+        if (spPosition - variableStackPosition == 0) {
           codes.add(strcommand + "r" + reg_counter + ", [sp]");
         } else {
-          if (!ast.getLhs().isArray()) {
-            if (x != -1) {
+          if (!lhsast.isArray()) {
+            if (variableStackPosition != -1) {
               codes.add(strcommand +
                   "r" + reg_counter +
-                  ", [sp, #" + (spPosition - x) + "]");
+                  ", [sp, #" + (spPosition - variableStackPosition) + "]");
             }
           }
         }
       }
     }
 
-    if (ast.getLhs().isArray()) {
-      visitExprAST(ast.getLhs().getArrayElem(), codes, reg_counter + 1);
+    if (lhsast.isArray()) {
+      visitExprAST(lhsast.getArrayElem(), codes, reg_counter + 1);
       while (type instanceof ArrayType) {
         type = ((ArrayType) type).getType();
       }
@@ -535,52 +551,50 @@ public class ASTVisitor {
 
   public void visitExprAST(AST ast, List<String> codes, int reg_counter) {
     if (ast instanceof IntNode) {
-      //
       IntNode int_ast = (IntNode) ast;
       codes.add(LDR_value(("r" + reg_counter), int_ast.getValue()));
     } else if (ast instanceof BoolNode) {
-      //
       BoolNode bool_ast = (BoolNode) ast;
       codes.add(MOV("r" + reg_counter, bool_ast.getBoolValue()));
     } else if (ast instanceof IdentNode) {
-      //
-      int x = symbolTable.getStackTable(((IdentNode) ast).getIdent());
+      int variableStackPosition = symbolTable.getStackTable(((IdentNode) ast).getIdent());
       Type type = symbolTable.getVariable(((IdentNode) ast).getIdent());
+
       String loadWord = "\tLDR";
       if (type.equals(boolType()) || type.equals(charType())) {
         loadWord = "\tLDRSB";
       }
 
-      if (in_func && x <= symbolTable.getParamCounter()) {
+      if (in_func && variableStackPosition <= symbolTable.getParamCounter()) {
         codes.add(
             loadWord
                 + " r"
                 + reg_counter
                 + ", [sp, #"
-                + (spPosition - symbolTable.getParamCounter() + x)
+                + (spPosition - symbolTable.getParamCounter() + variableStackPosition)
                 + "]");
       } else {
-        if (spPosition - x == 0) {
+        if (spPosition - variableStackPosition == 0) {
           codes.add(loadWord + " r" + reg_counter + ", [sp]");
         } else {
-          codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - x) + "]");
+          codes.add(loadWord + " r" + reg_counter + ", [sp, #" + (spPosition - variableStackPosition) + "]");
         }
       }
     } else if (ast instanceof StringNode) {
-      //
       codes.add(LDR_msg("r" + reg_counter, String.valueOf(stringCounter)));
       visitStringNode((StringNode) ast);
     } else if (ast instanceof CharNode) {
-      //
       codes.add(MOV("r" + reg_counter, "#'" + ((CharNode) ast).getCharValue() + "'"));
     } else if (ast instanceof Binary_BoolOpNode) {
+      int r1 = reg_counter;       // register to store the first argument.
+      int r2 = reg_counter + 1;   // register to store the second argument.
 
-      int r1 = reg_counter;
-      int r2 = reg_counter + 1;
       visitExprAST(((Binary_BoolOpNode) ast).getExpr1(), codes, r1);
       visitExprAST(((Binary_BoolOpNode) ast).getExpr2(), codes, r2);
+
+      // generate codes according to the different operator
       if (!((Binary_BoolOpNode) ast).isBinaryAnd() &&
-              !((Binary_BoolOpNode) ast).isBinaryOr()) {
+          !((Binary_BoolOpNode) ast).isBinaryOr()) {
         codes.add(CMP_reg("r" + reg_counter, "r" + (reg_counter + 1)));
       }
       if (((Binary_BoolOpNode) ast).isEqual()) {
@@ -607,18 +621,19 @@ public class ASTVisitor {
         codes.add("\tORR r" + r1 + ", r" + r1 + ", r" + r2);
       }
     } else if (ast instanceof BinaryOpNode) {
-      //
-      int r1 = reg_counter;
-      int r2 = reg_counter + 1;
-      if (mallocCounter != 0) {
-        r2 = reg_counter + 1 + mallocCounter;
+      int r1 = reg_counter;       // register to store the first argument.
+      int r2 = reg_counter + 1;   // register to store the second argument.
+
+      if (mallocCounter != 0) {   // adjust register if malloc is called
+        r2 = r2 + mallocCounter;
       }
+
       visitExprAST(((BinaryOpNode) ast).getExpr1(), codes, r1);
-      if (r2 > 10) {
+
+      // prevent using more than 10 register.
+      if (r2 > MAX_REG) {
         codes.add(PUSH("r10"));
-        // maximum amount of registers we can use.
-        int regMax = 10;
-        r2 = regMax;
+        r2 = MAX_REG;
         pushCounter++;
       }
       visitExprAST(((BinaryOpNode) ast).getExpr2(), codes, r2);
@@ -628,10 +643,12 @@ public class ASTVisitor {
         pushCounter--;
         r2 = 11;
       }
+
       if (((BinaryOpNode) ast).isDivid() || ((BinaryOpNode) ast).isMod()) {
         codes.add(MOV("r0", "r" + r1));
         codes.add(MOV("r1", "r" + r2));
         codes.add(BL("p_check_divide_by_zero"));
+
         if (((BinaryOpNode) ast).isDivid()) {
           codes.add(BL("__aeabi_idiv"));
           codes.add(MOV("r" + reg_counter, resultReg));
@@ -660,6 +677,7 @@ public class ASTVisitor {
       }
     } else if (ast instanceof UnaryOpNode) {
       visitExprAST(((UnaryOpNode) ast).getExpr(), codes, reg_counter);
+
       if (((UnaryOpNode) ast).isNOT()) {
         codes.add("\tEOR r" + reg_counter + ", r" + reg_counter + ", #1");
       } else if (((UnaryOpNode) ast).isMinus()) {
@@ -672,7 +690,7 @@ public class ASTVisitor {
     } else if (ast instanceof CallAST) {
       visitCallAst((CallAST) ast, codes, reg_counter);
     } else if (ast instanceof ArrayElemNode) {
-      int arrayIndexReg = reg_counter + mallocCounter; // TODO: comment here
+      int arrayIndexReg = reg_counter + mallocCounter;   // find out the correct register for array
       codes.add(
           ADD(
               ("r" + reg_counter),
@@ -680,7 +698,7 @@ public class ASTVisitor {
               (spPosition
                   - symbolTable.getStackTable(((ArrayElemNode) ast).getName()))));
 
-      //
+      // generate codes for loading each element in the array.
       for (int i = 0; i < ((ArrayElemNode) ast).getExprs().size(); i++) {
         visitExprAST(((ArrayElemNode) ast).getExprs().get(i), codes, arrayIndexReg);
         codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
@@ -715,7 +733,7 @@ public class ASTVisitor {
   }
 
   private void visitCallAst(CallAST ast, List<String> codes, int reg_counter) {
-    int arg_count = 0;
+    int arg_count = 0;    // to record spPosition change in loading arguments for the function.
     if (ast.hasArgument()) {
       for (int i = ast.getArguments().size() - 1; i >= 0; i--) {
         AST argument = ast.getArguments().get(i);
@@ -766,9 +784,10 @@ public class ASTVisitor {
     codes.add(BL("malloc"));
     mallocCounter++;
     codes.add(MOV(paramReg, resultReg));
+
     int array_counter = 0;
-    int array_reg = reg_counter + mallocCounter;
-    for (AST a : ast.getArrayAST().getExprs()) {
+    int array_reg = reg_counter + mallocCounter;   // find out the correct register for array
+    for (AST a : ast.getArrayAST().getExprs()) {   // generate codes for every element in the array
       visitExprAST(a, codes, array_reg);
       if (arrayType.getType().equals(charType()) ||
               arrayType.getType().equals(boolType())) {
@@ -796,6 +815,7 @@ public class ASTVisitor {
     Type type = ast.getType();
     String strWord = "\tSTR ";
 
+    // adjust spPosition base on variable type
     if (rhs.getArrayAST() != null || type instanceof ArrayType) {
       // array declaration
       codes.add(SUB(SP, SP, 4));
@@ -805,7 +825,7 @@ public class ASTVisitor {
       spPosition += 4;
       ArrayType arrayType = (ArrayType) type;
       if (rhs.getArrayAST() != null)
-        visitArrayLiter(arrayType, ast.getAssignRhsAST(), codes, reg_counter);
+        visitArrayLiter(arrayType, rhs, codes, reg_counter);
     } else if (type.equals(stringType()) || type.equals(intType())) {
       codes.add(SUB(SP, SP, 4));
       if (in_func || inBlock) {
@@ -885,10 +905,10 @@ public class ASTVisitor {
       }
     }
 
-    if (ast.getAssignRhsAST().call()) {
-      visitCallAst(ast.getAssignRhsAST().getCallAST(), codes, reg_counter);
-    } else if (ast.getAssignRhsAST().getRhsContext().expr().size() <= 1) {
-      if (ast.getAssignRhsAST().getExpr1() != null) {
+    if (rhs.call()) {
+      visitCallAst(rhs.getCallAST(), codes, reg_counter);
+    } else if (rhs.getRhsContext().expr().size() <= 1) {
+      if (rhs.getExpr1() != null) {
         // rhs is a null or all other cases
         visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
       } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
@@ -918,7 +938,7 @@ public class ASTVisitor {
       }
     }
 
-    if (ast.getAssignRhsAST().getExpr1() instanceof ArrayElemNode) {
+    if (rhs.getExpr1() instanceof ArrayElemNode) {
       String ldrWord = "\tLDR ";
       if (type.equals(boolType()) || type.equals(charType())) {
         ldrWord = "\tLDRSB ";
@@ -927,8 +947,7 @@ public class ASTVisitor {
     }
 
     codes.add(strWord + paramReg + ", [sp]");
-
-    symbolTable.putStackTable(ast.getName(), spPosition);
+    symbolTable.putStackTable(ast.getName(), spPosition);  // record the stack position for declared variable
   }
 
   private void visitReturnAST(ReturnAst ast, List<String> codes, int reg_counter) {
@@ -937,9 +956,10 @@ public class ASTVisitor {
     return_Pop = true;
   }
 
-  public void visitSkipAst(AST ast) {}
+  public void visitSkipAst(AST ast) {}     // skip statement simply do nothing
 
   public void visitStringNode(StringNode ast) {
+    // generate codes for a string
     variables.add("msg_" + stringCounter + ":");
     variables.add("\t.word " + ast.getStringLength());
     variables.add("\t.ascii  " + ast.getValue());
@@ -950,6 +970,7 @@ public class ASTVisitor {
     AST expr = ast.getExpr();
     visitExprAST(expr, codes, reg_counter);
 
+    // add load statement when printing an array element
     if (expr instanceof ArrayElemNode) {
       Type type = symbolTable.getVariable(((ArrayElemNode) expr).getName());
       while (type instanceof ArrayType) {
@@ -961,12 +982,16 @@ public class ASTVisitor {
         codes.add(LDR_reg("r" + reg_counter, "r" + reg_counter));
       }
     }
+
     if (expr instanceof PairAST) {
       if (((PairAST) expr).ident.equals("null")) {
         codes.add(LDR_value(paramReg, 0));
       }
     }
+
     codes.add(MOV(resultReg, paramReg));
+
+    // generate print code according to different types
     Type type = null;
     if (expr instanceof Binary_BoolOpNode
         || expr instanceof BoolNode
@@ -1025,14 +1050,6 @@ public class ASTVisitor {
   public void visitPrintlnAst(PrintlnAst ast, List<String> codes, int reg_counter) {
     codes.add(BL("p_print_ln"));
     println = true;
-  }
-
-  int counter_start = 1;
-
-  private String reg_add() {
-    String current_reg = "r" + counter_start;
-    counter_start++;
-    return current_reg;
   }
 
   public void visitReadAST(ReadAst ast, List<String> codes, int reg_counter) {
