@@ -5,7 +5,7 @@ stages:
 compile:
   stage: compile
   script:
-    - mvn package
+    - mvn compile
   tags:
     - shell
 
