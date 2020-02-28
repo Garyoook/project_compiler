@@ -45,6 +45,10 @@ public class AssignRHSAST extends AST{
         return rhsContext.call() != null;
     }
 
+    public boolean newPair() {
+      return rhsContext.expr().size() > 1;
+    }
+
     public CallAST getCallAST() {
         return callAST;
     }

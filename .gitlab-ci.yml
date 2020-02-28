@@ -12,6 +12,6 @@ compile:
 test:
   stage: test
   script:
-    - mvn test:jute
+    - mvn test
   tags:
     - shell
