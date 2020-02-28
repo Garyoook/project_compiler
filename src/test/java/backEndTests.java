@@ -413,20 +413,43 @@ public class backEndTests {
 
     @Test
     public void backend_expression_negBothModExpr() throws IOException, InterruptedException {
-        String fp = "wacc_examples/valid/expressions/negBothMod.wacc";
-        emulator(fp);
-        ProcessBuilder pb = new ProcessBuilder();
+        Result_of_execution result = exec("negBothMod");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(myOutput.readLine(), "-2");
+        assertEquals(result.getExit_code(), 0);
+    }
 
+
+    private Result_of_execution exec(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/expressions/" + filename + ".wacc";
+        emulator(fp);
         Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s negBothMod.s");
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
         pr.waitFor();
         Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
         pr2.waitFor();
         OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
-        int myExitCode = pr2.exitValue();
-        assertEquals(bufferedReader.readLine(), "-2");
-        assertEquals(myExitCode, 0);
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
+
+    private class Result_of_execution {
+        private BufferedReader bufferedReader;
+        private int exit_code;
+
+
+        private Result_of_execution(BufferedReader bufferedReader, int exit_code) {
+            this.bufferedReader = bufferedReader;
+            this.exit_code = exit_code;
+        }
+
+        public BufferedReader getBufferedReader() {
+            return bufferedReader;
+        }
+
+        public int getExit_code() {
+            return exit_code;
+        }
     }
 
 
