@@ -344,7 +344,7 @@ public class ASTVisitor {
   public void visitParamNode(ParamNode param) {
     Type type = param.getType();
     //
-    if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType) {
+    if (type.equals(intType()) || type.equals(boolType()) || type instanceof ArrayType || type instanceof PairType) {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 4);
     } else {
       symbolTable.setParamCounter(symbolTable.getParamCounter() + 1);
@@ -426,7 +426,11 @@ public class ASTVisitor {
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
         printCheckNullPointer = true;
-        codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        if (ast.getRhs().getRhsContext().pair_elem().fst() != null) {
+          codes.add(LDR_reg(paramReg, paramReg));
+        } else {
+          codes.add(LDR_reg(paramReg, paramReg + ", #4"));
+        }
         codes.add(LDR_reg(paramReg, paramReg));
       }
     }
@@ -485,23 +489,25 @@ public class ASTVisitor {
 
     int x = symbolTable.getStackTable(ast.getLhs().getLhsContext().getText());
 
-    if (in_func && x <= symbolTable.getParamCounter()) {
-      codes.add(
-          strcommand
-              + " r"
-              + reg_counter
-              + ", [sp, #"
-              + (x + symbolTable.getLocal_variable())
-              + "]");
-    } else {
-      if (spPosition - x == 0) {
-        codes.add(strcommand + "r" + reg_counter + ", [sp]");
+    if (x!=-1) {
+      if (in_func && x <= symbolTable.getParamCounter()) {
+        codes.add(
+            strcommand
+                + "r"
+                + reg_counter
+                + ", [sp, #"
+                + (x + symbolTable.getLocal_variable())
+                + "]");
       } else {
-        if (!ast.getLhs().isArray()) {
-          if (x != -1) {
-            codes.add(strcommand +
-                    "r" + reg_counter +
-                    ", [sp, #" + (spPosition - x) + "]");
+        if (spPosition - x == 0) {
+          codes.add(strcommand + "r" + reg_counter + ", [sp]");
+        } else {
+          if (!ast.getLhs().isArray()) {
+            if (x != -1) {
+              codes.add(strcommand +
+                  "r" + reg_counter +
+                  ", [sp, #" + (spPosition - x) + "]");
+            }
           }
         }
       }
@@ -814,8 +820,7 @@ public class ASTVisitor {
       spPosition += 1;
       strWord = "\tSTRB ";
     } else if (ast.getAssignRhsAST().getRhsContext().expr().size() > 0
-        || (ast.getType() instanceof PairType)) {
-      // pair declaration (not pairElemNode)
+        || (ast.getType() instanceof PairType)) {     // pair declaration (not pairElemNode)
       codes.add(SUB(SP, SP, 4));
       spPosition += 4;
       if (in_func || inBlock) {
@@ -829,43 +834,45 @@ public class ASTVisitor {
         // do nothing here if rhs is a declared pair
       } else {
         // rhs is a new pair
-        codes.add(LDR_value(resultReg, 8));
-        codes.add(BL("malloc"));
-        codes.add(MOV("r" + reg_counter, resultReg));
-        reg_counter++;
-        visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
-        Type lType = null;
-        Type rType = null;
-        if (type instanceof PairType) {
-          lType = ((PairType) type).getLeftType();
-          rType = ((PairType) type).getRightType();
-        }
-        if (lType instanceof PairType) {
-          if (((PairType) lType).getLeftType() == null) {
-            codes.add(LDR_value("r" + reg_counter, 0));
+        if (ast.getAssignRhsAST().getPairElemNode() == null) {
+          codes.add(LDR_value(resultReg, 8));
+          codes.add(BL("malloc"));
+          codes.add(MOV("r" + reg_counter, resultReg));
+          reg_counter++;
+          visitExprAST(ast.getAssignRhsAST().getExpr1(), codes, reg_counter);
+          Type lType = null;
+          Type rType = null;
+          if (type instanceof PairType) {
+            lType = ((PairType) type).getLeftType();
+            rType = ((PairType) type).getRightType();
           }
-        }
-        int size = (lType.equals(charType()) || lType.equals(boolType())) ? 1 : 4;
-        String b = (lType.equals(charType()) || lType.equals(boolType())) ? "B" : "";
-        codes.add(LDR_value(resultReg, size));
-        codes.add(BL("malloc"));
-        codes.add(!b.equals("") ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
-        codes.add(STR(resultReg, "[r4]"));
-        int codesLength = codes.size();
-        visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
-        size = (rType.equals(Type.charType()) || rType.equals(boolType())) ? 1 : 4;
-        b = rType.equals(Type.charType()) ? "B" : "";
-        if (codes.size() - codesLength == 0) {
-          if (rType instanceof PairType) {
-            if (((PairType) rType).getLeftType() == null) {
-              codes.add(LDR_value("r" + reg_counter, 0));
+//        if (lType instanceof PairType) {
+////          if (((PairType) lType).getLeftType() == null) {
+////            codes.add(LDR_value("r" + reg_counter, 0));
+////          }
+//        }
+          int size = (lType.equals(charType()) || lType.equals(boolType())) ? 1 : 4;
+          String b = (lType.equals(charType()) || lType.equals(boolType())) ? "B" : "";
+          codes.add(LDR_value(resultReg, size));
+          codes.add(BL("malloc"));
+          codes.add(!b.equals("") ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
+          codes.add(STR(resultReg, "[r4]"));
+          int codesLength = codes.size();
+          visitExprAST(ast.getAssignRhsAST().getExpr2(), codes, reg_counter);
+          size = (rType.equals(Type.charType()) || rType.equals(boolType())) ? 1 : 4;
+          b = rType.equals(Type.charType()) ? "B" : "";
+          if (codes.size() - codesLength == 0) {
+            if (rType instanceof PairType) {
+              if (((PairType) rType).getLeftType() == null) {
+                codes.add(LDR_value("r" + reg_counter, 0));
+              }
             }
           }
+          codes.add(LDR_value(resultReg, size));
+          codes.add(BL("malloc"));
+          codes.add(!b.equals("") ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
+          codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
         }
-        codes.add(LDR_value(resultReg, size));
-        codes.add(BL("malloc"));
-        codes.add(!b.equals("") ? STRB("r5", "[" + resultReg + "]") : STR("r5", "[" + resultReg + "]"));
-        codes.add(STR(resultReg, "[" + paramReg + ", #4]"));
       }
     } else if (ast.getAssignRhsAST().getPairElemNode() != null) {
       // pair declaration (pairElemNode)
