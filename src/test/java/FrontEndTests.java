@@ -1,5 +1,7 @@
+
 import antlr.BasicLexer;
 import antlr.BasicParser;
+import com.igormaznitsa.jute.annotations.JUteTest;
 import doc.wacc.astNodes.AST;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.ErrorMessage;
@@ -16,21 +18,83 @@ import java.util.BitSet;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
+import static org.junit.Assert.assertEquals;
 
-public class ASTTest {
+public class FrontEndTests {
+    // do not run in IDE, run all the tests using commandline:
+    // ```mvn test:jute```
+    // to run all the tests
+
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     @Test
-    public void testIf() {
+    public void valid_testif1() {
         String fp = "wacc_examples/valid/if/if1.wacc";
         emulator(fp);
     }
 
     @Test
+    public void valid_testIf2()
+    {
+        String fp = "wacc_examples/valid/if/if2.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIf3() {
+        String fp = "wacc_examples/valid/if/if3.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIf4() {
+        String fp = "wacc_examples/valid/if/if4.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIf5() {
+        String fp = "wacc_examples/valid/if/if5.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIf6() {
+        String fp = "wacc_examples/valid/if/if6.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIfBasic() {
+        String fp = "wacc_examples/valid/if/ifBasic.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIfFalse() {
+        String fp = "wacc_examples/valid/if/ifFalse.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testIfTrue() {
+        String fp = "wacc_examples/valid/if/ifTrue.wacc";
+        emulator(fp);
+    }
+
+    @Test
+    public void valid_testWhitespace() {
+        String fp = "wacc_examples/valid/if/whitespace.wacc";
+        emulator(fp);
+    }
+
+    @Test
     public void testSemanticErr() {
-        exit.expectSystemExitWithStatus(200);
         String fp = "wacc_examples/invalid/semanticErr/function/functionAssign.wacc";
+        ProcessBuilder p = new ProcessBuilder();
+        p.command("./compile " + fp);
+        exit.expectSystemExitWithStatus(200);
         emulator(fp);
     }
 
@@ -40,7 +104,6 @@ public class ASTTest {
         String fp = "wacc_examples/invalid/syntaxErr/function/functionLateDefine.wacc";
         emulator(fp);
     }
-
 
     public void emulator(String filepath) {
         StringBuilder sb = new StringBuilder();

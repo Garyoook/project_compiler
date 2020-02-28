@@ -1171,6 +1171,7 @@ public class ASTVisitor {
     printFree = true;
   }
 
+  // for later optimization of register allocation
   public ArrayList<Register> regsExcept(ArrayList<Register> except) {
     ArrayList<Register> tempRegs = allRegs;
     for (Register r : except) {

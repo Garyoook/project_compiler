@@ -29,6 +29,13 @@
             <version>1.19.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.igormaznitsa</groupId>
+            <artifactId>jute-annotations</artifactId>
+            <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -86,6 +93,20 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>com.igormaznitsa</groupId>
+                <artifactId>jute</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jute</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>
