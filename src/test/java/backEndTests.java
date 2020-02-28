@@ -1329,13 +1329,6 @@ public class backEndTests {
     }
 
     @Test
-    public void backend_fixedPointRealArithmetic() throws IOException, InterruptedException {
-        Result_of_execution result = exec_nested_func("fixedPointRealArithmetic");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-    }
-
-    @Test
     public void backend_Basic_2() throws IOException, InterruptedException {
         Result_of_execution result = exec_basic_exit("exitBasic2");
         BufferedReader myOutput = result.getBufferedReader();
