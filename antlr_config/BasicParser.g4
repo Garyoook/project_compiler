@@ -100,6 +100,7 @@ stat: ASKIP                      #askip
 | PRINTLN expr                   #println
 | IF expr THEN stat ELSE stat FI #ifthenesle
 | WHILE expr DO stat DONE        #whileloop
+| DO stat WHILE expr DONE          #dowhileloop
 | BEGIN stat END                 #block
 | stat COLON stat                #seq_compose;
 

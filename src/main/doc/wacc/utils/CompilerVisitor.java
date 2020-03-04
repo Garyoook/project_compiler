@@ -333,6 +333,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return ast;
   }
 
+  @Override
+  public AST visitDowhileloop(DowhileloopContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    AST ast = new DoWhileAST(visitStat(ctx.stat()), visitExpr(ctx.expr()), symbolTable);
+    symbolTable = symbolTable.previousScope();
+    return ast;
+  }
+
   @Override public AST visitSeq_compose(Seq_composeContext ctx) {
     ArrayList<AST> seqs = new ArrayList<>();
     StatContext statContext1 = ctx.stat(ctx.stat().size());
@@ -554,6 +564,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof WhileloopContext) {
         return visitWhileloop((WhileloopContext) statContext);
+      }
+      if (statContext instanceof DowhileloopContext) {
+        return visitDowhileloop((DowhileloopContext) statContext);
       }
       if (statContext instanceof BlockContext) {
         return visitBlock((BlockContext) statContext);

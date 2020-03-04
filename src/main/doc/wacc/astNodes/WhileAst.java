@@ -31,19 +31,19 @@ public class WhileAst extends AST {
     return symbolTable;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("while (").append(expr).append("): ");
-    sb.append("{ ").append(stat).append("}\n");
-    return sb.toString();
-  }
-
   public AST getExpr() {
     return expr;
   }
 
   public AST getStat() {
     return stat;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("while (").append(expr).append("): ");
+    sb.append("{ ").append(stat).append("}\n");
+    return sb.toString();
   }
 }
