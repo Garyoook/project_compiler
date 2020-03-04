@@ -76,24 +76,24 @@ public class Wacc {
 
       System.out.println("Compiling from source: " + args[0] + ":");
       AST ast = visitor.visitProg(basicParser.prog());
-      System.out.println(ast);
+//      System.out.println(ast);
 
-//      String[] s1 = args[0].split("/");
-//      String fileName = s1[s1.length - 1];
-//      fileName = fileName.split("\\.")[0];
-//      System.out.println(fileName);
-//      if (!ErrorMessage.hasError()) {
-//        File outputFile = new File(fileName+".s");
-//        FileWriter myWriter = new FileWriter(outputFile);
-//        ASTVisitor translator = new ASTVisitor();
-//        translator.visitProgAST(ast);
-//        List<String> result = translator.getCodes();
-//        for (String s:result) {
-//          myWriter.write(s + "\n");
-//        }
-//        myWriter.close();
-////        outputFile.deleteOnExit();
-//      }
+      String[] s1 = args[0].split("/");
+      String fileName = s1[s1.length - 1];
+      fileName = fileName.split("\\.")[0];
+      System.out.println(fileName);
+      if (!ErrorMessage.hasError()) {
+        File outputFile = new File(fileName+".s");
+        FileWriter myWriter = new FileWriter(outputFile);
+        ASTVisitor translator = new ASTVisitor();
+        translator.visitProgAST(ast);
+        List<String> result = translator.getCodes();
+        for (String s:result) {
+          myWriter.write(s + "\n");
+        }
+        myWriter.close();
+//        outputFile.deleteOnExit();
+      }
     } catch (NumberFormatException e) {
       ErrorMessage.addSyntaxError("Integer overflow");
     }

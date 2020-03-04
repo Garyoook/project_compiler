@@ -51,7 +51,6 @@ public class ASTVisitor {
   private boolean return_Pop = false;  // indicate a return statement is met.
 
   public List<String> getCodes() {
-    // TODO: comment here.
     if (spPosition > 0) {
       while (spPosition > 1024) {
         main.add(ADD(SP, SP, 1024));
@@ -304,6 +303,8 @@ public class ASTVisitor {
       visitIfAst((IfAst) ast, codes, reg_counter);
     } else if (ast instanceof WhileAst) {
       visitWhileAST((WhileAst) ast, codes, reg_counter);
+    } else if (ast instanceof DoWhileAST) {
+      visitDoWhileAST((DoWhileAST) ast, codes, reg_counter);
     } else if (ast instanceof ReturnAst) {
       visitReturnAST((ReturnAst) ast, codes, reg_counter);
     } else if (ast instanceof FreeAst) {
@@ -324,6 +325,8 @@ public class ASTVisitor {
       symbolTable = temp;
     }
   }
+
+
 
   public void visitFuncAST(FuncAST ast, List<String> codes, int reg_counter) {
     SymbolTable symbolTabletemp = symbolTable;
@@ -1135,6 +1138,41 @@ public class ASTVisitor {
     }
     codes.add("L" + branchCounter++ + ":");
     symbolTable = symbolTabletemp;
+  }
+
+  private void visitDoWhileAST(DoWhileAST ast, List<String> codes, int reg_counter) {
+    SymbolTable symbolTableTemp = symbolTable;
+    symbolTable = ast.getSymbolTable();
+    symbolTable.setParamCounter(symbolTableTemp.getParamCounter());
+    int loopLabel = branchCounter++;
+    int bodyLabel = branchCounter++;
+    codes.add("L" + bodyLabel + ":");
+    int oldSp = spPosition;
+    visitStat(ast.getStat(), codes, reg_counter);
+    if (spPosition - oldSp != 0) {
+      codes.add(ADD(SP, SP, spPosition - oldSp));
+    }
+    spPosition = oldSp;
+    codes.add("L" + loopLabel + ":");
+    AST expr;
+
+    if (ast.getExpr() instanceof ExprWithParen) {
+      expr = ((ExprWithParen) ast.getExpr()).getExpr();
+    } else {
+      expr = ast.getExpr();
+    }
+    visitExprAST(expr, codes, reg_counter);
+    if (expr instanceof BoolNode
+            || expr instanceof Binary_BoolOpNode
+            || expr instanceof IdentNode) {
+      codes.add(CMP_value(paramReg, 1));
+    } else {
+      codes.add(CMP_reg(paramReg, "r" + reg_counter));
+    }
+
+    codes.add(BEQ("L" + bodyLabel));
+    symbolTable = symbolTableTemp;
+
   }
 
   public void visitWhileAST(WhileAst ast, List<String> codes, int reg_counter) {
