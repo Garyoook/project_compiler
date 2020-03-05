@@ -17,6 +17,7 @@ TRUE: 'true';
 FALSE: 'false';
 
 fragment DIGIT: '0'..'9' ;
+fragment HEX: '0'..'9'|'A'..'F' ;
 
 // unary operators
 NOT: '!' ;
@@ -25,6 +26,8 @@ ORD: 'ord' ;
 CHR: 'chr' ;
 
 ALLINT: (DIGIT)+ ;
+BINARY: '0b'('0'|'1')+ ;
+HEXADECIMAL: '0x'(HEX)+ ;
 
 // binary operators
 PLUS: '+' ;

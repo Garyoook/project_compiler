@@ -51,11 +51,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitInt_sign(Int_signContext ctx) { return visitChildren(ctx); }
 
   @Override public AST visitInt_liter(Int_literContext ctx) {
-    if (ctx.int_sign() == null) {
-      return new IntNode(Integer.parseInt(ctx.getText()));
-    }
-    if (ctx.int_sign().getText().equals("-")) {
-      return new IntNode(Integer.parseInt(ctx.getText()));
+    if (ctx.BINARY()!=null) {
+      String binary = ctx.getText().substring(2);
+      int result = 0;
+      for (int i = 0; i < binary.length(); i++) {
+        result += Math.pow(2, i) * Integer.parseInt(String.valueOf(binary.charAt(binary.length()-i-1)));
+      }
+      return new IntNode(result);
+    } else if (ctx.HEXADECIMAL()!=null) {
+      String hexadecimal = ctx.getText().substring(2);
+      return new IntNode(Integer.parseInt(hexadecimal, 16));
     } else {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }

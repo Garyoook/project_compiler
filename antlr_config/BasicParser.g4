@@ -27,7 +27,7 @@ unary_not: NOT ;
 unary_chr: CHR ;
 
 int_sign: PLUS | MINUS ;
-int_liter: (int_sign)? ALLINT ;
+int_liter: (int_sign)? ALLINT | BINARY | HEXADECIMAL;
 char_liter: CHAR_LITER;
 string_liter: STR_LITER;
 ident: IDENT;
