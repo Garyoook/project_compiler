@@ -17,7 +17,7 @@ TRUE: 'true';
 FALSE: 'false';
 
 fragment DIGIT: '0'..'9' ;
-fragment HEX: '0'..'9'|'A'..'F' ;
+fragment HEX: '0'..'9'|'A'..'F'|'a'..'f' ;
 
 // unary operators
 NOT: '!' ;
