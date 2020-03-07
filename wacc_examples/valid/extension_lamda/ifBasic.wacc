@@ -1,0 +1,11 @@
+# simple if statement
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  true ? skip : skip
+end
+

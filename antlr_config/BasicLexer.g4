@@ -2,6 +2,10 @@ lexer grammar BasicLexer;
 @header {
 package antlr;
 }
+
+QUEST: '?';
+COL: ':';
+
 // program
 BEGIN: 'begin';
 END: 'end';
