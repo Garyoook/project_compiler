@@ -49,6 +49,8 @@ B_OR: '||' ;
 
 
 // stat
+IMPORT: 'import';
+WACCSUFFIX: '.wacc';
 READ: 'read';
 FREE: 'free';
 RETURN: 'return';

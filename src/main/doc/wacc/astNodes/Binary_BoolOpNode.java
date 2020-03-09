@@ -24,7 +24,7 @@ public class Binary_BoolOpNode extends AST{
     }
   }
 
-  public Binary_BoolOpNode(BasicParser.Lowest_binbool_opContext operContext, AST expr1, AST expr2) {
+  public Binary_BoolOpNode(Lowest_binbool_opContext operContext, AST expr1, AST expr2) {
     this.lowest_binaryOpNode = operContext;
     this.expr1 = expr1;
     this.expr2 = expr2;

@@ -89,7 +89,7 @@ assign_lhs: IDENT
 | array_elem
 | pair_elem ;
 
-stat: ASKIP                      #askip
+stat: ASKIP                          #askip
 | type IDENT ASSIGN assign_rhs   #declaration
 | assign_lhs ASSIGN assign_rhs   #assignment
 | READ assign_lhs                #read
@@ -100,7 +100,7 @@ stat: ASKIP                      #askip
 | PRINTLN expr                   #println
 | IF expr THEN stat ELSE stat FI #ifthenesle
 | WHILE expr DO stat DONE        #whileloop
-| DO stat WHILE expr DONE          #dowhileloop
+| DO stat WHILE expr DONE        #dowhileloop
 | BEGIN stat END                 #block
 | stat COLON stat                #seq_compose;
 
@@ -109,5 +109,6 @@ param: type IDENT;
 param_list: param (COMMA param)*;
 
 func: type IDENT OPEN_PARENTHESES (param_list)? CLOSE_PARENTHESES IS stat END ;
+libraries: IMPORT IDENT WACCSUFFIX;
 
-prog: BEGIN (func)* stat END EOF ;
+prog: BEGIN (libraries)* (func)* stat END EOF ;

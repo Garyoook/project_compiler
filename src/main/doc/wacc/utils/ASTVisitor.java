@@ -252,6 +252,29 @@ public class ASTVisitor {
     ProgramAST past = (ProgramAST) ast;
     int k = 4;
 
+//    for imported library:
+//    =========================================================================
+    // put parameters onto stack firstly
+    for (FuncAST f : past.getLibraries().get(0).getFunctions()) {
+      SymbolTable symbolTabletemp = symbolTable;
+      symbolTable = f.getSymbolTable();
+
+      for (ParamNode p : f.getParameters()) {
+        visitParamNode(p);
+      }
+      functionParams.put(f.getFuncName(), symbolTable.getParamCounter());
+      symbolTable = symbolTabletemp;
+    }
+
+    for (FuncAST f : past.getLibraries().get(0).getFunctions()) {
+      in_func = true;
+      visitFuncAST(f, main, k);
+      in_func = false;
+      symbolTable.local_variable = 0;
+      spPosition = 0;
+    }
+    //=========================================================================
+
     // put parameters onto stack firstly
     for (FuncAST f : past.getFunctions()) {
       SymbolTable symbolTabletemp = symbolTable;
