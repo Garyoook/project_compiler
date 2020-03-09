@@ -252,26 +252,30 @@ public class ASTVisitor {
     ProgramAST past = (ProgramAST) ast;
     int k = 4;
 
-//    for imported library:
-//    =========================================================================
+    //    for imported library:
+    //    =========================================================================
     // put parameters onto stack firstly
-    for (FuncAST f : past.getLibraries().get(0).getFunctions()) {
-      SymbolTable symbolTabletemp = symbolTable;
-      symbolTable = f.getSymbolTable();
+    if (!past.getLibraries().isEmpty()) {
+      for (int i = 0; i < past.getLibraries().size(); i++) {
+        for (FuncAST f : past.getLibraries().get(i).getFunctions()) {
+          SymbolTable symbolTabletemp = symbolTable;
+          symbolTable = f.getSymbolTable();
 
-      for (ParamNode p : f.getParameters()) {
-        visitParamNode(p);
+          for (ParamNode p : f.getParameters()) {
+            visitParamNode(p);
+          }
+          functionParams.put(f.getFuncName(), symbolTable.getParamCounter());
+          symbolTable = symbolTabletemp;
+        }
+
+        for (FuncAST f : past.getLibraries().get(i).getFunctions()) {
+          in_func = true;
+          visitFuncAST(f, main, k);
+          in_func = false;
+          symbolTable.local_variable = 0;
+          spPosition = 0;
+        }
       }
-      functionParams.put(f.getFuncName(), symbolTable.getParamCounter());
-      symbolTable = symbolTabletemp;
-    }
-
-    for (FuncAST f : past.getLibraries().get(0).getFunctions()) {
-      in_func = true;
-      visitFuncAST(f, main, k);
-      in_func = false;
-      symbolTable.local_variable = 0;
-      spPosition = 0;
     }
     //=========================================================================
 

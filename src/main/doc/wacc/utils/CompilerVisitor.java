@@ -607,12 +607,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     // GG's extension: adding imported libraries...
     ArrayList<LibAST> libASTS = new ArrayList<>();
 
-    for (LibrariesContext libCxt : ctx.libraries()) {
-      AST temp = visitLibraries(libCxt);
-      if (!(temp instanceof ErrorAST)) {
-         libASTS.add((LibAST) temp);
+    if (!ctx.libraries().isEmpty()) {
+      for (LibrariesContext libCxt : ctx.libraries()) {
+        AST temp = visitLibraries(libCxt);
+        if (!(temp instanceof ErrorAST)) {
+          libASTS.add((LibAST) temp);
+        }
       }
     }
+
+    //=========================================================================
 
     for (FuncContext funcContext:ctx.func()) {
       List<Type> types = new ArrayList<>();
