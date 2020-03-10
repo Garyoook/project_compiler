@@ -476,31 +476,15 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
     ProgramAST progInLib = getProgramFromWACC("wacc_standard_libraries/" + ctx.IDENT().getText() + ".wacc");
 
-    return new LibAST(ctx.IDENT().getText(), progInLib.getFunctions());
+    if (!(progInLib.getMainProgram() instanceof SkipAst)) {
+      // if the miported library has any main body except for Skip, report an syntax error.
+      ErrorMessage.addSyntaxError("The imported Library file "+ctx.IDENT().getText() +
+                      ".wacc is not a valid library! \n at line:" + currentLine + ":" +
+              currentCharPos);
+      return new ErrorAST();
+    }
 
-//    for (FuncContext funcContext:ctx.func()) {
-//      List<Type> types = new ArrayList<>();
-//      types.add(visitType(funcContext.type()));
-//      if (funcContext.param_list() != null) {
-//        for (ParamContext p : funcContext.param_list().param()) {
-//          types.add(visitType(p.type()));
-//        }
-//      }
-//      if (functionTable.get(funcContext.IDENT().getText()) != null) {
-//        ErrorMessage.addSemanticError("function redefined" +
-//                " at line:" + currentLine + ":" +
-//                currentCharPos + " -- " +
-//                "in function " + ctx.getText() + ";");
-//        return new ErrorAST();
-//      }
-//      functionTable.put(funcContext.IDENT().getText(), types);
-//    }
-//    for (FuncContext funcContext:ctx.func()) {
-//      AST temp = visitFunc(funcContext);
-//      if (!(temp instanceof ErrorAST)) {
-//        funcASTS.add((FuncAST) visitFunc(funcContext));
-//      }
-//    }
+    return new LibAST(ctx.IDENT().getText(), progInLib.getFunctions());
   }
 
   public ProgramAST getProgramFromWACC(String path) {
