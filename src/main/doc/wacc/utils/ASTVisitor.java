@@ -32,6 +32,8 @@ public class ASTVisitor {
   private int pushCounter = 0;     // for counting the number of pushing registers to stack
   private int mallocCounter = 0;   // for array
 
+  private boolean optimization = true;
+
   private boolean println = false;   // indicate if println is called in wacc code.
                                      // if yes, print corresponding assembly code
   private boolean printint = false;  // indicate if an integer is printed in wacc code.
@@ -215,6 +217,11 @@ public class ASTVisitor {
       visitStringNode(new StringNode("\"%.*s\\0\""));
     }
 
+    if (optimization) {
+      main = optimize(main);
+      printcodes = optimize(printcodes);
+    }
+
     // print data list
     if (variables.size() > 0) {
       variables.add(0, ".data\n");
@@ -242,6 +249,22 @@ public class ASTVisitor {
     result.addAll(main);
     result.addAll(printcodes);
 
+    return result;
+  }
+
+  private List<String> optimize(List<String> assembly) {
+    List<String> result = new ArrayList<>();
+    for(int i=0; i<assembly.length()-1; i++) {
+      String current = assembly.get(i);
+      String next = assembly.get(i+1);
+      if (current.equals(next)) {
+        result.add(current);
+        i++;
+      } else if (current.subString(0, 3).equals("MOV")&&next.subString(0, 3).equals("LDR")&&current.subString(3).equals(next.subString(3))) {
+        result.add(current);
+        i++;
+      }
+    }
     return result;
   }
 
