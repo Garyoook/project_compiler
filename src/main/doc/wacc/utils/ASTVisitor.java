@@ -32,7 +32,7 @@ public class ASTVisitor {
   private int pushCounter = 0;     // for counting the number of pushing registers to stack
   private int mallocCounter = 0;   // for array
 
-  private boolean optimization = true;
+  private boolean optimization = false;
 
   private boolean println = false;   // indicate if println is called in wacc code.
                                      // if yes, print corresponding assembly code
@@ -254,15 +254,23 @@ public class ASTVisitor {
 
   private List<String> optimize(List<String> assembly) {
     List<String> result = new ArrayList<>();
-    for(int i=0; i<assembly.length()-1; i++) {
+    for(int i=0; i<assembly.size()-1; i++) {
+      boolean last = i==assembly.size()-2;
       String current = assembly.get(i);
       String next = assembly.get(i+1);
       if (current.equals(next)) {
         result.add(current);
         i++;
-      } else if (current.subString(0, 3).equals("MOV")&&next.subString(0, 3).equals("LDR")&&current.subString(3).equals(next.subString(3))) {
+      } else if (current.substring(1, 4).equals("STR")&&next.substring(1, 4).equals("LDR")&&current.substring(4).equals(next.substring(4))) {
         result.add(current);
         i++;
+      } else {
+        result.add(current);
+      }
+
+      // add the last line if it is at the end and not skip the last line
+      if (last && i!=assembly.size()-1) {
+        result.add(next);
       }
     }
     return result;
