@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 public abstract class AST {
@@ -25,7 +25,8 @@ public abstract class AST {
       }
     } else
     if (expr1 instanceof IdentNode) {
-      if (!symbolTable.getVariable(((IdentNode) expr1).getIdent()).equals(Type.intType())) {
+      Type t = symbolTable.getVariable(((IdentNode) expr1).getIdent());
+      if (!(t.equals(Type.intType()) || t instanceof Type.PtrType)) {
         return false;
       }
     } else

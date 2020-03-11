@@ -89,6 +89,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitExpr(ExprContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
+    if (ctx.unary_ref() != null) {
+      return (new RefNode(ctx.ident().getText()));
+    } else
+    if (ctx.unary_deref() != null) {
+      return (new DerefNode(ctx.ident().getText(), ctx.unary_deref().TIME().size()));
+    } else
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
@@ -397,7 +403,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+
+    if (ctx.ident().ptr().size() > 0) {
+      return new DeclarationAst(new PtrType(visitType(ctx.type())), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+    }
+    return new DeclarationAst(visitType(ctx.type()), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {

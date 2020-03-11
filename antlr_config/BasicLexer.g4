@@ -6,6 +6,7 @@ package antlr;
 QUEST: '?';
 COL: ':';
 
+
 // program
 BEGIN: 'begin';
 END: 'end';
@@ -28,6 +29,7 @@ NOT: '!' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
+REF: '&';
 
 ALLINT: (DIGIT)+ ;
 BINARY: '0b'('0'|'1')+ ;

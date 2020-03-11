@@ -52,6 +52,23 @@ public abstract class Type extends AST {
         }
     }
 
+    public static class PtrType extends Type {
+        private final Type type;
+
+        public PtrType(Type type) {
+            this.type = type;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        @Override
+        public String toString() {
+            return type + "*";
+        }
+    }
+
     public static class ArrayType extends Type {
         private final Type type;
 

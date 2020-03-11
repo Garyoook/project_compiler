@@ -25,7 +25,7 @@ public class AssignAST extends AST {
     } else if (lhs.getLhsContext().array_elem() != null) {
       type = symbolTable.getVariable(lhs.getLhsContext().array_elem().IDENT().getText());
     } else {
-      type = symbolTable.getVariable(lhs.getLhsContext().getText());
+      type = symbolTable.getVariable(lhs.getLhsContext().ident().IDENT().getText());
     }
 
     if (type == null) {
