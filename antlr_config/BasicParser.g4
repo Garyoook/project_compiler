@@ -17,6 +17,7 @@ bool_liter: TRUE | FALSE ;
 
 array_elem: IDENT (OPEN_SQUARE expr CLOSE_SQUARE)+ ;
 
+ptr: TIME ;
 hignp_bin_op : TIME | DIVIDE | MOD ;
 binary_oper: PLUS | MINUS ;
 binary_bool_oper: GREATER| SMALLER | GREATER_E | SMALLER_E ;
@@ -25,12 +26,14 @@ lowest_binbool_op: B_AND | B_OR ;
 unary_oper: MINUS | LEN | ORD ;
 unary_not: NOT ;
 unary_chr: CHR ;
+unary_ref: REF ;
+unary_deref: TIME+ ;
 
 int_sign: PLUS | MINUS ;
 int_liter: (int_sign)? ALLINT | BINARY | HEXADECIMAL;
 char_liter: CHAR_LITER;
 string_liter: STR_LITER;
-ident: IDENT;
+ident: IDENT | ptr+ IDENT;
 
 expr: string_liter
 | int_liter
@@ -38,6 +41,8 @@ expr: string_liter
 | char_liter
 | pair_liter
 | array_elem
+| unary_ref ident
+| unary_deref ident
 | unary_oper expr
 | unary_chr expr
 | unary_not expr
@@ -85,12 +90,12 @@ assign_rhs: expr
 | pair_elem
 | call IDENT OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES ;
 
-assign_lhs: IDENT
+assign_lhs: ident
 | array_elem
 | pair_elem ;
 
-stat: ASKIP                          #askip
-| type IDENT ASSIGN assign_rhs   #declaration
+stat: ASKIP                      #askip
+| type ident ASSIGN assign_rhs   #declaration
 | assign_lhs ASSIGN assign_rhs   #assignment
 | READ assign_lhs                #read
 | FREE expr                      #free
@@ -98,6 +103,9 @@ stat: ASKIP                          #askip
 | EXIT expr                      #exit
 | PRINT expr                     #print
 | PRINTLN expr                   #println
+| expr QUEST stat COL stat       #lamdaIf
+| expr QUEST stat                #lamdaIfnoElse
+| IF expr THEN stat FI           #ifthennoelse
 | IF expr THEN stat ELSE stat FI #ifthenesle
 | WHILE expr DO stat DONE        #whileloop
 | DO stat WHILE expr DONE        #dowhileloop

@@ -314,7 +314,6 @@ public class BackEndTests {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
         int myExitCode = pr2.exitValue();
         String myOutput = bufferedReader.readLine();
-
         assertEquals(myExitCode, 153);
         assertNull(myOutput);
     }

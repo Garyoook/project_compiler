@@ -1,0 +1,19 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# a
+# b
+# c
+
+# Program:
+
+begin
+  char[] k = ['a','b','c'] ;
+  char *j = k;
+  println *j ;
+  j = j + 1;
+  println *j;
+  j = j + 1;
+  println *j
+
+end

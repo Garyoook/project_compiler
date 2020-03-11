@@ -1,0 +1,13 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# b
+
+# Program:
+
+begin
+  char k = 'a' ;
+  char k2 = 'b' ;
+  char* j = &k - 1;
+  println *j
+end

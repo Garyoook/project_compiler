@@ -94,6 +94,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitExpr(ExprContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
+    if (ctx.unary_ref() != null) {
+      return (new RefNode(ctx.ident().getText()));
+    } else
+    if (ctx.unary_deref() != null) {
+      return (new DerefNode(ctx.ident().getText(), ctx.unary_deref().TIME().size()));
+    } else
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
@@ -241,6 +247,76 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), visitAssign_rhs(ctx.assign_rhs()));
   }
 
+
+  @Override public AST visitIfthennoelse(BasicParser.IfthennoelseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
+  @Override public AST visitLamdaIf(BasicParser.LamdaIfContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat(0));
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = visitStat(ctx.stat(1));
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
+
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     SymbolTable thenSymbolTable = symbolTable;
@@ -332,7 +408,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+
+    if (ctx.ident().ptr().size() > 0) {
+      return new DeclarationAst(new PtrType(visitType(ctx.type())), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+    }
+    return new DeclarationAst(visitType(ctx.type()), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
@@ -630,6 +710,40 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new ProgramAST(libASTS, funcASTS, visitStat(ctx.stat()));
   }
 
+  public AST visitLamdaIfnoElse(BasicParser.LamdaIfnoElseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
 
   public AST visitStat(StatContext statContext) {
     currentLine = statContext.getStart().getLine();
@@ -647,6 +761,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof AskipContext) {
         return visitAskip((AskipContext) statContext);
+      }
+
+      if (statContext instanceof IfthennoelseContext) {
+        return visitIfthennoelse((IfthennoelseContext) statContext);
+      }
+      if (statContext instanceof LamdaIfContext) {
+        return visitLamdaIf((LamdaIfContext) statContext);
       }
       if (statContext instanceof DeclarationContext) {
         return visitDeclaration((DeclarationContext) statContext);
@@ -671,6 +792,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof IfthenesleContext) {
         return visitIfthenesle((IfthenesleContext) statContext);
+      }
+      if (statContext instanceof LamdaIfnoElseContext) {
+        return visitLamdaIfnoElse((LamdaIfnoElseContext) statContext);
       }
       if (statContext instanceof WhileloopContext) {
         return visitWhileloop((WhileloopContext) statContext);

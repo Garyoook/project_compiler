@@ -1,0 +1,12 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# 100
+
+# Program:
+
+begin
+  int k = 100 ;
+  int* j = &k;
+  println *j
+end
