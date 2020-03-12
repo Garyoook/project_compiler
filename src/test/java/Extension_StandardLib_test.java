@@ -22,7 +22,7 @@ public class Extension_StandardLib_test {
   public void extension_standardLib_pow() throws IOException, InterruptedException {
     Result_of_execution result = exec_extension_standardLib("standardLib_pow");
     BufferedReader output = result.getBufferedReader();
-    assertEquals(result.getExit_code(), 0);
+    assertEquals(0, result.getExit_code());
     assertEquals("8", output.readLine());
   }
 
@@ -30,7 +30,7 @@ public class Extension_StandardLib_test {
   public void extension_standardLib_fabs() throws IOException, InterruptedException {
     Result_of_execution result = exec_extension_standardLib("standardLib_fabs");
     BufferedReader output = result.getBufferedReader();
-    assertEquals(result.getExit_code(), 0);
+    assertEquals(0, result.getExit_code());
     assertEquals("10", output.readLine());
   }
 
@@ -38,7 +38,7 @@ public class Extension_StandardLib_test {
   public void extension_standardLib_factorial() throws IOException, InterruptedException {
     Result_of_execution result = exec_extension_standardLib("standardLib_factorial");
     BufferedReader output = result.getBufferedReader();
-    assertEquals(result.getExit_code(), 0);
+    assertEquals(0, result.getExit_code());
     assertEquals("6", output.readLine());
   }
 
@@ -46,16 +46,8 @@ public class Extension_StandardLib_test {
   public void extension_standardLib_permutation() throws IOException, InterruptedException {
     Result_of_execution result = exec_extension_standardLib("standardLib_permutation");
     BufferedReader output = result.getBufferedReader();
-    assertEquals(result.getExit_code(), 0);
+    assertEquals(0, result.getExit_code());
     assertEquals("20", output.readLine());
-  }
-
-  @Test
-  public void extension_standardLib_sumArr() throws IOException, InterruptedException {
-    Result_of_execution result = exec_extension_standardLib("standardLib_sumArr");
-    BufferedReader output = result.getBufferedReader();
-    assertEquals(result.getExit_code(), 0);
-    assertEquals("10", output.readLine());
   }
 
   // ======================= Emulator =======================================

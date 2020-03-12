@@ -47,14 +47,5 @@ int perm(int a, int b) is
     fi
     end
 
-int sumArr(int[] a) is
-    int length = len a - 1;
-    int result = 0;
-    while length != -1 do
-        result = result + a[length];
-        length = length - 1
-    done;
-    return result
-    end
 skip
 end
