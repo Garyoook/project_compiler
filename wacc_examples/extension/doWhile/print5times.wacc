@@ -1,0 +1,9 @@
+begin
+int a = 0;
+do
+    print "repeat";
+    println a;
+    a = a + 1
+while (a != 5)
+done
+end

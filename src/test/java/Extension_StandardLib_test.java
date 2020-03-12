@@ -167,7 +167,7 @@ public class Extension_StandardLib_test {
 
   private Result_of_execution exec_extension_standardLib(String filename)
       throws IOException, InterruptedException {
-    String fp = "wacc_examples/extension/" + filename + ".wacc";
+    String fp = "wacc_examples/extension/standardLibrary/" + filename + ".wacc";
     emulator(fp);
     Runtime rt = Runtime.getRuntime();
     Process pr =

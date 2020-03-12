@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 public class Extension_DoWhile {
     @Test
-    public void extension_standardLib_pow() throws IOException, InterruptedException {
+    public void extension_print5times() throws IOException, InterruptedException {
         Result_of_execution result = exec_extension_doWhile("print5times");
         BufferedReader output = result.getBufferedReader();
         assertEquals(0, result.getExit_code());
