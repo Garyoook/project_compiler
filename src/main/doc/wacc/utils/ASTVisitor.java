@@ -259,10 +259,30 @@ public class ASTVisitor {
       String current = assembly.get(i);
       String next = assembly.get(i+1);
       if (current.equals(next)) {
+        // same operation
         result.add(current);
         i++;
       } else if (current.substring(1, 4).equals("STR")&&next.substring(1, 4).equals("LDR")&&current.substring(4).equals(next.substring(4))) {
+        // store then load immediately
         result.add(current);
+        i++;
+      } else if (current.substring(1, 4).equals("LDR")&&current.substring(current.length()-2).equals("=0")&&next.substring(1, 5).equals("ADDS")) {
+        // add zero
+        i++;
+      } else if (current.substring(1, 4).equals("LDR")&&current.substring(current.length()-2).equals("=1")&&next.substring(1, 6).equals("SMULL") {
+        // multiply one 
+        i++;
+      } else if (current.substring(1,4).equals("LDR")&&current.contains("=")
+      &&Integer.parseInt(current.substring(current.lastIndexOf('=')))>0 
+      &&Integer.parseInt(current.substring(current.lastIndexOf('=')))
+      ==Math.pow(2, Math.round(Math.log(Integer.parseInt(
+      current.substring(current.lastIndexOf('='))))/Math.log(2))
+      &&next.substring(1, 6).equals("SMULL")) {
+        // multiply power of 2
+        String dest = next.substring(6, firstIndexOf(','));
+        String src = current.substring(4, firstIndexOf(','));
+        int shift = Math.log(Integer.parseInt(current.substring(current.lastIndexOf('='))))/Math.log(2);
+        result.add("LSL " + dest + ", " + src + ", #" + shift);
         i++;
       } else {
         result.add(current);
