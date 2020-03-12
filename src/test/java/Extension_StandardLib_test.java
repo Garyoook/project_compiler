@@ -50,6 +50,14 @@ public class Extension_StandardLib_test {
     assertEquals("20", output.readLine());
   }
 
+  @Test
+  public void extension_standardLib_sumArr() throws IOException, InterruptedException {
+    Result_of_execution result = exec_extension_standardLib("standardLib_sumArr");
+    BufferedReader output = result.getBufferedReader();
+    assertEquals(result.getExit_code(), 0);
+    assertEquals("10", output.readLine());
+  }
+
   // ======================= Emulator =======================================
   public void emulator(String filepath) {
     StringBuilder sb = new StringBuilder();
