@@ -115,7 +115,7 @@ public class extention_pointer_test {
 
 
     private Result_of_execution exec_extension_ptr(String filename) throws IOException, InterruptedException {
-        String fp = "wacc_examples/valid/ptr_test/" + filename + ".wacc";
+        String fp = "wacc_examples/valid/extension_ptr_test/" + filename + ".wacc";
         emulator(fp);
         Runtime rt = Runtime.getRuntime();
         Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
