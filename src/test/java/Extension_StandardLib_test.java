@@ -23,7 +23,7 @@ public class Extension_StandardLib_test {
     Result_of_execution result = exec_extension_standardLib("standardLib_pow");
     BufferedReader output = result.getBufferedReader();
     assertEquals(result.getExit_code(), 0);
-    assertEquals(output.readLine(), "8");
+    assertEquals("8", output.readLine());
   }
 
   @Test
@@ -31,7 +31,7 @@ public class Extension_StandardLib_test {
     Result_of_execution result = exec_extension_standardLib("standardLib_fabs");
     BufferedReader output = result.getBufferedReader();
     assertEquals(result.getExit_code(), 0);
-    assertEquals(output.readLine(), "10");
+    assertEquals("10", output.readLine());
   }
 
   @Test
@@ -39,7 +39,7 @@ public class Extension_StandardLib_test {
     Result_of_execution result = exec_extension_standardLib("standardLib_factorial");
     BufferedReader output = result.getBufferedReader();
     assertEquals(result.getExit_code(), 0);
-    assertEquals(output.readLine(), "6");
+    assertEquals("6", output.readLine());
   }
 
   @Test
@@ -47,7 +47,7 @@ public class Extension_StandardLib_test {
     Result_of_execution result = exec_extension_standardLib("standardLib_permutation");
     BufferedReader output = result.getBufferedReader();
     assertEquals(result.getExit_code(), 0);
-    assertEquals(output.readLine(), "10");
+    assertEquals("20", output.readLine());
   }
 
   // ======================= Emulator =======================================
