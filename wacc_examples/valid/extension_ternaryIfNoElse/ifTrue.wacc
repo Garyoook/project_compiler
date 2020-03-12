@@ -6,9 +6,7 @@
 # Program:
 
 begin
-  if true
-  then
-    println "here"
-  fi
+  true ? println "here"
+
 end
 

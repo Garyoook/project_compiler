@@ -6,9 +6,7 @@
 # Program:
 
 begin
-  if false
-  then
-    println "not here"
-  fi
+  false ? println "not here"
+
 end
 

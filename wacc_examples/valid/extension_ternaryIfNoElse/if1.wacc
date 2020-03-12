@@ -7,8 +7,5 @@
 
 begin
   int a = 13;	
-  if true 
-  then 
-    println "correct"
-  fi
+  true ? println "correct"
 end

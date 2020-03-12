@@ -8,8 +8,5 @@
 begin
   bool b = true;
   bool c = false;	
-  if b && c 
-  then 
-    println "incorrect"
-  fi
+  b && c ? println "incorrect"
 end

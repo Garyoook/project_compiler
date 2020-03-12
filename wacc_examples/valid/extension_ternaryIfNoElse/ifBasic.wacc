@@ -6,9 +6,6 @@
 # Program:
 
 begin
-  if true 
-  then
-    skip
-  fi
+  true ? skip
 end
 
