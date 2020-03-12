@@ -282,7 +282,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return if_Ast;
   }
 
-  @Override public AST visitLamdaIf(BasicParser.LamdaIfContext ctx) {
+  @Override public AST visitTernaryIf(BasicParser.TernaryIfContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     SymbolTable thenSymbolTable = symbolTable;
     currentLine = ctx.getStart().getLine();
@@ -710,7 +710,7 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new ProgramAST(libASTS, funcASTS, visitStat(ctx.stat()));
   }
 
-  public AST visitLamdaIfnoElse(BasicParser.LamdaIfnoElseContext ctx) {
+  public AST visitTernaryIfnoElse(BasicParser.TernaryIfnoElseContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     SymbolTable thenSymbolTable = symbolTable;
     currentLine = ctx.getStart().getLine();
@@ -766,8 +766,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       if (statContext instanceof IfthennoelseContext) {
         return visitIfthennoelse((IfthennoelseContext) statContext);
       }
-      if (statContext instanceof LamdaIfContext) {
-        return visitLamdaIf((LamdaIfContext) statContext);
+      if (statContext instanceof TernaryIfContext) {
+        return visitTernaryIf((TernaryIfContext) statContext);
       }
       if (statContext instanceof DeclarationContext) {
         return visitDeclaration((DeclarationContext) statContext);
@@ -793,8 +793,8 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       if (statContext instanceof IfthenesleContext) {
         return visitIfthenesle((IfthenesleContext) statContext);
       }
-      if (statContext instanceof LamdaIfnoElseContext) {
-        return visitLamdaIfnoElse((LamdaIfnoElseContext) statContext);
+      if (statContext instanceof TernaryIfnoElseContext) {
+        return visitTernaryIfnoElse((TernaryIfnoElseContext) statContext);
       }
       if (statContext instanceof WhileloopContext) {
         return visitWhileloop((WhileloopContext) statContext);

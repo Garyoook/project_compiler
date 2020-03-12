@@ -103,8 +103,8 @@ stat: ASKIP                      #askip
 | EXIT expr                      #exit
 | PRINT expr                     #print
 | PRINTLN expr                   #println
-| expr QUEST stat COL stat       #lamdaIf
-| expr QUEST stat                #lamdaIfnoElse
+| expr QUEST stat COL stat       #ternaryIf
+| expr QUEST stat                #ternaryIfnoElse
 | IF expr THEN stat FI           #ifthennoelse
 | IF expr THEN stat ELSE stat FI #ifthenesle
 | WHILE expr DO stat DONE        #whileloop

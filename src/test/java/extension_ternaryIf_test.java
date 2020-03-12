@@ -18,11 +18,54 @@ import static java.lang.System.exit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class extension_lamdaNoElse_test {
+public class extension_ternaryIf_test {
 
     @Test
-    public void extension_lamdaNoElse1() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if1");
+    public void extension_ternaryIf1() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if1");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+
+        assertEquals(myOutput.readLine(), "happy");
+    }
+
+
+    @Test
+    public void extension_ternaryIf2() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if2");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIf3() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if3");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIf4() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if4");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIf5() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if5");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIf6() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("if6");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 0);
         assertEquals(myOutput.readLine(), "correct");
@@ -30,73 +73,31 @@ public class extension_lamdaNoElse_test {
 
 
     @Test
-    public void extension_lamdaNoElse2() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if2");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-        assertNull(myOutput.readLine());
-    }
-
-    @Test
-    public void extension_lamdaNoElse3() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if3");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-        assertEquals(myOutput.readLine(), "correct");
-    }
-
-    @Test
-    public void extension_lamdaNoElse4() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if4");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-        assertNull(myOutput.readLine());
-    }
-
-    @Test
-    public void extension_lamdaNoElse5() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if5");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-        assertEquals(myOutput.readLine(), "correct");
-    }
-
-    @Test
-    public void extension_lamdaNoElse6() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("if6");
-        BufferedReader myOutput = result.getBufferedReader();
-        assertEquals(result.getExit_code(), 0);
-        assertNull(myOutput.readLine());
-    }
-
-
-    @Test
-    public void extension_lamdaNoElseBasic() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("ifBasic");
+    public void extension_ternaryIfBasic() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("ifBasic");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 0);
         assertEquals(myOutput.readLine(), null);
     }
 
     @Test
-    public void extension_lamdaNoElseTrue() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("ifTrue");
+    public void extension_ternaryIfTrue() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("ifTrue");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 0);
         assertEquals(myOutput.readLine(), "here");
     }
 
     @Test
-    public void extension_lamdaNoElseFalse() throws IOException, InterruptedException {
-        Result_of_execution result = exec_extension_lamdaNoElse("ifFalse");
+    public void extension_ternaryIfFalse() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIf("ifFalse");
         BufferedReader myOutput = result.getBufferedReader();
         assertEquals(result.getExit_code(), 0);
-        assertEquals(myOutput.readLine(), null);
+        assertEquals(myOutput.readLine(), "here");
     }
 
-
-    private Result_of_execution exec_extension_lamdaNoElse(String filename) throws IOException, InterruptedException {
-        String fp = "wacc_examples/valid/extension_lamdaNoElse/" + filename + ".wacc";
+    private Result_of_execution exec_extension_ternaryIf(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/extension_ternaryIf/" + filename + ".wacc";
         emulator(fp);
         Runtime rt = Runtime.getRuntime();
         Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
@@ -210,4 +211,3 @@ public class extension_lamdaNoElse_test {
 
     }
 }
-
