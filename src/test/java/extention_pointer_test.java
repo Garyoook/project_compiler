@@ -53,6 +53,13 @@ public class extention_pointer_test {
     }
 
     @Test
+    public void extension_ptrNull() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ptr("ptrNull");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 139);
+    }
+
+    @Test
     public void extension_ptrString() throws IOException, InterruptedException {
         Result_of_execution result = exec_extension_ptr("ptrStr");
         BufferedReader myOutput = result.getBufferedReader();
