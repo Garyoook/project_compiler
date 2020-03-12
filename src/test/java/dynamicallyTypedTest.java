@@ -2370,6 +2370,7 @@ public class dynamicallyTypedTest {
       BasicParser basicParser = new BasicParser(stream);
       basicParser.addErrorListener(errorListener);
       CompilerVisitor visitor = new CompilerVisitor();
+      visitor.setDynamically_Typed();
 
       System.out.println("Compiling from source: " + filepath + ":");
       AST ast = visitor.visitProg(basicParser.prog());
