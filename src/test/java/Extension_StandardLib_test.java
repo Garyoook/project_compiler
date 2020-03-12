@@ -20,19 +20,10 @@ import static org.junit.Assert.assertEquals;
 public class Extension_StandardLib_test {
         @Test
         public void extension_standardLib_pow() throws IOException, InterruptedException {
-            String fp = "wacc_examples/extension/standardLib_pow.wacc";
-            emulator(fp);
-
-            Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s charComparisonExpr.s");
-            pr.waitFor();
-            Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
-            pr2.waitFor();
-            OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
-            int myExitCode = pr2.exitValue();
-
-            assertEquals(bufferedReader.readLine(), "8");
+            Result_of_execution result = exec_extension_standardLib("standardLib_pow");
+            BufferedReader output = result.getBufferedReader();
+            assertEquals(result.getExit_code(), 0);
+            assertEquals(output.readLine(), "8");
         }
 
         // ======================= Emulator =======================================
@@ -115,4 +106,36 @@ public class Extension_StandardLib_test {
             }
             ErrorMessage.errorWriter();
         }
+
+    private static class Result_of_execution {
+        private BufferedReader bufferedReader;
+        private int exit_code;
+
+
+        private Result_of_execution(BufferedReader bufferedReader, int exit_code) {
+            this.bufferedReader = bufferedReader;
+            this.exit_code = exit_code;
+        }
+
+        public BufferedReader getBufferedReader() {
+            return bufferedReader;
+        }
+
+        public int getExit_code() {
+            return exit_code;
+        }
+    }
+
+    private Result_of_execution exec_extension_standardLib(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/extension/" + filename + ".wacc";
+        emulator(fp);
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
+        pr.waitFor();
+        Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+        pr2.waitFor();
+        OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
 }
