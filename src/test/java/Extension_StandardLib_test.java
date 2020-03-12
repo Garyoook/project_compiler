@@ -32,7 +32,6 @@ public class Extension_StandardLib_test {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
             int myExitCode = pr2.exitValue();
 
-            assertEquals(myExitCode, 0);
             assertEquals(bufferedReader.readLine(), "8");
         }
 
