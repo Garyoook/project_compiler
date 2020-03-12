@@ -29,7 +29,7 @@ public class AssignAST extends AST {
         type = symbolTable.getVariable(lhs.getLhsContext().getText());
       }
 
-      if (type == null) {
+      if (type.equals(errorType())) {
         ErrorMessage.addSemanticError(lhs.getLhsContext().getText() + " is not defined" +
             " at line:" + currentLine + ":" +
             currentCharPos);

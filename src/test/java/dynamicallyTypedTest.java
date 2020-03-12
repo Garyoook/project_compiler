@@ -332,7 +332,7 @@ public class dynamicallyTypedTest {
 
   @Test
   public void multiTypeErrs() throws IOException, InterruptedException {
-    String fp = "dynamically_typed_tests/invalid/multiple/became_invalid/multiTypeErrs.wacc";
+    String fp = "dynamically_typed_tests/invalid/multiple/became_valid/multiTypeErrs.wacc";
     emulator(fp);
     Runtime rt = Runtime.getRuntime();
     Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "multiTypeErrs" + ".s");
@@ -342,7 +342,7 @@ public class dynamicallyTypedTest {
     OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
 
-    assertEquals(pr2.exitValue(), 255);
+    assertEquals(pr2.exitValue(), 0);
   }
 
   @Test
@@ -1549,7 +1549,16 @@ public class dynamicallyTypedTest {
 
   @Test
   public void backend_scope_scopeRedefine() throws IOException, InterruptedException {
-    Result_of_execution result = exec_scope("became_invalid/scopeRedefine");
+    String fp = "dynamically_typed_tests/valid/scope/became_invalid/scopeRedefine.wacc";
+    emulator(fp);
+    Runtime rt = Runtime.getRuntime();
+    Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + "scopeRedefine" + ".s");
+    pr.waitFor();
+    Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
+    pr2.waitFor();
+    OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
+    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
+    Result_of_execution result = new Result_of_execution(bufferedReader, pr2.exitValue());
     BufferedReader myOutput = result.getBufferedReader();
 //    assertEquals(myOutput.readLine(), "true");
 //    assertEquals(myOutput.readLine(), "2");
