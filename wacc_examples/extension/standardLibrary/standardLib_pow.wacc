@@ -1,0 +1,6 @@
+begin
+import Math.wacc
+
+int a = call pow(2, 3);
+println a
+end
