@@ -5,6 +5,7 @@ import doc.wacc.utils.SymbolTable;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
+import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
 import static java.lang.System.exit;
 
 public class IfAst extends AST {
@@ -20,9 +21,11 @@ public class IfAst extends AST {
     this.elsebranch = elsebranch;
     this.thenSymbolTable = symbolTable;
 
-    if (!is_bool(expr)) {
-      ErrorMessage.addSemanticError("wrong type in If condition, should be bool" +
-              " at line:" + currentLine + ":" + currentCharPos);
+    if (!dynamically_Typed) {
+      if (!is_bool(expr)) {
+        ErrorMessage.addSemanticError("wrong type in If condition, should be bool" +
+            " at line:" + currentLine + ":" + currentCharPos);
+      }
     }
   }
 

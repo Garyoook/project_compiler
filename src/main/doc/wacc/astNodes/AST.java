@@ -80,6 +80,14 @@ public abstract class AST {
     }
   }
 
+  public static boolean is_Array(AST exp) {
+    if (exp instanceof IdentNode) {
+      return symbolTable.getVariable(((IdentNode) exp).getIdent()) instanceof Type.ArrayType;
+    } else {
+      return exp instanceof Type.ArrayType;
+    }
+  }
+
   public static boolean is_Char(AST exp) {
     if (exp instanceof ArrayElemNode) {
       Type type = symbolTable.getVariable(((ArrayElemNode) exp).getName());

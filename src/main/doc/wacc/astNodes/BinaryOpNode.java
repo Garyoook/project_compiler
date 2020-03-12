@@ -6,6 +6,7 @@ import doc.wacc.utils.ErrorMessage;
 import static antlr.BasicParser.*;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
+import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
 import static java.lang.System.exit;
 import static java.lang.System.mapLibraryName;
 
@@ -20,9 +21,11 @@ public class BinaryOpNode extends AST{
     this.expr1 = expr1;
     this.expr2 = expr2;
 
-    if (!(is_int(expr1) && is_int(expr2))) {
-      ErrorMessage.addSemanticError("wrong type in " + operContext.getText() +
-              " at line:" + currentLine + ":" + currentCharPos);
+    if (!dynamically_Typed) {
+      if (!(is_int(expr1) && is_int(expr2))) {
+        ErrorMessage.addSemanticError("wrong type in " + operContext.getText() +
+            " at line:" + currentLine + ":" + currentCharPos);
+      }
     }
   }
 
@@ -31,11 +34,13 @@ public class BinaryOpNode extends AST{
     this.expr1 = expr1;
     this.expr2 = expr2;
 
-    if (!(is_int(expr1) && is_int(expr2))) {
-      System.out.println("Semantic error: wrong type in " + operContext.getText() +
-              " at line:" + currentLine + ":" + currentCharPos +
-              "\nExit code 200 returned");
-      exit(200);
+    if (!dynamically_Typed) {
+      if (!(is_int(expr1) && is_int(expr2))) {
+        System.out.println("Semantic error: wrong type in " + operContext.getText() +
+            " at line:" + currentLine + ":" + currentCharPos +
+            "\nExit code 200 returned");
+        exit(200);
+      }
     }
   }
 
@@ -50,6 +55,14 @@ public class BinaryOpNode extends AST{
 
   public AST getExpr2() {
     return expr2;
+  }
+
+  public boolean isOperContext() {
+    return operContext != null;
+  }
+
+  public boolean isHignp_bin_opContext() {
+    return hignp_bin_opContext != null;
   }
 
   public boolean isPlus() {
