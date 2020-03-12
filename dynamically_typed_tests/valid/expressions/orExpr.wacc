@@ -1,0 +1,16 @@
+# evaluating or
+
+# Output:
+# true
+# true
+# false
+
+# Program:
+
+begin
+  a = true ;
+  b = false ;
+  println a || b ;
+  println a || true ;
+  println b || false
+end

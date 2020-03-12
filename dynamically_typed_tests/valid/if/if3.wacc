@@ -1,0 +1,17 @@
+# Simple conditional statement with int comparison test
+
+# Output:
+# correct
+
+# Program:
+
+begin
+  a = 13;	
+  b = 37;
+  if a < b 
+  then 
+    println "correct"
+  else 
+    println "incorrect"
+  fi
+end

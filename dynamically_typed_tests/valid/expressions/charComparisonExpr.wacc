@@ -1,0 +1,23 @@
+# detailed battery of character comparison tests
+
+# Output:
+# false
+# true
+# true
+# true
+# false
+# false
+
+# Program:
+
+begin
+  c1 = 'a' ;
+  c2 = 'z' ;
+  println c1 == c2 ;
+  println c1 != c2 ;
+  println c1 < c2 ;
+  println c1 <= c2 ;
+  println c1 > c2 ;
+  println c1 >= c2
+end
+

@@ -1,0 +1,15 @@
+# type mismatch: int <- char
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  x = 4 ;
+  y = 'a' ;
+  println x + y
+end

@@ -1,0 +1,13 @@
+# expresission type mismatch bool->int
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  x = true + false
+end

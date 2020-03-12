@@ -1,0 +1,18 @@
+# print a pair of null pairs 
+
+# Output:
+# #addrs# = ((nil),(nil))
+
+# Program:
+
+begin
+  p = newpair(null, null) ;
+  print p ;
+  print " = (" ;
+  q = fst p ;
+  print q ;
+  print "," ;
+  r = snd p ;
+  print r ; 
+  println ")"
+end

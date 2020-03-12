@@ -1,0 +1,10 @@
+# simple string variable declaration
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  s = "Hello World!"
+end

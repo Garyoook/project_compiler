@@ -1,0 +1,125 @@
+# Tests scoping with most variable types
+
+# Output:
+# ( [1, 2, 3] , [a, b, c] )
+# [ #addrs# = (a, true), #addrs# = (b, false) ]
+# 1, 2
+# array, of, strings
+# true, false, true
+# xyz
+# 1, 2, 3
+# this is a string
+# true
+# x
+# 5
+
+# Program:
+
+begin
+
+  comma = ", ";
+  x = 5;
+  begin
+    x = 'x';    
+    begin
+      x = true;    
+      begin
+        x = "this is a string";    
+        begin
+          x = [1,2,3];    
+          begin
+            x = ['x', 'y', 'z'];    
+            begin
+              x = [true, false, true];
+              begin
+                x = ["array", "of", "strings"];
+                begin
+                  x = newpair(1, 2);
+                  begin
+                    y = newpair('a', true);
+                    z = newpair('b', false);
+                    x = [y, z];
+                    begin
+                      y = [1, 2, 3];
+                      z = ['a', 'b', 'c'];
+                      x = newpair(y, z);
+                      begin
+                        skip
+                      end;
+                      a = fst x;
+                      b = snd x;
+                      print "( [";
+                      print a[0];
+                      print comma;
+                      print a[1];
+                      print comma;
+                      print a[2];
+                      print "] , [";
+                      print b[0];
+                      print comma;
+                      print b[1];
+                      print comma;
+                      print b[2];
+                      println "] )" # ( [fst x] , [snd x] )
+                    end;
+                    a = x[0];
+                    aa = fst a;
+                    ab = snd a;
+                    b = x[1];
+                    ba = fst b;
+                    bb = snd b;
+                    print "[ ";
+                    print a;
+                    print " = (";
+                    print aa;
+                    print comma;
+                    print ab;
+                    print "), ";
+                    print b;
+                    print " = (";
+                    print ba;
+                    print comma;
+                    print bb;
+                    println ") ]" # [ x[0], x[1] ]
+                  end;
+                  y = fst x;
+                  z = snd x;
+                  print y; 
+                  print comma;
+                  println z # fst x, snd x
+                end;
+                a = x[0];
+                b = x[1];
+                c = x[2];
+                print a;
+                print comma;
+                print b;
+                print comma;
+                println c # string[]
+              end;
+              print x[0];
+              print comma;
+              print x[1];
+              print comma;
+              println x[2] # bool[]
+            end;
+            println x # char[]
+          end;
+          a = x[0];
+          b = x[1];
+          c = x[2];
+          print a;
+          print comma;
+          print b;
+          print comma;
+          println c # int[]
+        end;
+        println x # string
+      end;
+      println x # bool
+    end;
+    println x # char
+  end;
+  println x # int
+
+end

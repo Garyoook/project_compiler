@@ -1,0 +1,17 @@
+# variable scoping test that redefines a variable
+
+# Output:
+# true
+# 12
+
+# Program:
+
+begin
+  x = 12 ;
+  begin
+    x = true ;
+    println x
+  end ;
+  println x 
+end
+
