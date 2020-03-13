@@ -32,7 +32,7 @@ public class ASTVisitor {
   private int pushCounter = 0;     // for counting the number of pushing registers to stack
   private int mallocCounter = 0;   // for array
 
-  private boolean optimization = false;
+  private boolean optimisation = true;
 
   private boolean println = false;   // indicate if println is called in wacc code.
                                      // if yes, print corresponding assembly code
@@ -217,9 +217,8 @@ public class ASTVisitor {
       visitStringNode(new StringNode("\"%.*s\\0\""));
     }
 
-    if (optimization) {
+    if (optimisation) {
       main = optimize(main);
-      printcodes = optimize(printcodes);
     }
 
     // print data list
@@ -269,20 +268,20 @@ public class ASTVisitor {
       } else if (current.substring(1, 4).equals("LDR")&&current.substring(current.length()-2).equals("=0")&&next.substring(1, 5).equals("ADDS")) {
         // add zero
         i++;
-      } else if (current.substring(1, 4).equals("LDR")&&current.substring(current.length()-2).equals("=1")&&next.substring(1, 6).equals("SMULL") {
+      } else if (current.substring(1, 4).equals("LDR")&&current.substring(current.length()-2).equals("=1")&&next.substring(1, 6).equals("SMULL")) {
         // multiply one 
         i++;
       } else if (current.substring(1,4).equals("LDR")&&current.contains("=")
-      &&Integer.parseInt(current.substring(current.lastIndexOf('=')))>0 
-      &&Integer.parseInt(current.substring(current.lastIndexOf('=')))
-      ==Math.pow(2, Math.round(Math.log(Integer.parseInt(
-      current.substring(current.lastIndexOf('='))))/Math.log(2))
-      &&next.substring(1, 6).equals("SMULL")) {
+          &&Integer.parseInt(current.substring(current.lastIndexOf('=')+1))>0
+          &&Integer.parseInt(current.substring(current.lastIndexOf('=')+1))
+          ==Math.pow(2, Math.round(Math.log(Integer.parseInt(
+          current.substring(current.lastIndexOf('=')+1)))/Math.log(2)))
+          &&next.substring(1, 6).equals("SMULL")) {
         // multiply power of 2
-        String dest = next.substring(6, firstIndexOf(','));
-        String src = current.substring(4, firstIndexOf(','));
-        int shift = Math.log(Integer.parseInt(current.substring(current.lastIndexOf('='))))/Math.log(2);
-        result.add("LSL " + dest + ", " + src + ", #" + shift);
+        String dest = next.substring(7, next.indexOf(','));
+        String src = current.substring(5, current.indexOf(','));
+        int shift = (int) (Math.log(Integer.parseInt(current.substring(current.lastIndexOf('=')+1)))/Math.log(2));
+        result.add("\tLSL " + dest + ", " + src + ", #" + shift);
         i++;
       } else {
         result.add(current);
