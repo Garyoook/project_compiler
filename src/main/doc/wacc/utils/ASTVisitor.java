@@ -349,9 +349,8 @@ public class ASTVisitor {
           &&next.substring(1, 6).equals("SMULL")) {
         // multiply power of 2
         String dest = next.substring(7, next.indexOf(','));
-        String src = current.substring(5, current.indexOf(','));
         int shift = (int) (Math.log(Integer.parseInt(current.substring(current.lastIndexOf('=')+1)))/Math.log(2));
-        result.add("\tLSL " + dest + ", " + src + ", #" + shift);
+        result.add("\tLSL " + dest + ", " + dest + ", #" + shift);
         i++;
       } else {
         result.add(current);
