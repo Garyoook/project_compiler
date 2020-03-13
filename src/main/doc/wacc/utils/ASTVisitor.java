@@ -346,7 +346,8 @@ public class ASTVisitor {
           &&Integer.parseInt(current.substring(current.lastIndexOf('=')+1))
           ==Math.pow(2, Math.round(Math.log(Integer.parseInt(
           current.substring(current.lastIndexOf('=')+1)))/Math.log(2)))
-          &&next.substring(1, 6).equals("SMULL")) {
+          &&next.substring(1, 6).equals("SMULL")
+          &&!assembly.get(i+3).equals("\tBLNE p_throw_overflow_error")) {
         // multiply power of 2
         String dest = next.substring(7, next.indexOf(','));
         int shift = (int) (Math.log(Integer.parseInt(current.substring(current.lastIndexOf('=')+1)))/Math.log(2));
