@@ -747,6 +747,10 @@ public class ASTVisitor {
 
     int variableStackPosition = symbolTable.getStackTable(lhsast.getLhsName());
 
+    if (is_ptr) {
+      variableStackPosition = symbolTable.getStackTable(lhsast.getLhsContext().ident().IDENT().getText());
+    }
+
     if (variableStackPosition != -1 && ! is_ptr) {
       if (in_func && variableStackPosition <= symbolTable.getParamCounter()) {
         codes.add(
@@ -1210,7 +1214,7 @@ public class ASTVisitor {
       }
     } else if (ast instanceof CallAST) {
       visitCallAst((CallAST) ast, codes, reg_counter);
-    } else if (ast instanceof ArrayElemNode) {
+    } else if (ast instanceof ArrayElemNode && symbolTable.getVariable(((ArrayElemNode) ast).getName()) instanceof ArrayType) {
       int arrayIndexReg = reg_counter + mallocCounter;   // find out the correct register for array
       codes.add(
           ADD(
@@ -1648,7 +1652,7 @@ public class ASTVisitor {
       } else if (type.equals(charType())) {
         readType = "char";
       }
-      if (ast.getLhs().getLhsContext().ident().IDENT() == null) {
+      if (ast.getLhs().getLhsContext().ident() == null) {
         codes.add(LDR_reg(paramReg, SP));
         codes.add(MOV(resultReg, paramReg));
         codes.add(BL("p_check_null_pointer"));
