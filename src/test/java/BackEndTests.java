@@ -21,8 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.*;
 
-public class backEndTests {
-
+public class BackEndTests {
     // do not run in IDE, run all the tests using commandline:
     // ```mvn test:jute``` or just ```mvn test ```
     // to run all the tests
@@ -315,7 +314,6 @@ public class backEndTests {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
         int myExitCode = pr2.exitValue();
         String myOutput = bufferedReader.readLine();
-
         assertEquals(myExitCode, 153);
         assertNull(myOutput);
     }

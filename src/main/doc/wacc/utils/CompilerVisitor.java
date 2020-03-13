@@ -1,10 +1,15 @@
 package doc.wacc.utils;
 
+import antlr.BasicLexer;
+import antlr.BasicParser;
 import antlr.BasicParserBaseVisitor;
 import doc.wacc.utils.Type.ArrayType;
 import doc.wacc.utils.Type.BaseType;
 import doc.wacc.utils.Type.BaseTypeKind;
 import doc.wacc.astNodes.*;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 
 import javax.lang.model.element.TypeElement;
 
@@ -12,10 +17,11 @@ import static antlr.BasicParser.*;
 import static doc.wacc.astNodes.AST.symbolTable;
 import static doc.wacc.astNodes.AssignAST.*;
 import static doc.wacc.utils.Type.*;
+import static java.lang.System.exit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
 
 public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
@@ -58,11 +64,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitInt_sign(Int_signContext ctx) { return visitChildren(ctx); }
 
   @Override public AST visitInt_liter(Int_literContext ctx) {
-    if (ctx.int_sign() == null) {
-      return new IntNode(Integer.parseInt(ctx.getText()));
-    }
-    if (ctx.int_sign().getText().equals("-")) {
-      return new IntNode(Integer.parseInt(ctx.getText()));
+    if (ctx.BINARY()!=null) {
+      String binary = ctx.getText().substring(2);
+      int result = 0;
+      for (int i = 0; i < binary.length(); i++) {
+        result += Math.pow(2, i) * Integer.parseInt(String.valueOf(binary.charAt(binary.length()-i-1)));
+      }
+      return new IntNode(result);
+    } else if (ctx.HEXADECIMAL()!=null) {
+      String hexadecimal = ctx.getText().substring(2);
+      return new IntNode(Integer.parseInt(hexadecimal, 16));
     } else {
       return new IntNode(Integer.parseInt(ctx.getText()));
     }
@@ -90,6 +101,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitExpr(ExprContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
+    if (ctx.unary_ref() != null) {
+      return (new RefNode(ctx.ident().getText()));
+    } else
+    if (ctx.unary_deref() != null) {
+      return (new DerefNode(ctx.ident().getText(), ctx.unary_deref().TIME().size()));
+    } else
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
@@ -298,6 +315,76 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), rhsAst);
   }
 
+
+  @Override public AST visitIfthennoelse(BasicParser.IfthennoelseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
+  @Override public AST visitTernaryIf(BasicParser.TernaryIfContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat(0));
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = visitStat(ctx.stat(1));
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
+
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
     SymbolTable thenSymbolTable = symbolTable;
@@ -389,7 +476,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+
+    if (ctx.ident().ptr().size() > 0) {
+      return new DeclarationAst(new PtrType(visitType(ctx.type())), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+    }
+    return new DeclarationAst(visitType(ctx.type()), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
@@ -397,6 +488,16 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     AST ast = new WhileAst(visitExpr(ctx.expr()), visitStat(ctx.stat()), symbolTable);
+    symbolTable = symbolTable.previousScope();
+    return ast;
+  }
+
+  @Override
+  public AST visitDowhileloop(DowhileloopContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    AST ast = new DoWhileAST(visitStat(ctx.stat()), visitExpr(ctx.expr()), symbolTable);
     symbolTable = symbolTable.previousScope();
     return ast;
   }
@@ -522,6 +623,89 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return visitChildren(ctx);
   }
 
+  @Override
+  public AST visitLibraries(LibrariesContext ctx) {
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+
+    ProgramAST progInLib = getProgramFromWACC("wacc_standard_libraries/" + ctx.IDENT().getText() + ".wacc");
+
+    if (!(progInLib.getMainProgram() instanceof SkipAst)) {
+      // if the miported library has any main body except for Skip, report an syntax error.
+      ErrorMessage.addSyntaxError("The imported Library file "+ctx.IDENT().getText() +
+                      ".wacc is not a valid library! \n at line:" + currentLine + ":" +
+              currentCharPos);
+      return new ErrorAST();
+    }
+
+    return new LibAST(ctx.IDENT().getText(), progInLib.getFunctions());
+  }
+
+  public ProgramAST getProgramFromWACC(String path) {
+    StringBuilder sb = new StringBuilder();
+    try {
+      // the file to be opened for reading
+      FileInputStream fis = new FileInputStream(path);
+      Scanner sc = new Scanner(fis); // file to be scanned
+      // returns true if there is another line to read
+      while (sc.hasNextLine()) {
+        sb.append(sc.nextLine()).append("\n");
+      }
+      sc.close(); // closes the scanner
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    ANTLRInputStream input = new ANTLRInputStream(sb.toString());
+    BasicLexer lexer = new BasicLexer(input);
+
+    ANTLRErrorListener errorListener = new ANTLRErrorListener() {
+      @Override
+      public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+                              String msg, RecognitionException e) {
+        System.out.println("Syntax Error: parse error in ANTLR error listener\n" +
+                "\tat line "+line+":"+charPositionInLine+" \n\tat "+
+                offendingSymbol+": "+msg +
+                "\nExit code 100 returned");
+        exit(100);
+      }
+
+      @Override
+      public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
+
+      }
+
+      @Override
+      public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
+
+      }
+
+      @Override
+      public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
+
+      }
+    };
+
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(errorListener);
+    CommonTokenStream stream = new CommonTokenStream(lexer);
+
+    try {
+      BasicParser basicParser = new BasicParser(stream);
+      basicParser.addErrorListener(errorListener);
+      CompilerVisitor visitor = new CompilerVisitor();
+
+      System.out.println("Compiling from source: " + path + ":");
+      AST ast = visitor.visitProg(basicParser.prog());
+//      System.out.println(ast);
+      ProgramAST progAST = (ProgramAST) ast;
+      return progAST;
+    } catch (NumberFormatException e) {
+      ErrorMessage.addSyntaxError("Integer overflow");
+    }
+    ErrorMessage.errorWriter();
+    return null;
+  }
+
   @Override public AST visitFunc(FuncContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
@@ -560,6 +744,21 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     ArrayList<FuncAST> funcASTS = new ArrayList<>();
+
+    // GG's extension: adding imported libraries...
+    ArrayList<LibAST> libASTS = new ArrayList<>();
+
+    if (!ctx.libraries().isEmpty()) {
+      for (LibrariesContext libCxt : ctx.libraries()) {
+        AST temp = visitLibraries(libCxt);
+        if (!(temp instanceof ErrorAST)) {
+          libASTS.add((LibAST) temp);
+        }
+      }
+    }
+
+    //=========================================================================
+
     for (FuncContext funcContext:ctx.func()) {
       List<Type> types = new ArrayList<>();
       types.add(visitType(funcContext.type()));
@@ -584,7 +783,42 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
     }
 
-    return new ProgramAST(funcASTS, visitStat(ctx.stat()));
+
+    return new ProgramAST(libASTS, funcASTS, visitStat(ctx.stat()));
+  }
+
+  public AST visitTernaryIfnoElse(BasicParser.TernaryIfnoElseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
   }
 
 
@@ -604,6 +838,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof AskipContext) {
         return visitAskip((AskipContext) statContext);
+      }
+
+      if (statContext instanceof IfthennoelseContext) {
+        return visitIfthennoelse((IfthennoelseContext) statContext);
+      }
+      if (statContext instanceof TernaryIfContext) {
+        return visitTernaryIf((TernaryIfContext) statContext);
       }
       if (statContext instanceof DeclarationContext) {
         return visitDeclaration((DeclarationContext) statContext);
@@ -629,8 +870,14 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       if (statContext instanceof IfthenesleContext) {
         return visitIfthenesle((IfthenesleContext) statContext);
       }
+      if (statContext instanceof TernaryIfnoElseContext) {
+        return visitTernaryIfnoElse((TernaryIfnoElseContext) statContext);
+      }
       if (statContext instanceof WhileloopContext) {
         return visitWhileloop((WhileloopContext) statContext);
+      }
+      if (statContext instanceof DowhileloopContext) {
+        return visitDowhileloop((DowhileloopContext) statContext);
       }
       if (statContext instanceof BlockContext) {
         return visitBlock((BlockContext) statContext);

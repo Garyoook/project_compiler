@@ -2,6 +2,11 @@ lexer grammar BasicLexer;
 @header {
 package antlr;
 }
+
+QUEST: '?';
+COL: ':';
+
+
 // program
 BEGIN: 'begin';
 END: 'end';
@@ -17,14 +22,18 @@ TRUE: 'true';
 FALSE: 'false';
 
 fragment DIGIT: '0'..'9' ;
+fragment HEX: '0'..'9'|'A'..'F'|'a'..'f' ;
 
 // unary operators
 NOT: '!' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
+REF: '&';
 
 ALLINT: (DIGIT)+ ;
+BINARY: '0b'('0'|'1')+ ;
+HEXADECIMAL: '0x'(HEX)+ ;
 
 // binary operators
 PLUS: '+' ;
@@ -46,6 +55,8 @@ B_OR: '||' ;
 
 
 // stat
+IMPORT: 'import';
+WACCSUFFIX: '.wacc';
 READ: 'read';
 FREE: 'free';
 RETURN: 'return';

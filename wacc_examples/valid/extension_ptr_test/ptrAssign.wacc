@@ -1,0 +1,13 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# 5
+
+# Program:
+
+begin
+  int k = 1 ;
+  int* j = &k;
+  *j = 5;
+  println k
+end

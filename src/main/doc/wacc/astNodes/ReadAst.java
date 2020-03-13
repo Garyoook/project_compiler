@@ -63,7 +63,7 @@ public class ReadAst extends AST {
 
   @Override
   public String toString() {
-    return "reading from: " + lhs.getLhsContext().IDENT().getText() + "\n";
+    return "reading from: " + lhs.getLhsContext().ident().IDENT().getText() + "\n";
   }
 
   public Type getType() {

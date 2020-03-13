@@ -1,0 +1,12 @@
+# Simple conditional statement with boolen expression test
+
+# Output:
+# correct
+
+# Program:
+
+begin
+  bool b = true;
+  bool c = false;	
+  b || c ? println "correct"
+end

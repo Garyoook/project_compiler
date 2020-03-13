@@ -1,0 +1,12 @@
+# simple true if statement
+
+# Output:
+# here
+
+# Program:
+
+begin
+  true ? println "here"
+
+end
+

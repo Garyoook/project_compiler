@@ -1,0 +1,12 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# true
+
+# Program:
+
+begin
+  bool k = true ;
+  bool* j = &k;
+  println *j
+end

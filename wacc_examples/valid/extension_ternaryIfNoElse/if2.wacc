@@ -1,0 +1,11 @@
+# Simple conditional statement with int comparison test
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  int a = 13;	
+  a != 13 ? println "incorrect"
+end

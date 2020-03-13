@@ -6,7 +6,6 @@ import doc.wacc.utils.ErrorMessage;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
 import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
-import static java.lang.System.exit;
 
 public class PrintlnAst extends AST {
   private AST expr;
