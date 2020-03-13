@@ -1,0 +1,11 @@
+# Whitespace only important between keyword and variable tokens
+
+# Output:
+# hi
+
+# Program:
+
+begin
+  string* j = null;
+  println *j
+end

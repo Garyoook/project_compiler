@@ -1,0 +1,7 @@
+begin
+import Math.wacc
+
+int a = call factorial(3);
+println a
+end
+#expected output: 6

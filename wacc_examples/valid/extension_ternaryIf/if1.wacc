@@ -1,0 +1,13 @@
+# Simple conditional statement with int comparison test
+
+# Output:
+# correct
+# happy
+
+# Program:
+
+begin
+  int a = 13;	
+  a == 13 ? println "correct" : println "incorrect" ;
+  println "happy"
+end

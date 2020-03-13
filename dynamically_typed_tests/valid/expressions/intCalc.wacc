@@ -1,0 +1,13 @@
+# simple integer calculation
+
+# Output:
+# 72
+
+# Program:
+
+begin
+  x = 42 ;
+  y = 30 ;
+  z = x + y ;
+  println z
+end

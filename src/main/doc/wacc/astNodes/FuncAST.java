@@ -3,6 +3,7 @@ package doc.wacc.astNodes;
 import antlr.BasicParser;
 import doc.wacc.utils.CompilerVisitor;
 import doc.wacc.utils.SymbolTable;
+import doc.wacc.utils.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,18 @@ public class FuncAST extends AST {
     return params;
   }
 
-  public BasicParser.TypeContext getReturnType() {
-    return returnType;
+  public List<Type> getParamsType() {
+    CompilerVisitor visitor = new CompilerVisitor();
+    List<Type> types = new ArrayList<>();
+    for (BasicParser.ParamContext p: parameters) {
+      types.add(visitor.visitType(p.type()));
+    }
+    return types;
+  }
+
+  public Type getReturnType() {
+    CompilerVisitor visitor = new CompilerVisitor();
+    return visitor.visitType(returnType);
   }
 
   public String getFuncName() {
@@ -54,7 +65,7 @@ public class FuncAST extends AST {
       params.append(p.type().getText()).append(" ").append(p.IDENT()
               .getText()).append(", ");
     }
-    return "function: " + this.getReturnType().getText() + " " +this.getFuncName()+"("
+    return "function: " + this.getReturnType() + " " +this.getFuncName()+"("
             + params + "): " + this.functionBody;
   }
 }

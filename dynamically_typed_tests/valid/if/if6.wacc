@@ -1,0 +1,17 @@
+# Simple conditional statement with character comparison test
+
+# Output:
+# correct
+
+# Program:
+
+begin
+  c1 = 'f';
+  c2 = 'F';	
+  if c1 == c2 
+  then 
+    println "incorrect"
+  else 
+    println "correct"
+  fi
+end

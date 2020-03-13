@@ -11,6 +11,8 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
+import javax.lang.model.element.TypeElement;
+
 import static antlr.BasicParser.*;
 import static doc.wacc.astNodes.AST.symbolTable;
 import static doc.wacc.astNodes.AssignAST.*;
@@ -30,6 +32,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   private boolean thenHasReturn = false;
   public static int currentLine = 0;     // global variable for reporting error message
   public static int currentCharPos = 0;  // global variable for reporting error message
+  public static boolean dynamically_Typed = false;
+
+  public void setDynamically_Typed() {
+    dynamically_Typed = true;
+  }
 
   @Override public AST visitPair_liter(Pair_literContext ctx) {
     return new PairAST(ctx.getText(),null, null);
@@ -94,6 +101,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   @Override public AST visitExpr(ExprContext ctx) {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
+    if (ctx.unary_ref() != null) {
+      return (new RefNode(ctx.ident().getText()));
+    } else
+    if (ctx.unary_deref() != null) {
+      return (new DerefNode(ctx.ident().getText(), ctx.unary_deref().TIME().size()));
+    } else
     if (ctx.unary_oper() != null) {
       return (new UnaryOpNode(ctx.unary_oper(), visitExpr(ctx.expr(0))));
     } else
@@ -213,7 +226,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public PairElemNode visitPair_elem(Pair_elemContext ctx) {
-    return new PairElemNode(ctx.stop.getText());
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    return new PairElemNode(ctx.fst() != null, ctx.snd() != null, visitExpr(ctx.expr()));
   }
 
   @Override public AST visitArg_list(Arg_listContext ctx) { return visitChildren(ctx); }
@@ -233,13 +248,142 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
   }
 
   @Override public AST visitAssignment(AssignmentContext ctx) {
+    AssignRHSAST rhsAst = visitAssign_rhs(ctx.assign_rhs());
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
+
+    if (dynamically_Typed) {
+      if (ctx.assign_rhs().call() != null) {
+        List<Type> parameter = functionTable.get(ctx.assign_rhs().IDENT().getText());
+
+        if (parameter.size() > 1) {
+          int i = 0;
+          for (i = 1; i < parameter.size(); i++) {
+            //to check whether the number of parameter provided is smaller than the number of parameter needed
+            if (ctx.assign_rhs().arg_list().expr(i - 1) == null) {
+              ErrorMessage.addSemanticError("args number not matched" +
+                  " at line:" + currentLine + ":" +
+                  currentCharPos + " -- " +
+                  "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+              return new ErrorAST();
+            }
+
+            if (!dynamically_Typed) {
+              AST ast = visitExpr(ctx.assign_rhs().arg_list().expr(i - 1));
+              Type type = parameter.get(i);
+
+              if (ctx.assign_rhs().arg_list().expr(i - 1).array_elem() == null) {
+                if ((is_bool(ast) && !type.equals(boolType()) ||
+                    is_Char(ast) && !type.equals(charType()) ||
+                    is_int(ast) && !type.equals(intType())) ||
+                    is_String(ast) && !type.equals(stringType())) {
+                  ErrorMessage.addSemanticError("Wrong type in function parameter" +
+                      " at line:" + currentLine + ":" +
+                      currentCharPos + " -- " +
+                      "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+                  return new ErrorAST();
+                }
+              } else {
+                Type type1 = symbolTable.getVariable(ctx.assign_rhs().arg_list().expr(i - 1).array_elem().IDENT().getText());
+
+                if ((type1.equals(boolType()) && !type.equals(boolType()) ||
+                    type1.equals(charType()) && !type.equals(charType()) ||
+                    type1.equals(intType()) && !type.equals(intType())) ||
+                    type1.equals(stringType()) && !type.equals(stringType())) {
+                  ErrorMessage.addSemanticError("Wrong type in function parameter");
+                  return new ErrorAST();
+                }
+              }
+            }
+          }
+          //to check whether the number of parameter provided is greater than the number of parameter needed
+          if (ctx.assign_rhs().arg_list().expr(i - 1) != null) {
+            ErrorMessage.addSemanticError("args number not matched. " +
+                " at line:" + currentLine + ":" +
+                currentCharPos + " -- " +
+                "in function " + ctx.assign_rhs().IDENT().getText() + ";");
+            return new ErrorAST();
+          }
+        }
+      }
+    }
+
     if (ctx.assign_rhs().call() != null) {
       visitCall(ctx.assign_rhs().call());
     }
-    return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), visitAssign_rhs(ctx.assign_rhs()));
+
+    return new AssignAST(visitAssign_lhs(ctx.assign_lhs()), rhsAst);
   }
+
+
+  @Override public AST visitIfthennoelse(BasicParser.IfthennoelseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
+  @Override public AST visitTernaryIf(BasicParser.TernaryIfContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat(0));
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = visitStat(ctx.stat(1));
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
 
   @Override public AST visitIfthenesle(IfthenesleContext ctx) {
     symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
@@ -332,7 +476,11 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
         }
       }
     }
-    return new DeclarationAst(visitType(ctx.type()), ctx.IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+
+    if (ctx.ident().ptr().size() > 0) {
+      return new DeclarationAst(new PtrType(visitType(ctx.type())), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
+    }
+    return new DeclarationAst(visitType(ctx.type()), ctx.ident().IDENT().getText(), visitAssign_rhs(ctx.assign_rhs()));
   }
 
   @Override public AST visitWhileloop(WhileloopContext ctx) {
@@ -405,19 +553,22 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     currentLine = ctx.getStart().getLine();
     currentCharPos = ctx.getStart().getCharPositionInLine();
     AST expr = visitExpr(ctx.expr());
-    if (expr instanceof IdentNode) {
-      Type type = symbolTable.getVariable(((IdentNode) expr).getIdent());
-      if (!(type instanceof  PairType) && !(type instanceof ArrayType)) {
+
+    if (!dynamically_Typed) {
+      if (expr instanceof IdentNode) {
+        Type type = symbolTable.getVariable(((IdentNode) expr).getIdent());
+        if (!(type instanceof PairType) && !(type instanceof ArrayType)) {
+          ErrorMessage.addSemanticError("Can only free pair or array" +
+              " at line:" + currentLine + ":" +
+              currentCharPos);
+          return new ErrorAST();
+        }
+      } else if (!(expr instanceof ArrayAST) && !is_Pair(expr)) {
         ErrorMessage.addSemanticError("Can only free pair or array" +
-                " at line:" + currentLine + ":" +
-                currentCharPos);
+            " at line:" + currentLine + ":" +
+            currentCharPos);
         return new ErrorAST();
       }
-    } else if (!(expr instanceof ArrayAST) && !is_Pair(expr)) {
-      ErrorMessage.addSemanticError("Can only free pair or array" +
-                " at line:" + currentLine + ":" +
-                currentCharPos);
-      return new ErrorAST();
     }
     return new FreeAst(visitExpr((ctx.expr())));
   }
@@ -451,14 +602,17 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
 
     Type type = functionTable.get(currentFuncName).get(0);
     AST ast = visitExpr(ctx.expr());
-    if ((type.equals(boolType())  && !is_bool(ast)) ||
-        (type.equals(intType())   && !is_int(ast)) ||
-        (type.equals(charType())  && !is_Char(ast)) ||
-        (type.equals(stringType()) && !is_String(ast))) {
-      ErrorMessage.addSemanticError("return type not compatible"+
-              " at line:" + currentLine + ":" +
-              currentCharPos);
-      return new ErrorAST();
+
+    if (!dynamically_Typed) {
+      if ((type.equals(boolType()) && !is_bool(ast)) ||
+          (type.equals(intType()) && !is_int(ast)) ||
+          (type.equals(charType()) && !is_Char(ast)) ||
+          (type.equals(stringType()) && !is_String(ast))) {
+        ErrorMessage.addSemanticError("return type not compatible" +
+            " at line:" + currentLine + ":" +
+            currentCharPos);
+        return new ErrorAST();
+      }
     }
     return new ReturnAst(visitExpr(ctx.expr()));
   }
@@ -562,9 +716,12 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     Param_listContext params = ctx.param_list();
     List<ParamContext> pa =  params == null ? new ArrayList<>() : params.param();
 
-    for (ParamContext p: pa) {
-      symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
+    if (!dynamically_Typed) {
+      for (ParamContext p : pa) {
+        symbolTable.putVariable(p.IDENT().getText(), visitType(p.type()));
+      }
     }
+
     AST ast = new FuncAST(ctx.type(), ctx.IDENT().getText(), pa, visitStat(ctx.stat()), symbolTable);
     inFunction = false;
     symbolTable.inFunction = false;
@@ -630,6 +787,40 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
     return new ProgramAST(libASTS, funcASTS, visitStat(ctx.stat()));
   }
 
+  public AST visitTernaryIfnoElse(BasicParser.TernaryIfnoElseContext ctx) {
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable thenSymbolTable = symbolTable;
+    currentLine = ctx.getStart().getLine();
+    currentCharPos = ctx.getStart().getCharPositionInLine();
+    symbolTable.inIfThenElse = true;
+
+    AST thenAst = visitStat(ctx.stat());
+
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    SymbolTable s = symbolTable;
+    symbolTable = symbolTable.previousScope();
+    symbolTable = new SymbolTable(symbolTable, new HashMap<>()); //go to a new scope
+    SymbolTable elseSymbolTable = symbolTable;
+    symbolTable.inheritFlags(s);
+
+    AST elseAST = new SkipAst();
+    if (symbolTable.hasReturned) {
+      hasReturned = symbolTable.hasReturned;
+    }
+
+    symbolTable.thenHasReturn = false;
+    symbolTable = symbolTable.previousScope();
+    symbolTable.thenHasReturn = false;
+
+    IfAst if_Ast= new IfAst(visitExpr(ctx.expr()),thenAst ,elseAST, thenSymbolTable);
+    if_Ast.setElseSymbolTable(elseSymbolTable);
+
+    return if_Ast;
+  }
+
 
   public AST visitStat(StatContext statContext) {
     currentLine = statContext.getStart().getLine();
@@ -647,6 +838,13 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof AskipContext) {
         return visitAskip((AskipContext) statContext);
+      }
+
+      if (statContext instanceof IfthennoelseContext) {
+        return visitIfthennoelse((IfthennoelseContext) statContext);
+      }
+      if (statContext instanceof TernaryIfContext) {
+        return visitTernaryIf((TernaryIfContext) statContext);
       }
       if (statContext instanceof DeclarationContext) {
         return visitDeclaration((DeclarationContext) statContext);
@@ -671,6 +869,9 @@ public class CompilerVisitor extends BasicParserBaseVisitor<AST> {
       }
       if (statContext instanceof IfthenesleContext) {
         return visitIfthenesle((IfthenesleContext) statContext);
+      }
+      if (statContext instanceof TernaryIfnoElseContext) {
+        return visitTernaryIfnoElse((TernaryIfnoElseContext) statContext);
       }
       if (statContext instanceof WhileloopContext) {
         return visitWhileloop((WhileloopContext) statContext);

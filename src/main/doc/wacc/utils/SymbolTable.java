@@ -73,13 +73,17 @@ public class SymbolTable {
       return sbTableHelper(name, this);
     }
 
+    public boolean existInCurrentBlock(String name) {
+      return symbolTable.get(name) != null;
+    }
+
     private Type sbTableHelper(String name, SymbolTable symbolTable) {
       if (symbolTable == null) {
-        ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
+//        ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
         return Type.errorType();
       }
       if (symbolTable.symbolTable == null) {
-        ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
+//        ErrorMessage.addSemanticError("Semantic error: variable not exist " + name);
         return Type.errorType();
       }
       if (symbolTable.symbolTable.get(name) != null) {

@@ -1,0 +1,8 @@
+begin
+
+bool[] x = [true, false, true];
+              print x[0];
+              print x[1];
+              println x[2] # bool[]
+
+end

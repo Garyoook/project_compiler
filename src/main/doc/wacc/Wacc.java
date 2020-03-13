@@ -75,6 +75,8 @@ public class Wacc {
       CompilerVisitor visitor = new CompilerVisitor();
 
       System.out.println("Compiling from source: " + args[0] + ":");
+      // changed WACC to dynamically typed
+//      visitor.setDynamically_Typed();
       AST ast = visitor.visitProg(basicParser.prog());
 //      System.out.println(ast);
 

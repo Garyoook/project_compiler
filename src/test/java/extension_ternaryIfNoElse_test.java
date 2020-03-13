@@ -16,25 +16,115 @@ import java.util.Scanner;
 
 import static java.lang.System.exit;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-public class ExtensionTests {
+public class extension_ternaryIfNoElse_test {
 
     @Test
-    public void extension_standardLib_pow() throws IOException, InterruptedException {
-        String fp = "wacc_examples/extension/standardLib_pow.wacc";
-        emulator(fp);
+    public void extension_ternaryIfNoElse1() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if1");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
 
+
+    @Test
+    public void extension_ternaryIfNoElse2() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if2");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertNull(myOutput.readLine());
+    }
+
+    @Test
+    public void extension_ternaryIfNoElse3() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if3");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIfNoElse4() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if4");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertNull(myOutput.readLine());
+    }
+
+    @Test
+    public void extension_ternaryIfNoElse5() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if5");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "correct");
+    }
+
+    @Test
+    public void extension_ternaryIfNoElse6() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("if6");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertNull(myOutput.readLine());
+    }
+
+
+    @Test
+    public void extension_ternaryIfNoElseBasic() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("ifBasic");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), null);
+    }
+
+    @Test
+    public void extension_ternaryIfNoElseTrue() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("ifTrue");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), "here");
+    }
+
+    @Test
+    public void extension_ternaryIfNoElseFalse() throws IOException, InterruptedException {
+        Result_of_execution result = exec_extension_ternaryIfNoElse("ifFalse");
+        BufferedReader myOutput = result.getBufferedReader();
+        assertEquals(result.getExit_code(), 0);
+        assertEquals(myOutput.readLine(), null);
+    }
+
+
+    private Result_of_execution exec_extension_ternaryIfNoElse(String filename) throws IOException, InterruptedException {
+        String fp = "wacc_examples/valid/extension_ternaryIfNoElse/" + filename + ".wacc";
+        emulator(fp);
         Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s charComparisonExpr.s");
+        Process pr = rt.exec("arm-linux-gnueabi-gcc -o tempProg -mcpu=arm1176jzf-s -mtune=arm1176jzf-s " + filename + ".s");
         pr.waitFor();
         Process pr2 = rt.exec("qemu-arm -L /usr/arm-linux-gnueabi/ tempProg");
         pr2.waitFor();
         OutputStreamWriter osw = new OutputStreamWriter(pr2.getOutputStream());
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pr2.getInputStream()));
-        int myExitCode = pr2.exitValue();
+        return new Result_of_execution(bufferedReader, pr2.exitValue());
+    }
 
-        assertEquals(myExitCode, 0);
-        assertEquals(bufferedReader.readLine(), "8");
+    private static class Result_of_execution {
+        private BufferedReader bufferedReader;
+        private int exit_code;
+
+
+        private Result_of_execution(BufferedReader bufferedReader, int exit_code) {
+            this.bufferedReader = bufferedReader;
+            this.exit_code = exit_code;
+        }
+
+        public BufferedReader getBufferedReader() {
+            return bufferedReader;
+        }
+
+        public int getExit_code() {
+            return exit_code;
+        }
     }
 
     // ======================= Emulator =======================================
@@ -120,3 +210,4 @@ public class ExtensionTests {
 
     }
 }
+

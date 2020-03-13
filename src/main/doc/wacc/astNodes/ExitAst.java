@@ -5,6 +5,7 @@ import doc.wacc.utils.ErrorMessage;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
+import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
 import static java.lang.System.exit;
 
 public class ExitAst extends AST {
@@ -13,9 +14,11 @@ public class ExitAst extends AST {
   public ExitAst(AST expr) {
     this.expr = expr;
 
-    if (!is_int(expr)) {
-      ErrorMessage.addSemanticError("Type incompatible: exit code should be an int" +
-              " at line:" + currentLine + ":" + currentCharPos);
+    if (!dynamically_Typed) {
+      if (!is_int(expr)) {
+        ErrorMessage.addSemanticError("Type incompatible: exit code should be an int" +
+            " at line:" + currentLine + ":" + currentCharPos);
+      }
     }
   }
 

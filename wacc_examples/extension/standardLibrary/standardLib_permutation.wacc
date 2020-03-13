@@ -1,0 +1,7 @@
+begin
+import Math.wacc
+
+int a = call perm(5,2);
+println a
+end
+#expected output: 20

@@ -1,0 +1,18 @@
+# creates a pair which is returned from a function
+
+# Output:
+# 10
+
+# Program:
+
+begin
+
+  pair(int, int) getPair() is
+    p = newpair(10,15);
+    return p
+  end
+
+  p = call getPair();
+  x = fst p;
+  println x
+end

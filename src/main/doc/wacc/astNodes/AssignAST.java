@@ -7,6 +7,7 @@ import doc.wacc.utils.Type;
 import static antlr.BasicParser.*;
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
+import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
 import static doc.wacc.utils.Type.*;
 import static java.lang.System.exit;
 
@@ -19,35 +20,35 @@ public class AssignAST extends AST {
     this.lhs = lhs;
     this.rhs = rhs;
 
+    if (!dynamically_Typed) {
+      if (lhs.getLhsContext().pair_elem() != null) {
+        type = symbolTable.getVariable(lhs.getLhsContext().pair_elem().expr().getText());
+      } else if (lhs.getLhsContext().array_elem() != null) {
+        type = symbolTable.getVariable(lhs.getLhsContext().array_elem().IDENT().getText());
+      } else {
+        type = symbolTable.getVariable(lhs.getLhsContext().ident().IDENT().getText());
+      }
 
-    if (lhs.getLhsContext().pair_elem() != null) {
-      type = symbolTable.getVariable(lhs.getLhsContext().pair_elem().expr().getText());
-    } else if (lhs.getLhsContext().array_elem() != null) {
-      type = symbolTable.getVariable(lhs.getLhsContext().array_elem().IDENT().getText());
-    } else {
-      type = symbolTable.getVariable(lhs.getLhsContext().getText());
-    }
-
-    if (type == null) {
-      ErrorMessage.addSemanticError(lhs.getLhsContext().getText() + " is not defined" +
-              " at line:" + currentLine + ":" +
-              currentCharPos);
-    }
+      if (type.equals(errorType())) {
+        ErrorMessage.addSemanticError(lhs.getLhsContext().getText() + " is not defined" +
+            " at line:" + currentLine + ":" +
+            currentCharPos);
+      }
 
 
+      //=========================================
 
-    //=========================================
-
-    if (rhs.getRhsContext().expr().size() == 1) {
-      CompilerVisitor visitor = new CompilerVisitor();
-      AST ast = visitor.visitExpr(rhs.getRhsContext().expr(0));
-      if ((type.equals(Type.boolType()) && !is_bool(ast)) ||
-              (type.equals(Type.intType()) && !is_int(ast)) ||
-              (type.equals(Type.charType()) && !is_Char(ast)) ||
-              (type.equals(Type.stringType()) && !is_String(ast)) ) {
-        ErrorMessage.addSemanticError("assignment type not compatible" +
-                " at line:" + currentLine + ":" + currentCharPos +
-                "expected: ");
+      if (rhs.getRhsContext().expr().size() == 1) {
+        CompilerVisitor visitor = new CompilerVisitor();
+        AST ast = visitor.visitExpr(rhs.getRhsContext().expr(0));
+        if ((type.equals(Type.boolType()) && !is_bool(ast)) ||
+            (type.equals(Type.intType()) && !is_int(ast)) ||
+            (type.equals(Type.charType()) && !is_Char(ast)) ||
+            (type.equals(Type.stringType()) && !is_String(ast))) {
+          ErrorMessage.addSemanticError("assignment type not compatible" +
+              " at line:" + currentLine + ":" + currentCharPos +
+              "expected: ");
+        }
       }
     }
 
@@ -69,6 +70,14 @@ public class AssignAST extends AST {
 
   public Pair_elemContext getLhsPairElem() {
     return lhs.getLhsContext().pair_elem();
+  }
+
+  public boolean rhsNotPairElemPair() {
+    return rhs.getRhsContext().expr().size() > 0;
+  }
+
+  public boolean rhsDeclaredPairOrNull() {
+    return rhs.getRhsContext().expr().size() == 1;
   }
 
   @Override

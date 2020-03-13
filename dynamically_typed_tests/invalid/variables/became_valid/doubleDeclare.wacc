@@ -1,0 +1,14 @@
+# redeclaration of variable
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  x = 10 ;
+  x = 20
+end

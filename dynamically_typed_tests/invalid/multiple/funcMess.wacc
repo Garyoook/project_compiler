@@ -1,0 +1,23 @@
+# a complete mess of function definition and use
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  int f(bool b) is
+    x = -1 ;
+    return "done"
+  end
+  
+  x = 5 ;
+  y = call f(x) ;
+  println y ;
+  println x
+  
+end
+	

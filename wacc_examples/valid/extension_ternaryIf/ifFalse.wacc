@@ -1,0 +1,11 @@
+# simple false if statement 
+
+# Output:
+# here
+
+# Program:
+
+begin
+  false ? println "not here" : println "here"
+end
+

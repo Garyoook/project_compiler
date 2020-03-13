@@ -1,0 +1,15 @@
+# evaluating less-than
+
+# Output:
+# true
+# false
+
+# Program:
+
+begin
+  x = 2 ;
+  y = 6 ;
+  z = 4 ;
+  println x < y ;
+  println y < z
+end

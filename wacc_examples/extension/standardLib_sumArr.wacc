@@ -1,0 +1,7 @@
+begin
+import Math.wacc
+int[] arr = [1,2,3,4];
+int a = call sumArr(arr);
+println a
+end
+#expected output: 10

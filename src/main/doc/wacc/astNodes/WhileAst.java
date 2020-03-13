@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import static doc.wacc.utils.CompilerVisitor.currentCharPos;
 import static doc.wacc.utils.CompilerVisitor.currentLine;
+import static doc.wacc.utils.CompilerVisitor.dynamically_Typed;
 import static java.lang.System.exit;
 
 public class WhileAst extends AST {
@@ -21,9 +22,11 @@ public class WhileAst extends AST {
     this.stat = stat;
     this.symbolTable = symbolTable;
 
-    if (!is_bool(expr)) {
-      ErrorMessage.addSemanticError("wrong type in while condition" +
-              " at line:" + currentLine + ":" + currentCharPos);
+    if (!dynamically_Typed) {
+      if (!is_bool(expr)) {
+        ErrorMessage.addSemanticError("wrong type in while condition" +
+            " at line:" + currentLine + ":" + currentCharPos);
+      }
     }
   }
 

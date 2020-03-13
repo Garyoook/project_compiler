@@ -1,0 +1,16 @@
+# null pair assignment
+
+# Output:
+# (nil)
+# (nil)
+
+# Program:
+
+begin
+  p = null ;
+  println p ;
+  p = null ;
+  println p
+end
+
+
